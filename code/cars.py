@@ -19,7 +19,7 @@ car_image.anchor_y = car_image.height // 2
 #outside lines
 line = pyglet.shapes.Line(x=472, y=23, x2=1723, y2=217, width = 1, batch = lines)
 line1 = pyglet.shapes.Line(x=1723, y=217, x2=1777, y2=295, width = 1, batch = lines)
-line2 = pyglet.shapes.Line(x=1777, y=295, x2=1764, y2=392, width = 1, batch = lines)
+line2 = pyglet.shapes.Line(x=1777, y=295, x2=1764, y2=392, width = 1, batch = lines, color = (255,0,255))
 line3 = pyglet.shapes.Line(x=1764, y=392, x2=1704, y2=459, width = 1, batch = lines)
 line4 = pyglet.shapes.Line(x=1704, y=459, x2=1580, y2=510, width = 1, batch = lines)
 line5 = pyglet.shapes.Line(x=1580, y=510, x2=1562, y2=548, width = 1, batch = lines)
@@ -43,14 +43,14 @@ line22 = pyglet.shapes.Line(x=364, y=832, x2=462, y2=624, width = 1, batch = lin
 line23 = pyglet.shapes.Line(x=462, y=624, x2=453, y2=555, width = 1, batch = lines)
 line24 = pyglet.shapes.Line(x=453, y=555, x2=269, y2=478, width = 1, batch = lines)
 line25 = pyglet.shapes.Line(x=269, y=478, x2=211, y2=370, width = 1, batch = lines)
-line26 = pyglet.shapes.Line(x=211, y=370, x2=207, y2=245, width = 1, batch = lines)
+line26 = pyglet.shapes.Line(x=211, y=370, x2=207, y2=245, width = 1, batch = lines, color = (255,0,255))
 line27 = pyglet.shapes.Line(x=207, y=245, x2=278, y2=98, width = 1, batch = lines)
 line28 = pyglet.shapes.Line(x=278, y=98, x2=355, y2=36, width = 1, batch = lines)
 line29 = pyglet.shapes.Line(x=355, y=36, x2=472, y2=23, width = 1, batch = lines)
 
 #inside lines
 line30 = pyglet.shapes.Line(x=470, y=181, x2=1525, y2=325, width = 1, batch = lines)
-line31 = pyglet.shapes.Line(x=1525, y=325, x2=1526, y2=363, width = 1, batch = lines)
+line31 = pyglet.shapes.Line(x=1525, y=325, x2=1526, y2=363, width = 1, batch = lines, color = (255,0,255))
 line32 = pyglet.shapes.Line(x=1526, y=363, x2=1383, y2=435, width = 1, batch = lines)
 line33 = pyglet.shapes.Line(x=1383, y=435, x2=1354, y2=554, width = 1, batch = lines)
 line34 = pyglet.shapes.Line(x=1354, y=554, x2=1414, y2=644, width = 1, batch = lines)
