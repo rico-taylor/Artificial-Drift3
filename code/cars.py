@@ -3,7 +3,7 @@
 import pyglet
 from pyglet import sprite, image
 from pyglet.window import key, mouse
-from math import sin, cos, atan, radians, sqrt
+from math import sin, cos, atan, radians, sqrt, tanh
 
 window = pyglet.window.Window(caption="Images")
 window.set_fullscreen(True)
@@ -86,9 +86,17 @@ def overlap_check(car_hitbox, input_lines):
     for input_line in input_lines:
       if min(input_line.x, input_line.x2) < x < max(input_line.x, input_line.x2):
         if min(input_line.y, input_line.y2) < y < max(input_line.y, input_line.y2):
+            
             gradient = (input_line.y2-input_line.y)/(input_line.x2-input_line.x)
+            input_line.color = (0,255,255)
+            if abs(gradient) > 12:
+              new_velocity = (tanh(velocity)*2+1)**12
+            elif abs(gradient) < 1:
+              new_velocity = (tanh(velocity)*2+1)**((abs(gradient)+1)**2)
+            else:
+              new_velocity = (tanh(velocity)*2+1)**abs(gradient)
             if velocity > 0:
-              if y - input_line.y -velocity < gradient*(x-input_line.x) < y - input_line.y + velocity:
+              if y - input_line.y -new_velocity < gradient*(x-input_line.x) < y - input_line.y + new_velocity:
                 return True
             #if velocity < 0:
               #if y - input_line.y -velocity > gradient*(x-input_line.x) > y - input_line.y + velocity:
@@ -163,7 +171,7 @@ def on_key_press(symbol, modifiers):
   if symbol == key.LSHIFT or symbol == key.RSHIFT:
     if len(backDict) > drift_time:
       drift = True
-      max_velocity = 12
+      max_velocity = 11
       rotation_speed = 3
       rounds = 0
 
