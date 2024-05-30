@@ -19,12 +19,12 @@ car_image.anchor_y = car_image.height // 2
 #outside lines
 line = pyglet.shapes.Line(x=472, y=23, x2=1723, y2=217, width = 1, batch = lines)
 line1 = pyglet.shapes.Line(x=1723, y=217, x2=1777, y2=295, width = 1, batch = lines)
-line2 = pyglet.shapes.Line(x=1777, y=295, x2=1764, y2=392, width = 1, batch = lines, color = (255,0,255))
+line2 = pyglet.shapes.Line(x=1777, y=295, x2=1764, y2=392, width = 1, batch = lines)
 line3 = pyglet.shapes.Line(x=1764, y=392, x2=1704, y2=459, width = 1, batch = lines)
 line4 = pyglet.shapes.Line(x=1704, y=459, x2=1580, y2=510, width = 1, batch = lines)
 line5 = pyglet.shapes.Line(x=1580, y=510, x2=1562, y2=548, width = 1, batch = lines)
 line6 = pyglet.shapes.Line(x=1562, y=548, x2=1571, y2=584, width = 1, batch = lines)
-line7 = pyglet.shapes.Line(x=1571, y=584, x2=1707, y2=690, width = 1, batch = lines)
+line7 = pyglet.shapes.Line(x=1571, y=584, x2=1707, y2=690, width = 1, batch = lines, color = (255,0,255))
 line8 = pyglet.shapes.Line(x=1707, y=690, x2=1765, y2=800, width = 1, batch = lines)
 line9 = pyglet.shapes.Line(x=1765, y=800, x2=1760, y2=901, width = 1, batch = lines)
 line10 = pyglet.shapes.Line(x=1760, y=901, x2=1696, y2=984, width = 1, batch = lines)
@@ -43,14 +43,14 @@ line22 = pyglet.shapes.Line(x=364, y=832, x2=462, y2=624, width = 1, batch = lin
 line23 = pyglet.shapes.Line(x=462, y=624, x2=453, y2=555, width = 1, batch = lines)
 line24 = pyglet.shapes.Line(x=453, y=555, x2=269, y2=478, width = 1, batch = lines)
 line25 = pyglet.shapes.Line(x=269, y=478, x2=211, y2=370, width = 1, batch = lines)
-line26 = pyglet.shapes.Line(x=211, y=370, x2=207, y2=245, width = 1, batch = lines, color = (255,0,255))
+line26 = pyglet.shapes.Line(x=211, y=370, x2=207, y2=245, width = 1, batch = lines)
 line27 = pyglet.shapes.Line(x=207, y=245, x2=278, y2=98, width = 1, batch = lines)
 line28 = pyglet.shapes.Line(x=278, y=98, x2=355, y2=36, width = 1, batch = lines)
 line29 = pyglet.shapes.Line(x=355, y=36, x2=472, y2=23, width = 1, batch = lines)
 
 #inside lines
 line30 = pyglet.shapes.Line(x=470, y=181, x2=1525, y2=325, width = 1, batch = lines)
-line31 = pyglet.shapes.Line(x=1525, y=325, x2=1526, y2=363, width = 1, batch = lines, color = (255,0,255))
+line31 = pyglet.shapes.Line(x=1525, y=325, x2=1526, y2=363, width = 1, batch = lines)
 line32 = pyglet.shapes.Line(x=1526, y=363, x2=1383, y2=435, width = 1, batch = lines)
 line33 = pyglet.shapes.Line(x=1383, y=435, x2=1354, y2=554, width = 1, batch = lines)
 line34 = pyglet.shapes.Line(x=1354, y=554, x2=1414, y2=644, width = 1, batch = lines)
@@ -73,7 +73,7 @@ line50 = pyglet.shapes.Line(x=608, y=697, x2=612, y2=548, width = 1, batch = lin
 line51 = pyglet.shapes.Line(x=612, y=548, x2=565, y2=452, width = 1, batch = lines)
 line52 = pyglet.shapes.Line(x=565, y=452, x2=440, y2=399, width = 1, batch = lines)
 line53 = pyglet.shapes.Line(x=440, y=399, x2=400, y2=364, width = 1, batch = lines)
-line54 = pyglet.shapes.Line(x=400, y=364, x2=383, y2=277, width = 1, batch = lines, color = (255,0,255))
+line54 = pyglet.shapes.Line(x=400, y=364, x2=383, y2=277, width = 1, batch = lines)
 line55 = pyglet.shapes.Line(x=383, y=277, x2=404, y2=217, width = 1, batch = lines)
 line56 = pyglet.shapes.Line(x=404, y=217, x2=470, y2=181, width = 1, batch = lines)
 
@@ -85,16 +85,14 @@ def overlap_check(car_hitbox, input_lines):
   for (x,y) in car_hitbox:
     for input_line in input_lines:
       if min(input_line.x, input_line.x2) < x < max(input_line.x, input_line.x2):
-        if min(input_line.y, input_line.y2) < y < max(input_line.y, input_line.y2):
-            
+        if min(input_line.y, input_line.y2) < y < max(input_line.y, input_line.y2):  
             gradient = (input_line.y2-input_line.y)/(input_line.x2-input_line.x)
-            input_line.color = (0,255,255)
             if abs(gradient) > 12:
               new_velocity = (tanh(velocity)*2+1)**12
-            elif abs(gradient) < 1:
+            elif abs(gradient) < 0.5:
               new_velocity = (tanh(velocity)*2+1)**((abs(gradient)+1)**2)
             else:
-              new_velocity = (tanh(velocity)*2+1)**abs(gradient)
+              new_velocity = (tanh(velocity)*2+1)
             if velocity > 0:
               if y - input_line.y -new_velocity < gradient*(x-input_line.x) < y - input_line.y + new_velocity:
                 return True
