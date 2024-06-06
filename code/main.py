@@ -26,11 +26,83 @@ elapsed = 0
 swap = False
 started = False
 
-lineCheck1 = False
-lineCheck2 = False
-lineCheck3 = False
-lineCheck4 = False
+checkerList = []
 
+#timer lines
+timer1 = pyglet.shapes.Line(x=995, y=100, x2=985, y2=250, width = 1, batch = lines, color=(255,165,0))
+timer2 = pyglet.shapes.Line(x=939, y=246, x2=947, y2=98, width = 1, batch = lines, color=(255,165,0))
+timer3 = pyglet.shapes.Line(x=889, y=239, x2=898, y2=91, width = 1, batch = lines, color=(225,165,0))
+timer4 = pyglet.shapes.Line(x=838, y=233, x2=844, y2=82, width = 1, batch = lines, color=(225,165,0))
+timer5 = pyglet.shapes.Line(x=789, y=225, x2=793, y2=75, width = 1, batch = lines, color=(225,165,0))
+timer6 = pyglet.shapes.Line(x=733, y=218, x2=742, y2=66, width = 1, batch = lines, color=(225,165,0))
+timer7 = pyglet.shapes.Line(x=682, y=210, x2=690, y2=58, width = 1, batch = lines, color=(225,165,0))
+timer8 = pyglet.shapes.Line(x=631, y=204, x2=637, y2=50, width = 1, batch = lines, color=(225,165,0))
+timer9 = pyglet.shapes.Line(x=584, y=198, x2=590, y2=43, width = 1, batch = lines, color=(225,165,0))
+timer10 = pyglet.shapes.Line(x=532, y=191, x2=542, y2=34, width = 1, batch = lines, color=(225,165,0))
+timer11 = pyglet.shapes.Line(x=476, y=183, x2=479, y2=26, width = 1, batch = lines, color=(225,165,0))
+timer12 = pyglet.shapes.Line(x=437, y=198, x2=381, y2=34, width = 1, batch = lines, color=(225,165,0))
+timer13 = pyglet.shapes.Line(x=402, y=217, x2=308, y2=74, width = 1, batch = lines, color=(225,165,0))
+timer14 = pyglet.shapes.Line(x=397, y=234, x2=253, y2=147, width = 1, batch = lines, color=(225,165,0))
+timer15 = pyglet.shapes.Line(x=386, y=268, x2=213, y2=229, width = 1, batch = lines, color=(225,165,0))
+timer16 = pyglet.shapes.Line(x=198, y=300, x2=390, y2=314, width = 1, batch = lines, color=(225,165,0))
+timer17 = pyglet.shapes.Line(x=393, y=338, x2=210, y2=371, width = 1, batch = lines, color=(225,165,0))
+timer18 = pyglet.shapes.Line(x=401, y=365, x2=243, y2=430, width = 1, batch = lines, color=(225,165,0))
+timer19 = pyglet.shapes.Line(x=422, y=384, x2=270, y2=480, width = 1, batch = lines, color=(225,165,0))
+timer20 = pyglet.shapes.Line(x=442, y=400, x2=337, y2=508, width = 1, batch = lines, color=(225,165,0))
+timer21 = pyglet.shapes.Line(x=467, y=412, x2=394, y2=529, width = 1, batch = lines, color=(225,165,0))
+timer22 = pyglet.shapes.Line(x=421, y=542, x2=500, y2=428, width = 1, batch = lines, color=(225,165,0))
+timer23 = pyglet.shapes.Line(x=565, y=454, x2=451, y2=554, width = 1, batch = lines, color=(225,165,0))
+timer24 = pyglet.shapes.Line(x=455, y=577, x2=591, y2=508, width = 1, batch = lines, color=(225,165,0))
+timer25 = pyglet.shapes.Line(x=611, y=565, x2=458, y2=597, width = 1, batch = lines, color=(225,165,0))
+timer26 = pyglet.shapes.Line(x=462, y=624, x2=608, y2=626, width = 1, batch = lines, color=(225,165,0))
+timer27 = pyglet.shapes.Line(x=447, y=658, x2=607, y2=697, width = 1, batch = lines, color=(225,165,0))
+timer28 = pyglet.shapes.Line(x=425, y=705, x2=589, y2=760, width = 1, batch = lines, color=(225,165,0))
+timer29 = pyglet.shapes.Line(x=401, y=752, x2=565, y2=815, width = 1, batch = lines, color=(225,165,0))
+timer30 = pyglet.shapes.Line(x=555, y=838, x2=364, y2=833, width = 1, batch = lines, color=(225,165,0))
+timer31 = pyglet.shapes.Line(x=555, y=855, x2=384, y2=964, width = 1, batch = lines, color=(225,165,0))
+timer32 = pyglet.shapes.Line(x=565, y=863, x2=495, y2=1032, width = 1, batch = lines, color=(225,165,0))
+timer33 = pyglet.shapes.Line(x=627, y=1049, x2=571, y2=859, width = 1, batch = lines, color=(225,165,0))
+timer34 = pyglet.shapes.Line(x=710, y=993, x2=579, y2=850, width = 1, batch = lines, color=(225,165,0))
+timer35 = pyglet.shapes.Line(x=733, y=921, x2=582, y2=839, width = 1, batch = lines, color=(225,165,0))
+timer36 = pyglet.shapes.Line(x=584, y=798, x2=751, y2=872, width = 1, batch = lines, color=(225,165,0))
+timer37 = pyglet.shapes.Line(x=617, y=742, x2=771, y2=842, width = 1, batch = lines, color=(225,165,0))
+timer38 = pyglet.shapes.Line(x=790, y=798, x2=654, y2=700, width = 1, batch = lines, color=(225,165,0))
+timer39 = pyglet.shapes.Line(x=801, y=778, x2=724, y2=660, width = 1, batch = lines, color=(225,165,0))
+timer40 = pyglet.shapes.Line(x=834, y=774, x2=802, y2=629, width = 1, batch = lines, color=(225,165,0))
+timer41 = pyglet.shapes.Line(x=874, y=774, x2=863, y2=635, width = 1, batch = lines, color=(225,165,0))
+timer42 = pyglet.shapes.Line(x=897, y=772, x2=944, y2=639, width = 1, batch = lines, color=(225,165,0))
+timer43 = pyglet.shapes.Line(x=937, y=793, x2=998, y2=655, width = 1, batch = lines, color=(225,165,0))
+timer44 = pyglet.shapes.Line(x=972, y=808, x2=1043, y2=677, width = 1, batch = lines, color=(225,165,0))
+timer45 = pyglet.shapes.Line(x=1011, y=826, x2=1083, y2=699, width = 1, batch = lines, color=(225,165,0))
+timer46 = pyglet.shapes.Line(x=1049, y=841, x2=1125, y2=720, width = 1, batch = lines, color=(225,165,0))
+timer47 = pyglet.shapes.Line(x=1094, y=863, x2=1173, y2=744, width = 1, batch = lines, color=(225,165,0))
+timer48 = pyglet.shapes.Line(x=1227, y=770, x2=1145, y2=886, width = 1, batch = lines, color=(225,165,0))
+timer49 = pyglet.shapes.Line(x=1198, y=909, x2=1281, y2=798, width = 1, batch = lines, color=(225,165,0))
+timer50 = pyglet.shapes.Line(x=1277, y=942, x2=1346, y2=831, width = 1, batch = lines, color=(225,165,0))
+timer51 = pyglet.shapes.Line(x=1341, y=970, x2=1398, y2=857, width = 1, batch = lines, color=(225,165,0))
+timer52 = pyglet.shapes.Line(x=1384, y=990, x2=1442, y2=877, width = 1, batch = lines, color=(225,165,0))
+timer53 = pyglet.shapes.Line(x=1467, y=884, x2=1431, y2=1009, width = 1, batch = lines, color=(225,165,0))
+timer54 = pyglet.shapes.Line(x=1486, y=1023, x2=1496, y2=888, width = 1, batch = lines, color=(225,165,0))
+timer55 = pyglet.shapes.Line(x=1536, y=893, x2=1537, y2=1023, width = 1, batch = lines, color=(225,165,0))
+timer56 = pyglet.shapes.Line(x=1555, y=882, x2=1631, y2=1022, width = 1, batch = lines, color=(225,165,0))
+timer57 = pyglet.shapes.Line(x=1697, y=983, x2=1563, y2=873, width = 1, batch = lines, color=(225,165,0))
+timer58 = pyglet.shapes.Line(x=1758, y=904, x2=1576, y2=857, width = 1, batch = lines, color=(225,165,0))
+timer59 = pyglet.shapes.Line(x=1594, y=837, x2=1763, y2=848, width = 1, batch = lines, color=(225,165,0))
+timer60 = pyglet.shapes.Line(x=1761, y=793, x2=1586, y2=810, width = 1, batch = lines, color=(225,165,0))
+timer61 = pyglet.shapes.Line(x=1576, y=776, x2=1726, y2=729, width = 1, batch = lines, color=(225,165,0))
+timer62 = pyglet.shapes.Line(x=1555, y=749, x2=1688, y2=675, width = 1, batch = lines, color=(225,165,0))
+timer63 = pyglet.shapes.Line(x=1633, y=635, x2=1516, y2=720, width = 1, batch = lines, color=(225,165,0))
+timer64 = pyglet.shapes.Line(x=1470, y=685, x2=1596, y2=607, width = 1, batch = lines, color=(225,165,0))
+
+
+
+timerLineList = [timer1, timer2, timer3, timer4, timer5, timer6, timer7, timer8, timer9, timer10, timer11, timer12, timer13, timer14, timer15, timer16, timer17, timer18, timer19] 
+
+#loading up checkerList based on number of timer lines.
+for x in timerLineList:
+  checkerList.append(False)
+
+print(checkerList)
 def stopwatch():
   global going
   global start
@@ -55,52 +127,54 @@ def stopwatch():
   return "{:#.2f}".format(elapsed)
 
 def timerLine(input_line):
-  if input_line == timer1 or input_line == timer2 or input_line == timer4:
+  global timerLineList
+  if input_line in timerLineList:
     return True
 
 def lineChecks(input_line):
   global swap
-  global lineCheck1
-  global lineCheck2
-  global lineCheck3
-  global lineCheck4
+  global checkerList
   global going
   global start
   global started
   global lapCompleted
+  print(checkerList)
+  noStart = False
+  noFinish = False
   if input_line == timer1:
-    if lineCheck2 == False and lineCheck4 == False:
+    for x in checkerList:
+      if x != False:
+        noStart = True
+        break
+    if noStart == False:
       if started == False:
         started = True
-        lineCheck1 = True
+        checkerList[0] = True
         swap = True
         going = True
-    if lineCheck1 == True and lineCheck2 == True and lineCheck4 == True:
+    
+    if checkerList[timerLineList.index(input_line)-1] == True or checkerList[timerLineList.index(input_line)-2] == True:
       swap = True
       started = False
-      lineCheck1 = False
-      lineCheck2 = False
-      lineCheck4 = False
+      for x in range(1,len(checkerList)+1):
+        checkerList[x-1] = False
+      
+      for line in timerLineList:
+        line.color = (255,165,0)
+      
+      
       lapCompleted = True
       if going == False:
         going = True
       else:
         going = False
-  if input_line == timer2:
-    if lineCheck1 == True and lineCheck4 == False:
-      lineCheck2 = True
-  if input_line == timer4:
-    if lineCheck1 == True and lineCheck2 == True:
-      lineCheck4 = True 
+  
+  else:
+    if checkerList[timerLineList.index(input_line)-1] == True or checkerList[timerLineList.index(input_line)-2] == True:
+      input_line.color = (255,255,255)
+      checkerList[timerLineList.index(input_line)] = True
 
 
-#timer lines
-timer1 = pyglet.shapes.Line(x=995, y=100, x2=985, y2=250, width = 1, batch = lines, color=(255,165,0))
-timer2 = pyglet.shapes.Line(x=198, y=300, x2=390, y2=314, width = 1, batch = lines, color=(0,255,255))
-timer4 = pyglet.shapes.Line(x=1581, y=835, x2=1781, y2=847, width = 1, batch = lines, color=(0,255,255))
-timer1.opacity = 1000
-timer2.opacity = 0
-timer4.opacity = 0
 
 #outside lines
 line = pyglet.shapes.Line(x=472, y=23, x2=1723, y2=217, width = 1, batch = lines)
@@ -163,7 +237,7 @@ line54 = pyglet.shapes.Line(x=400, y=364, x2=383, y2=277, width = 1, batch = lin
 line55 = pyglet.shapes.Line(x=383, y=277, x2=404, y2=217, width = 1, batch = lines)
 line56 = pyglet.shapes.Line(x=404, y=217, x2=470, y2=181, width = 1, batch = lines)
 
-line_list = [line, line1, line2, line3, line4, line5, line6, line7, line8, line9, line10, line11, line12, line13, line14, line15, line16, line17, line18, line19, line20, line21, line22, line23, line24, line25, line26, line27, line28, line29, line30, line31, line32, line33, line34, line35, line36, line37, line38, line39, line40, line41, line42, line43, line44, line45, line46, line47, line48, line49, line50, line51, line52, line53, line54, line55, line56, timer1, timer2, timer4]
+line_list = [line, line1, line2, line3, line4, line5, line6, line7, line8, line9, line10, line11, line12, line13, line14, line15, line16, line17, line18, line19, line20, line21, line22, line23, line24, line25, line26, line27, line28, line29, line30, line31, line32, line33, line34, line35, line36, line37, line38, line39, line40, line41, line42, line43, line44, line45, line46, line47, line48, line49, line50, line51, line52, line53, line54, line55, line56, timer1, timer2, timer3, timer4, timer5, timer6, timer7, timer8, timer9, timer10, timer11, timer12, timer13, timer14, timer15, timer16, timer17, timer18, timer19,]
 
 lap_list = []
 
@@ -278,6 +352,7 @@ def on_key_press(symbol, modifiers):
 def on_mouse_press(x,y,button, modifiers):
   if button == mouse.LEFT:
     print(x,y)
+    print(lap_list)
 
 @window.event
 def on_key_release(symbol, modifiers):
