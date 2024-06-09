@@ -4,6 +4,8 @@ from pyglet.window import mouse
 window1 = pyglet.window.Window(width=400, height=300, caption='Window 1')
 window2 = pyglet.window.Window(width=400, height=300, caption='Window 2')
 
+line = pyglet.shapes.Line(x=200, y=200, x2=500, y2=500)
+
 window1.set_fullscreen(False)
 window2.set_fullscreen(False)
 #maybe for my actual game it would be good to have another screen as a backdrop since when I did this there is slight time delay where you can see the code.
@@ -21,6 +23,7 @@ def on_mouse_press(x, y, button, modifiers):
 @window2.event
 def on_draw():
   window2.clear()
+  line.draw()
 
 @window2.event
 def on_mouse_press(x, y, button, modifiers):
