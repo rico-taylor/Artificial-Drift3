@@ -1,5 +1,4 @@
-#NOTE: 
-#need to fix that if you drive backwards you go straight through the barrier
+#importing variables
 import pyglet
 import time
 from pyglet import sprite, image
@@ -22,18 +21,21 @@ displays = pyglet.graphics.Batch()
 entryDisplay = pyglet.graphics.Batch()
 
 #entry images
+#logo
 logo_img = image.load("images/logo_finished.png")
 logo_img.anchor_x = logo_img.width//2
 logo_img.anchor_y = logo_img.height//2
 logo = sprite.Sprite(logo_img, x=window.width//2, y=window.height//2 +100, batch=entryDisplay)
 logo.scale = scale_factor
 
+#play button
 play_img = image.load("images/text_play.png")
 play_img.anchor_x = play_img.width//2
 play_img.anchor_y = play_img.height//2
 playButton = sprite.Sprite(play_img, x=window.width//2, y=window.height//2 -200, batch=entryDisplay)
 playButton.scale = 0.5*scale_factor
 
+#triangle decoration
 triangle_img = image.load("images/triangle1_translucent.png")
 triangle_img.anchor_x = triangle_img.width//2
 triangle_img.anchor_y = triangle_img.height//2
@@ -41,11 +43,52 @@ triangle1 = sprite.Sprite(triangle_img, x=100, y=100, batch=entryDisplay)
 triangle1.rotation = 30
 triangle1.scale = 0.3*scale_factor
 
-#track_image = image.load("images/track V4.png")
+#car sprite PLAYER 1
 car_image = image.load("images/car.png")
-
 car_image.anchor_x = car_image.width// 2
 car_image.anchor_y = car_image.height // 2
+car_start_x =  1020/1920 *window.width
+car_start_y =  185/1080 *window.height
+car = sprite.Sprite(car_image, car_start_x, car_start_y)
+car.scale = 0.1*scale_factor
+car.rotation = 260
+
+#car sprite PLAYER 2
+car_image2 = image.load("images/car2.png")
+car_image2.anchor_x = car_image2.width// 2
+car_image2.anchor_y = car_image2.height // 2
+car_start_x2 =  1020/1920 *window.width +3
+car_start_y2 =  185/1080 *window.height -30
+car2 = sprite.Sprite(car_image2, car_start_x2, car_start_y2)
+car2.scale = 0.1*scale_factor
+car2.rotation = 260
+
+#constant values - having them as callable variables should make the update function faster
+half_width_car = (car_image.width)*scale_factor // 20
+half_height_car = (car_image.height)*scale_factor// 20
+h = sqrt(half_width_car**2 + half_height_car**2)
+angle = atan(half_width_car/half_height_car) - radians(car.rotation)
+
+#defining variables, lists, and dictionaries
+sprite_hitbox = [(0,0),(0,0),(0,0),(0,0)]
+forward = False
+backward = False
+aclockwise = False
+clockwise = False
+drift = False
+backDict = {}
+collList = []
+rounds = 0
+
+lapCompleted = False
+
+#tunable variables 
+velocity = 0 *scale_factor
+max_velocity = 8 *scale_factor
+friction = 0.07 *scale_factor
+acceleration = 0.1 *scale_factor
+rotation_speed = 3
+drift_time = 8 *scale_factor
 
 #timer code
 going = False
@@ -54,10 +97,9 @@ current= 0
 elapsed = 0
 swap = False
 started = False
-
 checkerList = []
 
-#timer lines
+#timer lines (reward gates)
 timer1 = pyglet.shapes.Line(x=995/1920 *window.width, y=100/1080 *window.height, x2=985/1920 *window.width, y2=250/1080 *window.height, width = 1, batch = lines, color=(255,165,0))
 timer2 = pyglet.shapes.Line(x=939/1920 *window.width, y=246/1080 *window.height, x2=947/1920 *window.width, y2=98/1080 *window.height, width = 1, batch = lines, color=(255,165,0))
 timer3 = pyglet.shapes.Line(x=889/1920 *window.width, y=239/1080 *window.height, x2=898/1920 *window.width, y2=91/1080 *window.height, width = 1, batch = lines, color=(225,165,0))
@@ -144,8 +186,6 @@ timer83 = pyglet.shapes.Line(x=1108/1920 *window.width, y=270/1080 *window.heigh
 timer84 = pyglet.shapes.Line(x=1048/1920 *window.width, y=262/1080 *window.height, x2=1101/1920 *window.width, y2=125/1080 *window.height, width = 1, batch = lines, color=(225,165,0))
 timer85 = pyglet.shapes.Line(x=1020/1920 *window.width, y=258/1080 *window.height, x2=1054/1920 *window.width, y2=117/1080 *window.height, width = 1, batch = lines, color=(225,165,0))
 
-
-
 timerLineList = [timer1, timer2, timer3, timer4, timer5, timer6, timer7, timer8, timer9, timer10, timer11, timer12, timer13, timer14, timer15, timer16, timer17, timer18, timer19, timer20, timer21, timer22, timer23, timer24, timer25, timer26, timer27, timer28, timer29, timer30, timer31, timer32, timer33, timer34, timer35, timer36, timer37, timer38, timer39, timer40, timer41, timer42, timer43, timer44, timer45, timer46, timer47, timer48, timer49, timer50, timer51, timer52, timer53, timer54, timer55, timer56, timer57, timer58, timer59, timer60, timer61, timer62, timer63, timer64, timer65, timer66, timer67, timer68, timer69, timer70, timer71, timer72, timer73, timer74, timer75, timer76, timer77, timer78, timer79, timer80, timer81, timer82, timer83, timer84, timer85] 
 
 #loading up checkerList based on number of timer lines.
@@ -153,6 +193,7 @@ for x in timerLineList:
   checkerList.append(False)
   x.opacity = 100
 
+#function that records the time for each lap
 def stopwatch():
   global going
   global start
@@ -223,8 +264,6 @@ def lineChecks(input_line):
       input_line.color = (255,255,255)
       checkerList[timerLineList.index(input_line)] = True
 
-
-
 #outside lines
 line = pyglet.shapes.Line(x=472/1920 * window.width, y=23/1080 * window.height, x2=1723/1920 * window.width, y2=217/1080 * window.height, width = 1, batch = lines)
 line1 = pyglet.shapes.Line(x=1723/1920 * window.width, y=217/1080 * window.height, x2=1777/1920 * window.width, y2=295/1080 * window.height, width = 1, batch = lines)
@@ -290,6 +329,7 @@ line_list = [line, line1, line2, line3, line4, line5, line6, line7, line8, line9
 
 lap_list = []
 
+#collision detection system
 def overlap_check(car_hitbox, input_lines):
   global collide_x
   global collide_y
@@ -351,41 +391,6 @@ def leader():
       return old_leader
 
 
-#track = sprite.Sprite(track_image, x=200, y=0)
-car_start_x =  1020/1920 *window.width
-car_start_y =  185/1080 *window.height
-car = sprite.Sprite(car_image, car_start_x, car_start_y)
-car.scale = 0.1*scale_factor
-#track.scale = 2.6*scale_factor
-car.rotation = 260
-
-#these are constant values - having them as callable variables should make the update function faster
-half_width_car = (car_image.width)*scale_factor // 20
-half_height_car = (car_image.height)*scale_factor// 20
-h = sqrt(half_width_car**2 + half_height_car**2)
-angle = atan(half_width_car/half_height_car) - radians(car.rotation)
-
-#defining variables, lists, and dictionaries
-sprite_hitbox = [(0,0),(0,0),(0,0),(0,0)]
-forward = False
-backward = False
-aclockwise = False
-clockwise = False
-drift = False
-backDict = {}
-collList = []
-rounds = 0
-
-lapCompleted = False
-
-#tunable variables 
-velocity = 0 *scale_factor
-max_velocity = 8 *scale_factor
-friction = 0.07 *scale_factor
-acceleration = 0.1 *scale_factor
-rotation_speed = 3
-drift_time = 8 *scale_factor
-
 @window.event
 def on_draw():
   window.clear()
@@ -395,6 +400,7 @@ def on_draw():
     displays.draw()
     #lap_displays() this function is commented out since it was causing lag
     car.draw()
+    car2.draw()
     lines.draw()
     circle.draw()
     circle1.draw()
