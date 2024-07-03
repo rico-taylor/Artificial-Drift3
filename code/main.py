@@ -44,7 +44,7 @@ triangle1.scale = 0.3*scale_factor
 #track_image = image.load("images/track V4.png")
 car_image = image.load("images/car.png")
 
-car_image.anchor_x = car_image.width // 2
+car_image.anchor_x = car_image.width// 2
 car_image.anchor_y = car_image.height // 2
 
 #timer code
@@ -160,7 +160,7 @@ def stopwatch():
   global elapsed
   global swap
   global lapCompleted
-  
+
   if lapCompleted == True:
     lap_list.append(float("{:#.2f}".format(elapsed)))
     lapCompleted = False
@@ -321,15 +321,47 @@ def lap_displays():
     text = pyglet.text.Label("Lap " +str(lap_list.index(x)+1) + ": " +str(x), font_size=20, x=50, y=700-50*lap_list.index(x), batch=displays)
     text.draw()
 
+#leader code
+def highestGate(listt):
+  loops = 0
+  biggest = 0
+  for x in listt:
+    loops += 1
+    if x == True:
+      biggest = loops
+  return biggest
+
+old_leader = "Orange"
+def leader():
+  global old_leader
+  if len(lap_list) > len(lap_list2):
+    old_leader = "Orange"
+    return "Orange"
+  elif len(lap_list2) > len(lap_list):
+    old_leader = "White"
+    return "White"
+  else:
+    if highestGate(checkerList) > highestGate(checkerList2):
+      old_leader = "Orange"
+      return "Orange"
+    elif highestGate(checkerList) < highestGate(checkerList2):
+      old_leader = "White"
+      return "White"
+    else:
+      return old_leader
+
+
 #track = sprite.Sprite(track_image, x=200, y=0)
-car = sprite.Sprite(car_image, x=1020, y=185)
+car_start_x =  1020/1920 *window.width
+car_start_y =  185/1080 *window.height
+car = sprite.Sprite(car_image, car_start_x, car_start_y)
 car.scale = 0.1*scale_factor
 #track.scale = 2.6*scale_factor
 car.rotation = 260
 
 #these are constant values - having them as callable variables should make the update function faster
-half_width_car = car_image.width // 20
-half_height_car = car_image.height // 20
+half_width_car = (car_image.width)*scale_factor // 20
+half_height_car = (car_image.height)*scale_factor// 20
 h = sqrt(half_width_car**2 + half_height_car**2)
 angle = atan(half_width_car/half_height_car) - radians(car.rotation)
 
@@ -347,12 +379,12 @@ rounds = 0
 lapCompleted = False
 
 #tunable variables 
-velocity = 0
-max_velocity = 8
-friction = 0.07
-acceleration = 0.1
+velocity = 0 *scale_factor
+max_velocity = 8 *scale_factor
+friction = 0.07 *scale_factor
+acceleration = 0.1 *scale_factor
 rotation_speed = 3
-drift_time = 8
+drift_time = 8 *scale_factor
 
 @window.event
 def on_draw():
@@ -394,8 +426,8 @@ def on_key_press(symbol, modifiers):
   if symbol == key.LSHIFT or symbol == key.RSHIFT:
     if len(backDict) > drift_time:
       drift = True
-      max_velocity = 11
-      rotation_speed = 3
+      #max_velocity = 11 
+      rotation_speed = 3.5
       rounds = 0
 
 @window.event   
@@ -428,7 +460,7 @@ def on_key_release(symbol, modifiers):
   if symbol == key.LSHIFT or symbol == key.RSHIFT:
     drift = False
     rotation_speed = 3
-    max_velocity = 8
+    #max_velocity = 8
 
 def update(dt):
   #display code
