@@ -69,7 +69,7 @@ half_height_car = (car_image.height)*scale_factor// 20
 h = sqrt(half_width_car**2 + half_height_car**2)
 angle = atan(half_width_car/half_height_car) - radians(car.rotation)
 
-#defining variables, lists, and dictionaries
+#defining variables, lists, and dictionaries - PLAYER 1 ---------------
 sprite_hitbox = [(0,0),(0,0),(0,0),(0,0)]
 forward = False
 backward = False
@@ -98,6 +98,36 @@ elapsed = 0
 swap = False
 started = False
 checkerList = []
+
+#defining variables, lists, and dictionaries - PLAYER 2 ---------------
+sprite_hitbox2 = [(0,0),(0,0),(0,0),(0,0)]
+forward2 = False
+backward2 = False
+aclockwise2 = False
+clockwise2 = False
+drift2 = False
+backDict2 = {}
+collList2 = []
+rounds2 = 0
+
+lapCompleted2 = False
+
+#tunable variables 
+velocity2 = 0 *scale_factor
+max_velocity2 = 8 *scale_factor
+friction2 = 0.07 *scale_factor
+acceleration2 = 0.1 *scale_factor
+rotation_speed2 = 3
+drift_time2 = 8 *scale_factor
+
+#timer code
+going2 = False
+start2 = 0
+current2 = 0
+elapsed2 = 0
+swap2 = False
+started2 = False
+checkerList2 = []
 
 #timer lines (reward gates)
 timer1 = pyglet.shapes.Line(x=995/1920 *window.width, y=100/1080 *window.height, x2=985/1920 *window.width, y2=250/1080 *window.height, width = 1, batch = lines, color=(255,165,0))
@@ -191,10 +221,12 @@ timerLineList = [timer1, timer2, timer3, timer4, timer5, timer6, timer7, timer8,
 #loading up checkerList based on number of timer lines.
 for x in timerLineList:
   checkerList.append(False)
+  checkerList2.append(False)
   x.opacity = 100
 
 #function that records the time for each lap
 def stopwatch():
+  #PLAYER 1 --------
   global going
   global start
   global current
@@ -216,13 +248,37 @@ def stopwatch():
   swap = False
 
   return "{:#.2f}".format(elapsed)
+def stopwatch2():
+  #PLAYER 2 --------
+  global going2
+  global start2
+  global current2
+  global elapsed2
+  global swap2
+  global lapCompleted2
+
+  if lapCompleted2 == True:
+    lap_list2.append(float("{:#.2f}".format(elapsed2)))
+    lapCompleted2 = False
+
+  current2 = time.time()
+  if going2 == True:
+    if swap2 == True:
+      start2 = time.time()
+  elif going2 == False:
+    current2 = start2
+  elapsed2 = current2 - start2
+  swap2 = False
+
+  return "{:#.2f}".format(elapsed2)
 
 def timerLine(input_line):
   global timerLineList
   if input_line in timerLineList:
     return True
 
-def lineChecks(input_line):
+def lineChecks(input_line): #STILL NEEDS PLAYER THINGS
+  #PLAYER 1 code --------------
   global swap
   global checkerList
   global going
@@ -230,7 +286,6 @@ def lineChecks(input_line):
   global started
   global lapCompleted
   noStart = False
-  noFinish = False
   if input_line == timer1:
     for x in checkerList:
       if x != False:
@@ -263,6 +318,46 @@ def lineChecks(input_line):
     if checkerList[timerLineList.index(input_line)-1] == True or checkerList[timerLineList.index(input_line)-2] == True or checkerList[timerLineList.index(input_line)-3] == True or checkerList[timerLineList.index(input_line)-4] == True or checkerList[timerLineList.index(input_line)-5] == True or checkerList[timerLineList.index(input_line)-6] == True:
       input_line.color = (255,255,255)
       checkerList[timerLineList.index(input_line)] = True
+  
+  #PLAYER 2 code --------------
+  global swap2
+  global checkerList2
+  global going2
+  global start2
+  global started2
+  global lapCompleted2
+  noStart2 = False
+  if input_line == timer1:
+    for x in checkerList2:
+      if x != False:
+        noStart2 = True
+        break
+    if noStart2 == False:
+      if started2 == False:
+        started2 = True
+        checkerList2[0] = True
+        swap2 = True
+        going2 = True
+    
+    if checkerList2[timerLineList.index(input_line)-1] == True or checkerList2[timerLineList.index(input_line)-2] == True or checkerList2[timerLineList.index(input_line)-3] == True or checkerList2[timerLineList.index(input_line)-4] == True or checkerList2[timerLineList.index(input_line)-5] == True or checkerList2[timerLineList.index(input_line)-6] == True:
+      swap2 = True
+      started2 = False
+      for x in range(1,len(checkerList2)+1):
+        checkerList2[x-1] = False
+      
+      for line in timerLineList:
+        line.color = (255,165,0)
+      
+      lapCompleted2 = True
+      if going2 == False:
+        going2 = True
+      else:
+        going2 = False
+  
+  else:
+    if checkerList2[timerLineList.index(input_line)-1] == True or checkerList2[timerLineList.index(input_line)-2] == True or checkerList2[timerLineList.index(input_line)-3] == True or checkerList2[timerLineList.index(input_line)-4] == True or checkerList2[timerLineList.index(input_line)-5] == True or checkerList2[timerLineList.index(input_line)-6] == True:
+      input_line.color = (255,255,255)
+      checkerList2[timerLineList.index(input_line)] = True
 
 #outside lines
 line = pyglet.shapes.Line(x=472/1920 * window.width, y=23/1080 * window.height, x2=1723/1920 * window.width, y2=217/1080 * window.height, width = 1, batch = lines)
@@ -328,23 +423,26 @@ line56 = pyglet.shapes.Line(x=404/1920 *window.width, y=217/1080 *window.height,
 line_list = [line, line1, line2, line3, line4, line5, line6, line7, line8, line9, line10, line11, line12, line13, line14, line15, line16, line17, line18, line19, line20, line21, line22, line23, line24, line25, line26, line27, line28, line29, line30, line31, line32, line33, line34, line35, line36, line37, line38, line39, line40, line41, line42, line43, line44, line45, line46, line47, line48, line49, line50, line51, line52, line53, line54, line55, line56, timer1, timer2, timer3, timer4, timer5, timer6, timer7, timer8, timer9, timer10, timer11, timer12, timer13, timer14, timer15, timer16, timer17, timer18, timer19, timer20, timer21, timer22, timer23, timer24, timer25, timer26, timer27, timer28, timer29, timer30, timer31, timer32, timer33, timer34, timer35, timer36, timer37, timer38, timer39, timer40, timer41, timer42, timer43, timer44, timer45, timer46, timer47, timer48, timer49, timer50, timer51, timer52, timer53, timer54, timer55, timer56, timer57, timer58, timer59, timer60, timer61, timer62, timer63, timer64, timer65, timer66, timer67, timer68, timer69, timer70, timer71, timer72, timer73, timer74, timer75, timer76, timer77, timer78, timer79, timer80, timer81, timer82, timer83, timer84, timer85]
 
 lap_list = []
+lap_list2 = []
 
 #collision detection system
 def overlap_check(car_hitbox, input_lines):
-  global collide_x
-  global collide_y
+  if car_hitbox == sprite_hitbox:
+    spriteVelocity = velocity
+  else:
+    spriteVelocity = velocity2
   for (x,y) in car_hitbox:
     for input_line in input_lines:
       if min(input_line.x, input_line.x2) < x < max(input_line.x, input_line.x2):
         if min(input_line.y, input_line.y2) < y < max(input_line.y, input_line.y2):  
             gradient = (input_line.y2-input_line.y)/(input_line.x2-input_line.x)
             if abs(gradient) > 12:
-              new_velocity = (tanh(velocity)*2+1)**12
+              new_velocity = (tanh(spriteVelocity)*2+1)**12
             elif abs(gradient) < 0.5:
-              new_velocity = (tanh(velocity)*2+1)**((abs(gradient)+1)**2)
+              new_velocity = (tanh(spriteVelocity)*2+1)**((abs(gradient)+1)**2)
             else:
-              new_velocity = (tanh(velocity)*2+1)
-            if velocity > 0:
+              new_velocity = (tanh(spriteVelocity)*2+1)
+            if spriteVelocity > 0:
               if y - input_line.y -new_velocity < gradient*(x-input_line.x) < y - input_line.y + new_velocity:
                 if timerLine(input_line) == True:
                   lineChecks(input_line)
@@ -402,13 +500,20 @@ def on_draw():
     car.draw()
     car2.draw()
     lines.draw()
+    
     circle.draw()
     circle1.draw()
     circle2.draw()
     circle3.draw()
 
+    circle4.draw()
+    circle5.draw()
+    circle6.draw()
+    circle7.draw()
+
 @window.event
 def on_key_press(symbol, modifiers):
+  #PLAYER 1 code -----
   global forward
   global backward
   global clockwise
@@ -429,12 +534,40 @@ def on_key_press(symbol, modifiers):
   if symbol == key.RIGHT:
     clockwise = True
 
-  if symbol == key.LSHIFT or symbol == key.RSHIFT:
+  if symbol == key.RSHIFT:
     if len(backDict) > drift_time:
       drift = True
       #max_velocity = 11 
       rotation_speed = 3.5
       rounds = 0
+  
+  #PLAYER 1 code -----
+  global forward2
+  global backward2
+  global clockwise2
+  global aclockwise2
+  global drift2
+  global rounds2
+  global rotation_speed2
+  global max_velocity2
+  global velocity2
+
+  if symbol == key.W:
+    forward2 = True
+  if symbol == key.S:
+    backward2 = True
+
+  if symbol == key.A:
+    aclockwise2 = True
+  if symbol == key.D:
+    clockwise2 = True
+
+  if symbol == key.LSHIFT:
+    if len(backDict2) > drift_time2:
+      drift2 = True
+      #max_velocity2 = 11 
+      rotation_speed2 = 3.5
+      rounds2 = 0
 
 @window.event   
 def on_mouse_press(x,y,button, modifiers):
@@ -444,9 +577,11 @@ def on_mouse_press(x,y,button, modifiers):
       windowOn = [0,1]
     print(x,y)
     print(lap_list)
+    print(lap_list2)
 
 @window.event
 def on_key_release(symbol, modifiers):
+  #PLAYER 1 code ---------
   global forward
   global backward
   global clockwise
@@ -463,21 +598,45 @@ def on_key_release(symbol, modifiers):
     aclockwise = False
   if symbol == key.RIGHT:
     clockwise = False
-  if symbol == key.LSHIFT or symbol == key.RSHIFT:
+  if symbol == key.RSHIFT:
     drift = False
     rotation_speed = 3
     #max_velocity = 8
+  
+  #PLAYER 2 code ---------
+  global forward2
+  global backward2
+  global clockwise2
+  global aclockwise2
+  global drift2
+  global rotation_speed2
+  global max_velocity2
+
+  if symbol == key.W:
+    forward2 = False
+  if symbol == key.S:
+    backward2 = False
+  if symbol == key.A:
+    aclockwise2 = False
+  if symbol == key.D:
+    clockwise2 = False
+  if symbol == key.LSHIFT:
+    drift2 = False
+    rotation_speed2 = 3
+    #max_velocity2 = 8
 
 def update(dt):
   #display code
   global timeTaken
   global laps
   global leader
+  stopwatch2()
   timeTaken = pyglet.text.Label("Time: " +"{:#.2f}".format(sum(lap_list) + float(stopwatch())), font_size=36, x=50, y=850, batch=displays)
   laps = pyglet.text.Label("Laps: " + str(len(lap_list)), font_size=36, x=50, y=800, batch=displays)
   leader = pyglet.text.Label("Leader: Me", font_size=36, x=50, y=750, batch=displays)
   #lap_displays()     this function is commented out since it was causing lag
 
+  #PLAYER 1 ------------------
   #car code
   global velocity
   global rounds
@@ -549,6 +708,79 @@ def update(dt):
       car.rotation -= rotation_speed
     if clockwise == True:
       car.rotation += rotation_speed
+  
+  #PLAYER 2 ------------------
+  #car code
+  global velocity2
+  global rounds2
+  global sprite_hitbox2
+  global circle4
+  global circle5
+  global circle6
+  global circle7
+  global drift2
+
+  if velocity2 > 0:
+    velocity2 -= friction2
+  if velocity2 < 0:
+    velocity2 += friction2
+  if velocity2 > max_velocity2:
+    velocity2 = max_velocity2
+  if velocity2 < -(max_velocity2-3):
+    velocity2 = -(max_velocity2-3)
+
+  if forward2 == True and overlap_check(sprite_hitbox2, line_list) != True:
+    velocity2 += acceleration2
+  if backward2 == True and overlap_check(sprite_hitbox2, line_list) != True:
+    velocity2 -= acceleration2/1.3
+
+  new = (car2.x, car2.y)
+  collList2.append(new)
+  if len(collList2) > 13:
+    del collList2[0]
+
+  if overlap_check(sprite_hitbox2,line_list) == True:
+    car2.x, car2.y = collList2[int(-velocity2//3)-2]
+    drift2 = False
+    velocity2 = 0
+  
+  dy2 = velocity2 * cos(radians(car2.rotation))
+  dx2 = velocity2 * sin(radians(car2.rotation))
+  
+  new = {dy2:dx2}
+  backDict2.update(new)
+  if len(backDict2) > drift_time2:
+    backDict2.pop(list(backDict2)[0])
+  
+  circle4 = pyglet.shapes.Circle(x=h*cos(1.57 +atan(half_width_car/half_height_car) - radians(car2.rotation)) + car2.x, y=h*sin(1.57 +atan(half_width_car/half_height_car) - radians(car2.rotation)) + car2.y, radius=1, color=(255,255,255))
+  circle5 = pyglet.shapes.Circle(x=h*cos(1.57 -atan(half_width_car/half_height_car) - radians(car2.rotation)) + car2.x, y=h*sin(1.57 -atan(half_width_car/half_height_car) - radians(car2.rotation)) + car2.y, radius=1, color=(255,255,255))
+  circle6 = pyglet.shapes.Circle(x=h*cos(4.71 -atan(half_width_car/half_height_car) - radians(car2.rotation)) + car2.x, y=h*sin(4.71 -atan(half_width_car/half_height_car) - radians(car2.rotation)) + car2.y, radius=1, color=(255,255,255))
+  circle7 = pyglet.shapes.Circle(x=h*cos(-1.57 +atan(half_width_car/half_height_car) - radians(car2.rotation)) + car2.x, y=h*sin(-1.57 +atan(half_width_car/half_height_car) - radians(car2.rotation)) + car2.y, radius=1, color=(255,255,255))
+  
+  sprite_top_left2 = (h*cos(1.57 +angle) + car2.x, h*sin(1.57 +angle) + car2.y)
+  sprite_top_right2 = (h*cos(1.57 - angle) + car2.x, h*sin(1.57 - angle) + car2.y)
+  sprite_bottom_left2 = (h*cos(4.71 -angle) + car2.x, h*sin(4.71 -angle) + car2.y)
+  sprite_bottom_right2 = (h*cos(-1.57 + angle) + car2.x, h*sin(-1.57 + angle) + car2.y)
+
+  sprite_hitbox2 = [sprite_top_left2,sprite_top_right2,sprite_bottom_left2,sprite_bottom_right2]
+  
+  rounds2 += 1
+  if drift2 == True:
+    if rounds2 >= drift_time2:
+      car2.y += list(backDict2)[0]
+      car2.x += backDict2[list(backDict2)[1]]
+    else:
+      car2.y += dy2
+      car2.x += dx2
+  else:
+    car2.y += dy2
+    car2.x += dx2
+  
+  if forward2 == True or backward2 == True or velocity2 > friction2 or velocity2 < -friction2:
+    if aclockwise2 == True:
+      car2.rotation -= rotation_speed2
+    if clockwise2 == True:
+      car2.rotation += rotation_speed2
   
 pyglet.clock.schedule_interval(update, 1/60)
 pyglet.app.run()
