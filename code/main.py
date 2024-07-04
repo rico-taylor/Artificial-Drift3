@@ -277,87 +277,88 @@ def timerLine(input_line):
   if input_line in timerLineList:
     return True
 
-def lineChecks(input_line): #STILL NEEDS PLAYER THINGS
-  #PLAYER 1 code --------------
-  global swap
-  global checkerList
-  global going
-  global start
-  global started
-  global lapCompleted
-  noStart = False
-  if input_line == timer1:
-    for x in checkerList:
-      if x != False:
-        noStart = True
-        break
-    if noStart == False:
-      if started == False:
-        started = True
-        checkerList[0] = True
+def lineChecks(input_line, car_hitbox): #STILL NEEDS PLAYER THINGS
+  if car_hitbox == sprite_hitbox:
+    #PLAYER 1 code --------------
+    global swap
+    global checkerList
+    global going
+    global start
+    global started
+    global lapCompleted
+    noStart = False
+    if input_line == timer1:
+      for x in checkerList:
+        if x != False:
+          noStart = True
+          break
+      if noStart == False:
+        if started == False:
+          started = True
+          checkerList[0] = True
+          swap = True
+          going = True
+      
+      if checkerList[timerLineList.index(input_line)-1] == True or checkerList[timerLineList.index(input_line)-2] == True or checkerList[timerLineList.index(input_line)-3] == True or checkerList[timerLineList.index(input_line)-4] == True or checkerList[timerLineList.index(input_line)-5] == True or checkerList[timerLineList.index(input_line)-6] == True:
         swap = True
-        going = True
+        started = False
+        for x in range(1,len(checkerList)+1):
+          checkerList[x-1] = False
+        
+        for line in timerLineList:
+          line.color = (255,165,0)
+        
+        
+        lapCompleted = True
+        if going == False:
+          going = True
+        else:
+          going = False
     
-    if checkerList[timerLineList.index(input_line)-1] == True or checkerList[timerLineList.index(input_line)-2] == True or checkerList[timerLineList.index(input_line)-3] == True or checkerList[timerLineList.index(input_line)-4] == True or checkerList[timerLineList.index(input_line)-5] == True or checkerList[timerLineList.index(input_line)-6] == True:
-      swap = True
-      started = False
-      for x in range(1,len(checkerList)+1):
-        checkerList[x-1] = False
-      
-      for line in timerLineList:
-        line.color = (255,165,0)
-      
-      
-      lapCompleted = True
-      if going == False:
-        going = True
-      else:
-        going = False
-  
+    else:
+      if checkerList[timerLineList.index(input_line)-1] == True or checkerList[timerLineList.index(input_line)-2] == True or checkerList[timerLineList.index(input_line)-3] == True or checkerList[timerLineList.index(input_line)-4] == True or checkerList[timerLineList.index(input_line)-5] == True or checkerList[timerLineList.index(input_line)-6] == True:
+        input_line.color = (255,255,255)
+        checkerList[timerLineList.index(input_line)] = True
   else:
-    if checkerList[timerLineList.index(input_line)-1] == True or checkerList[timerLineList.index(input_line)-2] == True or checkerList[timerLineList.index(input_line)-3] == True or checkerList[timerLineList.index(input_line)-4] == True or checkerList[timerLineList.index(input_line)-5] == True or checkerList[timerLineList.index(input_line)-6] == True:
-      input_line.color = (255,255,255)
-      checkerList[timerLineList.index(input_line)] = True
-  
-  #PLAYER 2 code --------------
-  global swap2
-  global checkerList2
-  global going2
-  global start2
-  global started2
-  global lapCompleted2
-  noStart2 = False
-  if input_line == timer1:
-    for x in checkerList2:
-      if x != False:
-        noStart2 = True
-        break
-    if noStart2 == False:
-      if started2 == False:
-        started2 = True
-        checkerList2[0] = True
+    #PLAYER 2 code --------------
+    global swap2
+    global checkerList2
+    global going2
+    global start2
+    global started2
+    global lapCompleted2
+    noStart2 = False
+    if input_line == timer1:
+      for x in checkerList2:
+        if x != False:
+          noStart2 = True
+          break
+      if noStart2 == False:
+        if started2 == False:
+          started2 = True
+          checkerList2[0] = True
+          swap2 = True
+          going2 = True
+      
+      if checkerList2[timerLineList.index(input_line)-1] == True or checkerList2[timerLineList.index(input_line)-2] == True or checkerList2[timerLineList.index(input_line)-3] == True or checkerList2[timerLineList.index(input_line)-4] == True or checkerList2[timerLineList.index(input_line)-5] == True or checkerList2[timerLineList.index(input_line)-6] == True:
         swap2 = True
-        going2 = True
+        started2 = False
+        for x in range(1,len(checkerList2)+1):
+          checkerList2[x-1] = False
+        
+        for line in timerLineList:
+          line.color = (255,165,0)
+        
+        lapCompleted2 = True
+        if going2 == False:
+          going2 = True
+        else:
+          going2 = False
     
-    if checkerList2[timerLineList.index(input_line)-1] == True or checkerList2[timerLineList.index(input_line)-2] == True or checkerList2[timerLineList.index(input_line)-3] == True or checkerList2[timerLineList.index(input_line)-4] == True or checkerList2[timerLineList.index(input_line)-5] == True or checkerList2[timerLineList.index(input_line)-6] == True:
-      swap2 = True
-      started2 = False
-      for x in range(1,len(checkerList2)+1):
-        checkerList2[x-1] = False
-      
-      for line in timerLineList:
-        line.color = (255,165,0)
-      
-      lapCompleted2 = True
-      if going2 == False:
-        going2 = True
-      else:
-        going2 = False
-  
-  else:
-    if checkerList2[timerLineList.index(input_line)-1] == True or checkerList2[timerLineList.index(input_line)-2] == True or checkerList2[timerLineList.index(input_line)-3] == True or checkerList2[timerLineList.index(input_line)-4] == True or checkerList2[timerLineList.index(input_line)-5] == True or checkerList2[timerLineList.index(input_line)-6] == True:
-      input_line.color = (255,255,255)
-      checkerList2[timerLineList.index(input_line)] = True
+    else:
+      if checkerList2[timerLineList.index(input_line)-1] == True or checkerList2[timerLineList.index(input_line)-2] == True or checkerList2[timerLineList.index(input_line)-3] == True or checkerList2[timerLineList.index(input_line)-4] == True or checkerList2[timerLineList.index(input_line)-5] == True or checkerList2[timerLineList.index(input_line)-6] == True:
+        input_line.color = (255,255,255)
+        checkerList2[timerLineList.index(input_line)] = True
 
 #outside lines
 line = pyglet.shapes.Line(x=472/1920 * window.width, y=23/1080 * window.height, x2=1723/1920 * window.width, y2=217/1080 * window.height, width = 1, batch = lines)
@@ -445,7 +446,7 @@ def overlap_check(car_hitbox, input_lines):
             if spriteVelocity > 0:
               if y - input_line.y -new_velocity < gradient*(x-input_line.x) < y - input_line.y + new_velocity:
                 if timerLine(input_line) == True:
-                  lineChecks(input_line)
+                  lineChecks(input_line, car_hitbox)
                 else:
                   return True
             #if velocity < 0:
@@ -629,11 +630,11 @@ def update(dt):
   #display code
   global timeTaken
   global laps
-  global leader
+  global leaderText
   stopwatch2()
   timeTaken = pyglet.text.Label("Time: " +"{:#.2f}".format(sum(lap_list) + float(stopwatch())), font_size=36, x=50, y=850, batch=displays)
   laps = pyglet.text.Label("Laps: " + str(len(lap_list)), font_size=36, x=50, y=800, batch=displays)
-  leader = pyglet.text.Label("Leader: Me", font_size=36, x=50, y=750, batch=displays)
+  leaderText = pyglet.text.Label("Leader: " +str(leader()), font_size=36, x=50, y=750, batch=displays)
   #lap_displays()     this function is commented out since it was causing lag
 
   #PLAYER 1 ------------------
