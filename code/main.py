@@ -19,6 +19,7 @@ scale_factor = (window.width/1920)%1
 lines = pyglet.graphics.Batch()
 displays = pyglet.graphics.Batch()
 entryDisplay = pyglet.graphics.Batch()
+aiLines = pyglet.graphics.Batch()
 
 #entry images
 #logo
@@ -98,6 +99,9 @@ elapsed = 0
 swap = False
 started = False
 checkerList = []
+
+#AI specific code
+lineLength = 100000000
 
 #defining variables, lists, and dictionaries - PLAYER 2 ---------------
 sprite_hitbox2 = [(0,0),(0,0),(0,0),(0,0)]
@@ -421,10 +425,65 @@ line54 = pyglet.shapes.Line(x=400/1920 *window.width, y=364/1080 *window.height,
 line55 = pyglet.shapes.Line(x=383/1920 *window.width, y=277/1080 *window.height, x2=404/1920 *window.width, y2=217/1080 *window.height, width = 1, batch = lines)
 line56 = pyglet.shapes.Line(x=404/1920 *window.width, y=217/1080 *window.height, x2=470/1920 *window.width, y2=181/1080 *window.height, width = 1, batch = lines)
 
+barrierLineList = [line, line1, line2, line3, line4, line5, line6, line7, line8, line9, line10, line11, line12, line13, line14, line15, line16, line17, line18, line19, line20, line21, line22, line23, line24, line25, line26, line27, line28, line29, line30, line31, line32, line33, line34, line35, line36, line37, line38, line39, line40, line41, line42, line43, line44, line45, line46, line47, line48, line49, line50, line51, line52, line53, line54, line55, line56]
+
 line_list = [line, line1, line2, line3, line4, line5, line6, line7, line8, line9, line10, line11, line12, line13, line14, line15, line16, line17, line18, line19, line20, line21, line22, line23, line24, line25, line26, line27, line28, line29, line30, line31, line32, line33, line34, line35, line36, line37, line38, line39, line40, line41, line42, line43, line44, line45, line46, line47, line48, line49, line50, line51, line52, line53, line54, line55, line56, timer1, timer2, timer3, timer4, timer5, timer6, timer7, timer8, timer9, timer10, timer11, timer12, timer13, timer14, timer15, timer16, timer17, timer18, timer19, timer20, timer21, timer22, timer23, timer24, timer25, timer26, timer27, timer28, timer29, timer30, timer31, timer32, timer33, timer34, timer35, timer36, timer37, timer38, timer39, timer40, timer41, timer42, timer43, timer44, timer45, timer46, timer47, timer48, timer49, timer50, timer51, timer52, timer53, timer54, timer55, timer56, timer57, timer58, timer59, timer60, timer61, timer62, timer63, timer64, timer65, timer66, timer67, timer68, timer69, timer70, timer71, timer72, timer73, timer74, timer75, timer76, timer77, timer78, timer79, timer80, timer81, timer82, timer83, timer84, timer85]
 
 lap_list = []
 lap_list2 = []
+
+#distance between two points function
+def distance_points(point1,point2):
+  x1 = point1[0]
+  y1 = point1[1]
+  x2 = point2[0]
+  y2 = point2[1]
+  distance = sqrt((x2-x1)**2+(y2-y1)**2)
+  return distance
+
+#line overlap function
+def find_intersection(line1, line2):
+    x1, y1, x2, y2 = line1.x, line1.y, line1.x2, line1.y2
+    x3, y3, x4, y4 = line2.x, line2.y, line2.x2, line2.y2
+    #first line equation
+    a1 = y2 - y1
+    b1 = x1 - x2
+    c1 = a1 * x1 + b1 * y1
+    #second line equation
+    a2 = y4 - y3
+    b2 = x3 - x4
+    c2 = a2 * x3 + b2 * y3
+    
+    determinant = a1 * b2 - a2 * b1
+
+    if determinant == 0:
+        # Lines are parallel
+        return None
+    else:
+        xi = (b2 * c1 - b1 * c2) / determinant
+        yi = (a1 * c2 - a2 * c1) / determinant
+        # Check if the intersection point is within both line segments
+        if (min(x1, x2) <= xi <= max(x1, x2) and min(y1, y2) <= yi <= max(y1, y2) and
+            min(x3, x4) <= xi <= max(x3, x4) and min(y3, y4) <= yi <= max(y3, y4)):
+            dist = distance_points((car.x, car.y), (xi,yi))
+            return (xi, yi, dist)
+        else:
+            return None
+
+#AI vision function - checks line overlaps
+def aiVision():
+    intersectList = []
+    for line in viewingLineList:
+        overlapList = []
+        for barrier in barrierLineList:
+            overlapPoint = find_intersection(line, barrier)
+            if overlapPoint is not None:
+                overlapList.append(overlapPoint)
+
+        if overlapList:
+            smallest = min(overlapList, key=lambda t: t[2])
+            intersectList.append((smallest[0], smallest[1]))
+    return intersectList
 
 #collision detection system
 def overlap_check(car_hitbox, input_lines):
@@ -501,6 +560,7 @@ def on_draw():
     car.draw()
     car2.draw()
     lines.draw()
+    #aiLines.draw()
     
     circle.draw()
     circle1.draw()
@@ -631,7 +691,6 @@ def update(dt):
   global timeTaken
   global laps
   global leaderText
-  stopwatch2()
   timeTaken = pyglet.text.Label("Time: " +"{:#.2f}".format(sum(lap_list) + float(stopwatch())), font_size=36, x=50, y=850, batch=displays)
   laps = pyglet.text.Label("Laps: " + str(len(lap_list)), font_size=36, x=50, y=800, batch=displays)
   leaderText = pyglet.text.Label("Leader: " +str(leader()), font_size=36, x=50, y=750, batch=displays)
@@ -692,6 +751,83 @@ def update(dt):
 
   sprite_hitbox = [sprite_top_left,sprite_top_right,sprite_bottom_left,sprite_bottom_right ]
   
+  #viewing lines for the AI (This code is purely for the visuals, it can be removed if needed but it is nice to have to show visually what is happening)
+  global viewingLine1
+  global viewingLine2
+  global viewingLine3
+  global viewingLine4
+  global viewingLine5
+  global viewingLine6
+  global viewingLine7
+  global viewingLine8
+  global viewingLine9
+  global viewingLine10
+  global viewingLine11
+  global viewingLine12
+  global viewingLine13
+  global viewingLine14
+  global viewingLineList
+  viewingLine1 = pyglet.shapes.Line(x=car.x, y=car.y, x2=lineLength*sin(radians(car.rotation)), y2=lineLength*cos(radians(car.rotation)), batch=lines)
+  viewingLine2 = pyglet.shapes.Line(x=car.x, y=car.y, x2=lineLength*sin(radians(car.rotation) + radians(15)), y2=lineLength*cos(radians(car.rotation)+ radians(15)), batch=aiLines)
+  viewingLine3 = pyglet.shapes.Line(x=car.x, y=car.y, x2=lineLength*sin(radians(car.rotation) + radians(30)), y2=lineLength*cos(radians(car.rotation) + radians(30)), batch=aiLines)
+  viewingLine4 = pyglet.shapes.Line(x=car.x, y=car.y, x2=lineLength*sin(radians(car.rotation) + radians(45)), y2=lineLength*cos(radians(car.rotation) + radians(45)), batch=aiLines)
+  viewingLine5 = pyglet.shapes.Line(x=car.x, y=car.y, x2=lineLength*sin(radians(car.rotation) + radians(60)), y2=lineLength*cos(radians(car.rotation) + radians(60)), batch=aiLines)
+  viewingLine6 = pyglet.shapes.Line(x=car.x, y=car.y, x2=lineLength*sin(radians(car.rotation) + radians(90)), y2=lineLength*cos(radians(car.rotation) + radians(90)), batch=aiLines)
+  viewingLine7 = pyglet.shapes.Line(x=car.x, y=car.y, x2=lineLength*sin(radians(car.rotation) + radians(135)), y2=lineLength*cos(radians(car.rotation) + radians(135)), batch=aiLines)
+  viewingLine8 = pyglet.shapes.Line(x=car.x, y=car.y, x2=lineLength*sin(radians(car.rotation) + radians(180)), y2=lineLength*cos(radians(car.rotation) + radians(180)), batch=aiLines)
+  viewingLine9 = pyglet.shapes.Line(x=car.x, y=car.y, x2=lineLength*sin(radians(car.rotation) + radians(225)), y2=lineLength*cos(radians(car.rotation) + radians(225)), batch=aiLines)
+  viewingLine10 = pyglet.shapes.Line(x=car.x, y=car.y, x2=lineLength*sin(radians(car.rotation) + radians(270)), y2=lineLength*cos(radians(car.rotation) + radians(270)), batch=aiLines)
+  viewingLine11 = pyglet.shapes.Line(x=car.x, y=car.y, x2=lineLength*sin(radians(car.rotation) + radians(300)), y2=lineLength*cos(radians(car.rotation) + radians(300)), batch=aiLines)
+  viewingLine12 = pyglet.shapes.Line(x=car.x, y=car.y, x2=lineLength*sin(radians(car.rotation) + radians(315)), y2=lineLength*cos(radians(car.rotation) + radians(315)), batch=aiLines)
+  viewingLine13 = pyglet.shapes.Line(x=car.x, y=car.y, x2=lineLength*sin(radians(car.rotation) + radians(330)), y2=lineLength*cos(radians(car.rotation) + radians(330)), batch=aiLines)
+  viewingLine14 = pyglet.shapes.Line(x=car.x, y=car.y, x2=lineLength*sin(radians(car.rotation) + radians(345)), y2=lineLength*cos(radians(car.rotation) + radians(345)), batch=aiLines)
+
+  viewingLineList = [viewingLine1, viewingLine2, viewingLine3, viewingLine4, viewingLine5, viewingLine6, viewingLine7, viewingLine8, viewingLine9, viewingLine10, viewingLine11, viewingLine12, viewingLine13, viewingLine14]
+
+  collisionPointsList = aiVision()
+  point1 = collisionPointsList[0]
+  point2 = collisionPointsList[1]
+  point3 = collisionPointsList[2]
+  point4 = collisionPointsList[3]
+  point5 = collisionPointsList[4]
+  point6 = collisionPointsList[5]
+  point7 = collisionPointsList[6]
+  point8 = collisionPointsList[7]
+  point9 = collisionPointsList[8]
+  point10 = collisionPointsList[9]
+  point11 = collisionPointsList[10]
+  point12 = collisionPointsList[11]
+  point13 = collisionPointsList[12]
+  point14 = collisionPointsList[13]
+  global circ1
+  global circ2
+  global circ3
+  global circ4
+  global circ5
+  global circ6
+  global circ7
+  global circ8
+  global circ9
+  global circ10
+  global circ11
+  global circ12
+  global circ13
+  global circ14
+  circ1 = pyglet.shapes.Circle(x=point1[0], y=point1[1], radius=5, color=(255,0,0), batch=aiLines)
+  circ2 = pyglet.shapes.Circle(x=point2[0], y=point2[1], radius=5, color=(255,0,0), batch=aiLines)
+  circ3 = pyglet.shapes.Circle(x=point3[0], y=point3[1], radius=5, color=(255,0,0), batch=aiLines)
+  circ4 = pyglet.shapes.Circle(x=point4[0], y=point4[1], radius=5, color=(255,0,0), batch=aiLines)
+  circ5 = pyglet.shapes.Circle(x=point5[0], y=point5[1], radius=5, color=(255,0,0), batch=aiLines)
+  circ6 = pyglet.shapes.Circle(x=point6[0], y=point6[1], radius=5, color=(255,0,0), batch=aiLines)
+  circ7 = pyglet.shapes.Circle(x=point7[0], y=point7[1], radius=5, color=(255,0,0), batch=aiLines)
+  circ8 = pyglet.shapes.Circle(x=point8[0], y=point8[1], radius=5, color=(255,0,0), batch=aiLines)
+  circ9 = pyglet.shapes.Circle(x=point9[0], y=point9[1], radius=5, color=(255,0,0), batch=aiLines)
+  circ10 = pyglet.shapes.Circle(x=point10[0], y=point10[1], radius=5, color=(255,0,0), batch=aiLines)
+  circ11 = pyglet.shapes.Circle(x=point11[0], y=point11[1], radius=5, color=(255,0,0), batch=aiLines)
+  circ12 = pyglet.shapes.Circle(x=point12[0], y=point12[1], radius=5, color=(255,0,0), batch=aiLines)
+  circ13 = pyglet.shapes.Circle(x=point13[0], y=point13[1], radius=5, color=(255,0,0), batch=aiLines)
+  circ14 = pyglet.shapes.Circle(x=point14[0], y=point14[1], radius=5, color=(255,0,0), batch=aiLines)
+  
   rounds += 1
   if drift == True:
     if rounds >= drift_time:
@@ -711,6 +847,7 @@ def update(dt):
       car.rotation += rotation_speed
   
   #PLAYER 2 ------------------
+  stopwatch2()
   #car code
   global velocity2
   global rounds2
