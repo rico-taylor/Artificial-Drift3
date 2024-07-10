@@ -16,3 +16,7 @@ class Person:
     self.height = height
     self.rating = rating
 
+Rico = Person(17, 176, 10)
+
+print(Rico.rating)
+
