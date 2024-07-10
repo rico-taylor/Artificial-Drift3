@@ -8,5 +8,11 @@ for x in range(1,len(list)+1):
   list[x-1] = True
 
 list = [False, True, False]
-print(list.index(True))
+
+
+class Person:
+  def __init__(self, age, height, rating):
+    self.age = age
+    self.height = height
+    self.rating = rating
 

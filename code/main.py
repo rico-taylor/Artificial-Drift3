@@ -215,14 +215,12 @@ timer78 = pyglet.shapes.Line(x=1389/1920 *window.width, y=309/1080 *window.heigh
 timer79 = pyglet.shapes.Line(x=1350/1920 *window.width, y=302/1080 *window.height, x2=1367/1920 *window.width, y2=166/1080 *window.height, width = 1, batch = lines, color=(225,165,0))
 timer80 = pyglet.shapes.Line(x=1283/1920 *window.width, y=296/1080 *window.height, x2=1315/1920 *window.width, y2=156/1080 *window.height, width = 1, batch = lines, color=(225,165,0))
 timer81 = pyglet.shapes.Line(x=1208/1920 *window.width, y=286/1080 *window.height, x2=1256/1920 *window.width, y2=149/1080 *window.height, width = 1, batch = lines, color=(225,165,0))
-timer82 = pyglet.shapes.Line(x=1162/1920 *window.width, y=278/1080 *window.height, x2=1200/1920 *window.width, y2=140/1080 *window.height, width = 1, batch = lines, color=(225,165,0))
-timer83 = pyglet.shapes.Line(x=1108/1920 *window.width, y=270/1080 *window.height, x2=1148/1920 *window.width, y2=131/1080 *window.height, width = 1, batch = lines, color=(225,165,0))
-timer84 = pyglet.shapes.Line(x=1048/1920 *window.width, y=262/1080 *window.height, x2=1101/1920 *window.width, y2=125/1080 *window.height, width = 1, batch = lines, color=(225,165,0))
-timer85 = pyglet.shapes.Line(x=1020/1920 *window.width, y=258/1080 *window.height, x2=1054/1920 *window.width, y2=117/1080 *window.height, width = 1, batch = lines, color=(225,165,0))
+timer82 = pyglet.shapes.Line(x=1108/1920 *window.width, y=270/1080 *window.height, x2=1148/1920 *window.width, y2=131/1080 *window.height, width = 1, batch = lines, color=(225,165,0))
+timer83 = pyglet.shapes.Line(x=1020/1920 *window.width, y=258/1080 *window.height, x2=1054/1920 *window.width, y2=117/1080 *window.height, width = 1, batch = lines, color=(225,165,0))
 
-timerLineList = [timer1, timer2, timer3, timer4, timer5, timer6, timer7, timer8, timer9, timer10, timer11, timer12, timer13, timer14, timer15, timer16, timer17, timer18, timer19, timer20, timer21, timer22, timer23, timer24, timer25, timer26, timer27, timer28, timer29, timer30, timer31, timer32, timer33, timer34, timer35, timer36, timer37, timer38, timer39, timer40, timer41, timer42, timer43, timer44, timer45, timer46, timer47, timer48, timer49, timer50, timer51, timer52, timer53, timer54, timer55, timer56, timer57, timer58, timer59, timer60, timer61, timer62, timer63, timer64, timer65, timer66, timer67, timer68, timer69, timer70, timer71, timer72, timer73, timer74, timer75, timer76, timer77, timer78, timer79, timer80, timer81, timer82, timer83, timer84, timer85] 
+timerLineList = [timer1, timer2, timer3, timer4, timer5, timer6, timer7, timer8, timer9, timer10, timer11, timer12, timer13, timer14, timer15, timer16, timer17, timer18, timer19, timer20, timer21, timer22, timer23, timer24, timer25, timer26, timer27, timer28, timer29, timer30, timer31, timer32, timer33, timer34, timer35, timer36, timer37, timer38, timer39, timer40, timer41, timer42, timer43, timer44, timer45, timer46, timer47, timer48, timer49, timer50, timer51, timer52, timer53, timer54, timer55, timer56, timer57, timer58, timer59, timer60, timer61, timer62, timer63, timer64, timer65, timer66, timer67, timer68, timer69, timer70, timer71, timer72, timer73, timer74, timer75, timer76, timer77, timer78, timer79, timer80, timer81, timer82, timer83] 
 
-#loading up checkerList based on number of timer lines.
+#loading up checkerList based on number of timer lines.tyimer
 for x in timerLineList:
   checkerList.append(False)
   checkerList2.append(False)
@@ -427,7 +425,7 @@ line56 = pyglet.shapes.Line(x=404/1920 *window.width, y=217/1080 *window.height,
 
 barrierLineList = [line, line1, line2, line3, line4, line5, line6, line7, line8, line9, line10, line11, line12, line13, line14, line15, line16, line17, line18, line19, line20, line21, line22, line23, line24, line25, line26, line27, line28, line29, line30, line31, line32, line33, line34, line35, line36, line37, line38, line39, line40, line41, line42, line43, line44, line45, line46, line47, line48, line49, line50, line51, line52, line53, line54, line55, line56]
 
-line_list = [line, line1, line2, line3, line4, line5, line6, line7, line8, line9, line10, line11, line12, line13, line14, line15, line16, line17, line18, line19, line20, line21, line22, line23, line24, line25, line26, line27, line28, line29, line30, line31, line32, line33, line34, line35, line36, line37, line38, line39, line40, line41, line42, line43, line44, line45, line46, line47, line48, line49, line50, line51, line52, line53, line54, line55, line56, timer1, timer2, timer3, timer4, timer5, timer6, timer7, timer8, timer9, timer10, timer11, timer12, timer13, timer14, timer15, timer16, timer17, timer18, timer19, timer20, timer21, timer22, timer23, timer24, timer25, timer26, timer27, timer28, timer29, timer30, timer31, timer32, timer33, timer34, timer35, timer36, timer37, timer38, timer39, timer40, timer41, timer42, timer43, timer44, timer45, timer46, timer47, timer48, timer49, timer50, timer51, timer52, timer53, timer54, timer55, timer56, timer57, timer58, timer59, timer60, timer61, timer62, timer63, timer64, timer65, timer66, timer67, timer68, timer69, timer70, timer71, timer72, timer73, timer74, timer75, timer76, timer77, timer78, timer79, timer80, timer81, timer82, timer83, timer84, timer85]
+line_list = [line, line1, line2, line3, line4, line5, line6, line7, line8, line9, line10, line11, line12, line13, line14, line15, line16, line17, line18, line19, line20, line21, line22, line23, line24, line25, line26, line27, line28, line29, line30, line31, line32, line33, line34, line35, line36, line37, line38, line39, line40, line41, line42, line43, line44, line45, line46, line47, line48, line49, line50, line51, line52, line53, line54, line55, line56, timer1, timer2, timer3, timer4, timer5, timer6, timer7, timer8, timer9, timer10, timer11, timer12, timer13, timer14, timer15, timer16, timer17, timer18, timer19, timer20, timer21, timer22, timer23, timer24, timer25, timer26, timer27, timer28, timer29, timer30, timer31, timer32, timer33, timer34, timer35, timer36, timer37, timer38, timer39, timer40, timer41, timer42, timer43, timer44, timer45, timer46, timer47, timer48, timer49, timer50, timer51, timer52, timer53, timer54, timer55, timer56, timer57, timer58, timer59, timer60, timer61, timer62, timer63, timer64, timer65, timer66, timer67, timer68, timer69, timer70, timer71, timer72, timer73, timer74, timer75, timer76, timer77, timer78, timer79, timer80, timer81, timer82, timer83]
 
 lap_list = []
 lap_list2 = []
@@ -440,6 +438,8 @@ def distance_points(point1,point2):
   y2 = point2[1]
   distance = sqrt((x2-x1)**2+(y2-y1)**2)
   return distance
+
+aiVisionList = []
 
 #line overlap function
 def find_intersection(line1, line2):
@@ -560,7 +560,7 @@ def on_draw():
     car.draw()
     car2.draw()
     lines.draw()
-    #aiLines.draw()
+    aiLines.draw()
     
     circle.draw()
     circle1.draw()
@@ -751,7 +751,26 @@ def update(dt):
 
   sprite_hitbox = [sprite_top_left,sprite_top_right,sprite_bottom_left,sprite_bottom_right ]
   
-  #viewing lines for the AI (This code is purely for the visuals, it can be removed if needed but it is nice to have to show visually what is happening)
+
+  rounds += 1
+  if drift == True:
+    if rounds >= drift_time:
+      car.y += list(backDict)[0]
+      car.x += backDict[list(backDict)[1]]
+    else:
+      car.y += dy
+      car.x += dx
+  else:
+    car.y += dy
+    car.x += dx
+  
+  if forward == True or backward == True or velocity > friction or velocity < -friction:
+    if aclockwise == True:
+      car.rotation -= rotation_speed
+    if clockwise == True:
+      car.rotation += rotation_speed
+
+  #viewing lines for the AI ------------ (most of this code is purely for visuals, a large amount could be removed)
   global viewingLine1
   global viewingLine2
   global viewingLine3
@@ -767,7 +786,7 @@ def update(dt):
   global viewingLine13
   global viewingLine14
   global viewingLineList
-  viewingLine1 = pyglet.shapes.Line(x=car.x, y=car.y, x2=lineLength*sin(radians(car.rotation)), y2=lineLength*cos(radians(car.rotation)), batch=lines)
+  viewingLine1 = pyglet.shapes.Line(x=car.x, y=car.y, x2=lineLength*sin(radians(car.rotation)), y2=lineLength*cos(radians(car.rotation)), batch=aiLines)
   viewingLine2 = pyglet.shapes.Line(x=car.x, y=car.y, x2=lineLength*sin(radians(car.rotation) + radians(15)), y2=lineLength*cos(radians(car.rotation)+ radians(15)), batch=aiLines)
   viewingLine3 = pyglet.shapes.Line(x=car.x, y=car.y, x2=lineLength*sin(radians(car.rotation) + radians(30)), y2=lineLength*cos(radians(car.rotation) + radians(30)), batch=aiLines)
   viewingLine4 = pyglet.shapes.Line(x=car.x, y=car.y, x2=lineLength*sin(radians(car.rotation) + radians(45)), y2=lineLength*cos(radians(car.rotation) + radians(45)), batch=aiLines)
@@ -784,7 +803,11 @@ def update(dt):
 
   viewingLineList = [viewingLine1, viewingLine2, viewingLine3, viewingLine4, viewingLine5, viewingLine6, viewingLine7, viewingLine8, viewingLine9, viewingLine10, viewingLine11, viewingLine12, viewingLine13, viewingLine14]
 
+  for x in viewingLineList:
+    x.opacity = 100
+
   collisionPointsList = aiVision()
+
   point1 = collisionPointsList[0]
   point2 = collisionPointsList[1]
   point3 = collisionPointsList[2]
@@ -828,23 +851,13 @@ def update(dt):
   circ13 = pyglet.shapes.Circle(x=point13[0], y=point13[1], radius=5, color=(255,0,0), batch=aiLines)
   circ14 = pyglet.shapes.Circle(x=point14[0], y=point14[1], radius=5, color=(255,0,0), batch=aiLines)
   
-  rounds += 1
-  if drift == True:
-    if rounds >= drift_time:
-      car.y += list(backDict)[0]
-      car.x += backDict[list(backDict)[1]]
-    else:
-      car.y += dy
-      car.x += dx
-  else:
-    car.y += dy
-    car.x += dx
-  
-  if forward == True or backward == True or velocity > friction or velocity < -friction:
-    if aclockwise == True:
-      car.rotation -= rotation_speed
-    if clockwise == True:
-      car.rotation += rotation_speed
+  #updating aiVisionList, which is what the AI will see as part of its obersations from the environment
+  global aiVisionList
+  aiVisionList.clear()
+  for x in range(len(collisionPointsList)):
+    aiVisionList += collisionPointsList[x]
+  print(aiVisionList)
+  observation_space = [car.x, car.y, car.rotation, velocity] + aiVisionList
   
   #PLAYER 2 ------------------
   stopwatch2()

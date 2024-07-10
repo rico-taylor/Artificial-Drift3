@@ -40,19 +40,20 @@ agent.fit(env, nb_steps=1, visualize=False, verbose=1)
 results = agent.test(env, nb_episodes=10, visualize=True, verbose=1)
 print(np.mean(results.history["episode_reward"]))
 
-#episodes = 10
-#for episode in range(1, episodes+1):
-    #state = env.reset()
-    #done = False
-    #score=0
+episodes = 10
+for episode in range(1, episodes+1):
+    state = env.reset()
+    done = False
+    score=0
 
-    #while not done:
-        #action = random.choice([0,1])
-        #_, reward, done, __ = env.step(action)
-        #score += reward
-        #env.render()
+    while not done:
+        action = random.choice([0,1])
+        _, reward, done, __ = env.step(action)
+        score += reward
+        env.render()
+        print("reward:", reward)
 
-    #print(f"Edpisode {episode}, Score: {score}")
+    print(f"Edpisode {episode}, Score: {score}")
 
 env.close()
 pygame.quit()
