@@ -6,8 +6,8 @@ from pyglet.window import key, mouse
 from math import sin, cos, atan, radians, sqrt, tanh
 
 #main window
-window = pyglet.window.Window(resizable = False, caption="Artificial Drift")
-window.set_fullscreen(True)
+window = pyglet.window.Window(resizable = True, caption="Artificial Drift")
+window.set_fullscreen(False)
 
 #showing what window is on
 windowOn = [1,0]
@@ -102,6 +102,9 @@ checkerList = []
 
 #AI specific code
 lineLength = 100000000
+reward_gate = False
+wall_collision = False
+new_gate_signal = False
 
 #defining variables, lists, and dictionaries - PLAYER 2 ---------------
 sprite_hitbox2 = [(0,0),(0,0),(0,0),(0,0)]
@@ -279,9 +282,10 @@ def timerLine(input_line):
   if input_line in timerLineList:
     return True
 
-def lineChecks(input_line, car_hitbox): #STILL NEEDS PLAYER THINGS
+def lineChecks(input_line, car_hitbox): #STILL NEEDS PLAYER THINGS (maybe not anymore?)
   if car_hitbox == sprite_hitbox:
     #PLAYER 1 code --------------
+    global new_gate_signal
     global swap
     global checkerList
     global going
@@ -320,7 +324,10 @@ def lineChecks(input_line, car_hitbox): #STILL NEEDS PLAYER THINGS
     else:
       if checkerList[timerLineList.index(input_line)-1] == True or checkerList[timerLineList.index(input_line)-2] == True or checkerList[timerLineList.index(input_line)-3] == True or checkerList[timerLineList.index(input_line)-4] == True or checkerList[timerLineList.index(input_line)-5] == True or checkerList[timerLineList.index(input_line)-6] == True:
         input_line.color = (255,255,255)
+        if checkerList[timerLineList.index(input_line)] == False:
+          new_gate_signal = True
         checkerList[timerLineList.index(input_line)] = True
+
   else:
     #PLAYER 2 code --------------
     global swap2
@@ -487,6 +494,8 @@ def aiVision():
 
 #collision detection system
 def overlap_check(car_hitbox, input_lines):
+  global reward_gate
+  global wall_collision
   if car_hitbox == sprite_hitbox:
     spriteVelocity = velocity
   else:
@@ -505,8 +514,10 @@ def overlap_check(car_hitbox, input_lines):
             if spriteVelocity > 0:
               if y - input_line.y -new_velocity < gradient*(x-input_line.x) < y - input_line.y + new_velocity:
                 if timerLine(input_line) == True:
+                  reward_gate = True
                   lineChecks(input_line, car_hitbox)
                 else:
+                  wall_collision = True
                   return True
             #if velocity < 0:
               #if y - input_line.y -velocity > gradient*(x-input_line.x) > y - input_line.y + velocity:
@@ -548,6 +559,22 @@ def leader():
     else:
       return old_leader
 
+#AI reward function
+def reward():
+  global reward_gate
+  global wall_collision
+  global new_gate_signal
+  reward = 0
+  if reward_gate == True and new_gate_signal == True:
+    reward += 10
+  if wall_collision == True:
+    reward -= 15
+
+  new_gate_signal = False
+  reward_gate = False
+  wall_collision = False
+
+  return reward
 
 @window.event
 def on_draw():
@@ -687,6 +714,7 @@ def on_key_release(symbol, modifiers):
     #max_velocity2 = 8
 
 def update(dt):
+  print(reward())
   #display code
   global timeTaken
   global laps
@@ -856,7 +884,6 @@ def update(dt):
   aiVisionList.clear()
   for x in range(len(collisionPointsList)):
     aiVisionList += collisionPointsList[x]
-  print(aiVisionList)
   observation_space = [car.x, car.y, car.rotation, velocity] + aiVisionList
   
   #PLAYER 2 ------------------
