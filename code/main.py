@@ -1,9 +1,10 @@
 #importing variables
 import pyglet
 import time
+import random
 from pyglet import sprite, image
 from pyglet.window import key, mouse
-from math import sin, cos, atan, radians, sqrt, tanh
+from math import sin, cos, atan, acos, radians, sqrt, tanh
 
 #main window
 window = pyglet.window.Window(resizable = True, caption="Artificial Drift")
@@ -446,6 +447,19 @@ def distance_points(point1,point2):
   distance = sqrt((x2-x1)**2+(y2-y1)**2)
   return distance
 
+def grad_points(point1,point2):
+  x1 = point1[0]
+  y1 = point1[1]
+  x2 = point2[0]
+  y2 = point2[1]
+  m = (y2-y1)/(x2/x1)
+  return m
+
+def midpoint(line):
+  midpointX = (line.x + line.x2)//2
+  midpointY = (line.y + line.y2)//2
+  return midpointX, midpointY
+
 aiVisionList = []
 
 #line overlap function
@@ -576,9 +590,81 @@ def reward():
 
   return reward
 
+#AI reset function
+def reset():
+  #TOTAL VARIABLE RESET
+  global forward, backward, aclockwise, clockwise, drift, backDict, collList, rounds, lapCompleted
+  global velocity, max_velocity, friction, acceleration, rotation_speed, drift_time
+  global going, start, current, elapsed, swap, started, checkerList
+  global reward_gate, wall_collision, new_gate_signal
+
+  forward = False
+  backward = False
+  aclockwise = False
+  clockwise = False
+  drift = False
+  backDict = {}
+  collList = []
+  rounds = 0
+
+  lapCompleted = False
+
+  #tunable variables 
+  velocity = 0 *scale_factor
+  max_velocity = 8 *scale_factor
+  friction = 0.07 *scale_factor
+  acceleration = 0.1 *scale_factor
+  rotation_speed = 3
+  drift_time = 8 *scale_factor
+
+  #timer code
+  going = False
+  start = 0
+  current= 0
+  elapsed = 0
+  swap = False
+  started = False
+
+  for x in range(len(checkerList)):
+    checkerList[x] = False
+
+  #AI specific code
+  reward_gate = False
+  wall_collision = False
+  new_gate_signal = False
+
+  car.x = car_start_x
+  car.y = car_start_y
+
+  #respawning the car at a random midpoint of a reward gate
+  respawnLine = random.choice(timerLineList)
+  car.x, car.y = midpoint(respawnLine)
+  
+  #getting the car rotation for the respawn
+  a,b = midpoint(respawnLine)
+  c,d = midpoint(timerLineList[timerLineList.index(respawnLine)+1])
+  dist = distance_points((a,b), (c,d))
+  vertical_height = d-b
+  print(vertical_height)
+  ang = (180/3.141)*acos(vertical_height/dist)
+  print(ang)
+  if grad_points((a,b), (c,d)) < 0:
+    if vertical_height < 0:
+      car.rotation = 180 - ang
+    else:
+      car.rotation = 360 - ang
+  else:
+    if vertical_height < 0:
+      car.rotation = ang + 180
+    else:
+      car.rotation = ang
+
+
+
 @window.event
 def on_draw():
   window.clear()
+
   if windowOn[0] == 1:
     entryDisplay.draw()
   if windowOn[1] == 1:
@@ -663,9 +749,10 @@ def on_mouse_press(x,y,button, modifiers):
   if button == mouse.LEFT:
     if windowOn == [1,0]:
       windowOn = [0,1]
-    print(x,y)
-    print(lap_list)
-    print(lap_list2)
+    #print(x,y)
+    #print(lap_list)
+    #print(lap_list2)
+    reset()
 
 @window.event
 def on_key_release(symbol, modifiers):
@@ -714,7 +801,6 @@ def on_key_release(symbol, modifiers):
     #max_velocity2 = 8
 
 def update(dt):
-  print(reward())
   #display code
   global timeTaken
   global laps
