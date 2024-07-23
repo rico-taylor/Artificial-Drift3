@@ -4,11 +4,11 @@ import time
 import random
 from pyglet import sprite, image
 from pyglet.window import key, mouse
-from math import sin, cos, atan, acos, radians, sqrt, tanh
+from math import sin, cos, atan, acos, asin, radians, sqrt, tanh
 
 #main window
-window = pyglet.window.Window(resizable = True, caption="Artificial Drift")
-window.set_fullscreen(False)
+window = pyglet.window.Window(resizable = False, caption="Artificial Drift")
+window.set_fullscreen(True)
 
 #showing what window is on
 windowOn = [1,0]
@@ -294,7 +294,7 @@ def lineChecks(input_line, car_hitbox): #STILL NEEDS PLAYER THINGS (maybe not an
     global started
     global lapCompleted
     noStart = False
-    if input_line == timer1:
+    if input_line == timerLineList[0]:
       for x in checkerList:
         if x != False:
           noStart = True
@@ -452,7 +452,7 @@ def grad_points(point1,point2):
   y1 = point1[1]
   x2 = point2[0]
   y2 = point2[1]
-  m = (y2-y1)/(x2/x1)
+  m = (y2-y1)/(x2-x1)
   return m
 
 def midpoint(line):
@@ -592,10 +592,13 @@ def reward():
 
 #AI reset function
 def reset():
+  global respawnLine
+  global timerLineList
+
   #TOTAL VARIABLE RESET
   global forward, backward, aclockwise, clockwise, drift, backDict, collList, rounds, lapCompleted
   global velocity, max_velocity, friction, acceleration, rotation_speed, drift_time
-  global going, start, current, elapsed, swap, started, checkerList
+  global going, start, current, elapsed, swap, started, lap_list, checkerList
   global reward_gate, wall_collision, new_gate_signal
 
   forward = False
@@ -625,39 +628,40 @@ def reset():
   swap = False
   started = False
 
-  for x in range(len(checkerList)):
-    checkerList[x] = False
+  lap_list = []
 
   #AI specific code
   reward_gate = False
   wall_collision = False
   new_gate_signal = False
 
-  car.x = car_start_x
-  car.y = car_start_y
-
   #respawning the car at a random midpoint of a reward gate
   respawnLine = random.choice(timerLineList)
   car.x, car.y = midpoint(respawnLine)
+
+  for x in range(timerLineList.index(respawnLine)):
+    timerLineList.append(timerLineList[0])
+    del timerLineList[0]
+
+  for x in range(len(checkerList)):
+    checkerList[x] = False
   
   #getting the car rotation for the respawn
   a,b = midpoint(respawnLine)
-  c,d = midpoint(timerLineList[timerLineList.index(respawnLine)+1])
+  c,d = midpoint(timerLineList[(timerLineList.index(respawnLine)+1)%len(timerLineList)])
   dist = distance_points((a,b), (c,d))
   vertical_height = d-b
-  print(vertical_height)
-  ang = (180/3.141)*acos(vertical_height/dist)
-  print(ang)
-  if grad_points((a,b), (c,d)) < 0:
-    if vertical_height < 0:
-      car.rotation = 180 - ang
-    else:
-      car.rotation = 360 - ang
+  ang = (180/3.141)*asin(abs(vertical_height)/dist)
+  if vertical_height > 0:
+    if grad_points((a,b), (c,d)) > 0: #first quadrant (GOOD)
+      car.rotation = 90 - ang
+    else: #second quadrant (BAD)
+      car.rotation = 270 + ang
   else:
-    if vertical_height < 0:
-      car.rotation = ang + 180
-    else:
-      car.rotation = ang
+    if grad_points((a,b), (c,d)) > 0: #third quadrant (GOOD)
+      car.rotation = 270 - ang
+    else: #fourth quadrant (BAD)
+      car.rotation = 90 + ang
 
 
 
