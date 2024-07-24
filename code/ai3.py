@@ -19,6 +19,8 @@ actions = env.action_space.n
 
 print(env.observation_space.shape)
 
+print(env)
+
 model = Sequential()
 model.add(Flatten(input_shape=(1, states)))
 model.add(Dense(24, activation="relu"))
@@ -38,6 +40,7 @@ agent.compile(Adam(learning_rate=0.001), metrics=["mae"])
 agent.fit(env, nb_steps=1, visualize=False, verbose=1)
 
 results = agent.test(env, nb_episodes=10, visualize=True, verbose=1)
+print(env)
 print(np.mean(results.history["episode_reward"]))
 
 episodes = 10

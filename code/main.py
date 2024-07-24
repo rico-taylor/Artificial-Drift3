@@ -753,9 +753,9 @@ def on_mouse_press(x,y,button, modifiers):
   if button == mouse.LEFT:
     if windowOn == [1,0]:
       windowOn = [0,1]
-    #print(x,y)
-    #print(lap_list)
-    #print(lap_list2)
+    print(x,y)
+    print(lap_list)
+    print(lap_list2)
     reset()
 
 @window.event
@@ -813,7 +813,7 @@ def update(dt):
   laps = pyglet.text.Label("Laps: " + str(len(lap_list)), font_size=36, x=50, y=800, batch=displays)
   leaderText = pyglet.text.Label("Leader: " +str(leader()), font_size=36, x=50, y=750, batch=displays)
   #lap_displays()     this function is commented out since it was causing lag
-
+  print("reward: ", reward())
   #PLAYER 1 ------------------
   #car code
   global velocity
@@ -924,8 +924,13 @@ def update(dt):
   for x in viewingLineList:
     x.opacity = 100
 
-  collisionPointsList = aiVision()
-
+  if len(aiVision()) < 14:
+    collisionPointsList = oldCollisionPointsList
+  else:
+    collisionPointsList = aiVision()
+    oldCollisionPointsList = collisionPointsList
+  
+  
   point1 = collisionPointsList[0]
   point2 = collisionPointsList[1]
   point3 = collisionPointsList[2]
@@ -975,7 +980,6 @@ def update(dt):
   for x in range(len(collisionPointsList)):
     aiVisionList += collisionPointsList[x]
   observation_space = [car.x, car.y, car.rotation, velocity] + aiVisionList
-  
   #PLAYER 2 ------------------
   stopwatch2()
   #car code
