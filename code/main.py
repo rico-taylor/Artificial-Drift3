@@ -106,6 +106,7 @@ lineLength = 100000000
 reward_gate = False
 wall_collision = False
 new_gate_signal = False
+oldCollisionPointsList = [(car_start_x,car_start_y),(car_start_x,car_start_y),(car_start_x,car_start_y), (car_start_x,car_start_y), (car_start_x,car_start_y), (car_start_x,car_start_y), (car_start_x,car_start_y), (car_start_x,car_start_y), (car_start_x,car_start_y), (car_start_x,car_start_y), (car_start_x,car_start_y), (car_start_x,car_start_y), (car_start_x,car_start_y), (car_start_x,car_start_y)]
 
 #defining variables, lists, and dictionaries - PLAYER 2 ---------------
 sprite_hitbox2 = [(0,0),(0,0),(0,0),(0,0)]
@@ -338,7 +339,7 @@ def lineChecks(input_line, car_hitbox): #STILL NEEDS PLAYER THINGS (maybe not an
     global started2
     global lapCompleted2
     noStart2 = False
-    if input_line == timer1:
+    if input_line == timerLineList[0]:
       for x in checkerList2:
         if x != False:
           noStart2 = True
@@ -510,29 +511,51 @@ def aiVision():
 def overlap_check(car_hitbox, input_lines):
   global reward_gate
   global wall_collision
-  if car_hitbox == sprite_hitbox:
-    spriteVelocity = velocity
-  else:
-    spriteVelocity = velocity2
-  for (x,y) in car_hitbox:
-    for input_line in input_lines:
-      if min(input_line.x, input_line.x2) < x < max(input_line.x, input_line.x2):
-        if min(input_line.y, input_line.y2) < y < max(input_line.y, input_line.y2):  
-            gradient = (input_line.y2-input_line.y)/(input_line.x2-input_line.x)
-            if abs(gradient) > 12:
-              new_velocity = (tanh(spriteVelocity)*2+1)**12
-            elif abs(gradient) < 0.5:
-              new_velocity = (tanh(spriteVelocity)*2+1)**((abs(gradient)+1)**2)
-            else:
-              new_velocity = (tanh(spriteVelocity)*2+1)
-            if spriteVelocity > 0:
-              if y - input_line.y -new_velocity < gradient*(x-input_line.x) < y - input_line.y + new_velocity:
-                if timerLine(input_line) == True:
-                  reward_gate = True
-                  lineChecks(input_line, car_hitbox)
-                else:
-                  wall_collision = True
-                  return True
+
+  hitbox_lines = []
+  for x in range(len(car_hitbox)):
+    a,b = car_hitbox[x%4]
+    c,d = car_hitbox[(x+1)%4]
+    hitbox_lines.append(pyglet.shapes.Line(x=a, y=b, x2=c, y2=d, width=1))
+
+  for wall in input_lines:
+    for car_side in hitbox_lines:
+      #if min(wall.x, wall.x2) < min(car_side.x, car_side.y) < max(wall.x, wall.x2)
+      if find_intersection(car_side, wall) != None:
+        if timerLine(wall) == True:
+          reward_gate = True
+          lineChecks(wall, car_hitbox)
+        else:
+          wall_collision = True
+          return True
+  
+  
+  
+  
+  
+  #if car_hitbox == sprite_hitbox:
+  #  spriteVelocity = velocity
+  #else:
+  #  spriteVelocity = velocity2
+  #for (x,y) in car_hitbox:
+  #  for input_line in input_lines:
+  #    if min(input_line.x, input_line.x2) < x < max(input_line.x, input_line.x2):
+  #      if min(input_line.y, input_line.y2) < y < max(input_line.y, input_line.y2):  
+  #          gradient = (input_line.y2-input_line.y)/(input_line.x2-input_line.x)
+  #          if abs(gradient) > 12:
+  #            new_velocity = (tanh(spriteVelocity)*2+1)**12
+  #          elif abs(gradient) < 0.5:
+  #            new_velocity = (tanh(spriteVelocity)*2+1)**((abs(gradient)+1)**2)
+  #          else:
+  #            new_velocity = (tanh(spriteVelocity)*2+1)
+  #          if spriteVelocity > 0:
+  #            if y - input_line.y -new_velocity < gradient*(x-input_line.x) < y - input_line.y + new_velocity:
+  #              if timerLine(input_line) == True:
+  #                reward_gate = True
+  #                lineChecks(input_line, car_hitbox)
+  #              else:
+  #                wall_collision = True
+  #                return True
             #if velocity < 0:
               #if y - input_line.y -velocity > gradient*(x-input_line.x) > y - input_line.y + velocity:
                 #return True
@@ -591,7 +614,7 @@ def reward():
   return reward
 
 #AI reset function
-def reset():
+def reset(): #making this in a class will make it easy to reset both of the cars.
   global respawnLine
   global timerLineList
 
@@ -813,7 +836,9 @@ def update(dt):
   laps = pyglet.text.Label("Laps: " + str(len(lap_list)), font_size=36, x=50, y=800, batch=displays)
   leaderText = pyglet.text.Label("Leader: " +str(leader()), font_size=36, x=50, y=750, batch=displays)
   #lap_displays()     this function is commented out since it was causing lag
-  print("reward: ", reward())
+  
+  #print("reward: ", reward())
+
   #PLAYER 1 ------------------
   #car code
   global velocity
@@ -921,6 +946,7 @@ def update(dt):
 
   viewingLineList = [viewingLine1, viewingLine2, viewingLine3, viewingLine4, viewingLine5, viewingLine6, viewingLine7, viewingLine8, viewingLine9, viewingLine10, viewingLine11, viewingLine12, viewingLine13, viewingLine14]
 
+  global oldCollisionPointsList
   for x in viewingLineList:
     x.opacity = 100
 

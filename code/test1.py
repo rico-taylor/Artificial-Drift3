@@ -18,5 +18,7 @@ class Person:
 
 Rico = Person(17, 176, 10)
 
-print(Rico.rating)
+jack = [(1,10),(2,9),(3,8),(4,7)]
+for x in range(len(jack)*2):
+  print(x%4)
 
