@@ -864,16 +864,17 @@ def update(dt):
   if backward == True and overlap_check(sprite_hitbox, line_list) != True:
     velocity -= acceleration/1.3
 
+  if overlap_check(sprite_hitbox,line_list) == True:
+    print(len(collList))
+    car.x, car.y = collList[int(-velocity//3)-2]
+    drift = False
+    velocity = 0
+  
   new = (car.x, car.y)
   collList.append(new)
   if len(collList) > 13:
     del collList[0]
 
-  if overlap_check(sprite_hitbox,line_list) == True:
-    car.x, car.y = collList[int(-velocity//3)-2]
-    drift = False
-    velocity = 0
-  
   dy = velocity * cos(radians(car.rotation))
   dx = velocity * sin(radians(car.rotation))
   
