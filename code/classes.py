@@ -6,9 +6,13 @@ from pyglet import sprite, image
 from pyglet.window import key, mouse
 from math import sin, cos, atan, acos, asin, radians, sqrt, tanh
 
+
+
 #main window
 window = pyglet.window.Window(resizable = False, caption="Artificial Drift")
 window.set_fullscreen(True)
+
+lines = pyglet.graphics.Batch()
 
 scale_factor = (window.width/1920)%1
 
@@ -72,6 +76,8 @@ class Car:
         self.car.x += dx
 
 player1 = Car(100,100,260,"images/car.png")
+
+
 
 @window.event
 def on_draw():
