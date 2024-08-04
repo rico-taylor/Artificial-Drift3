@@ -865,7 +865,6 @@ def update(dt):
     velocity -= acceleration/1.3
 
   if overlap_check(sprite_hitbox,line_list) == True:
-    print(len(collList))
     car.x, car.y = collList[int(-velocity//3)-2]
     drift = False
     velocity = 0

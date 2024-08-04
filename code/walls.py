@@ -1,15 +1,72 @@
 import pyglet
 
-class Walll:
-    def __init__(self, x1,y1,x2,y2,b):
-        self.line = pyglet.shapes.Line(x=x1,y=y1,x2=x2, y2=y2, batch=b)
+window = pyglet.window.Window(resizable = False, caption="Artificial Drift")
+window.set_fullscreen(True)
 
-def getWalls(window_width, window_height, batch):
-    line_list = []
-    #outside lines
-    line = Walll(472/1920 * window_width, 23/1080 * window_height, 1723/1920 * window_width, 217/1080 * window_height, batch)
-    line1 = Walll(1723/1920 * window_width, 217/1080 * window_height, 1777/1920 * window_width, 295/1080 * window_height, batch)
-    line2 = Walll(1777/1920 * window_width, 295/1080 * window_height, 1764/1920 * window_width, 392/1080 * window_height, batch)
+#outside lines
+def get_lines(window_width, window_height):
+    line = pyglet.shapes.Line(x=472/1920 * window_width, y=23/1080 * window_height, x2=1723/1920 * window_width, y2=217/1080 * window_height, width = 1)
+    line1 = pyglet.shapes.Line(x=1723/1920 * window_width, y=217/1080 * window_height, x2=1777/1920 * window_width, y2=295/1080 * window_height, width = 1)
+    line2 = pyglet.shapes.Line(x=1777/1920 * window_width, y=295/1080 * window_height, x2=1764/1920 * window_width, y2=392/1080 * window_height, width = 1)
+    line3 = pyglet.shapes.Line(x=1764/1920 * window_width, y=392/1080 * window_height, x2=1704/1920 * window_width, y2=459/1080 * window_height, width = 1)
+    line4 = pyglet.shapes.Line(x=1704/1920 * window_width, y=459/1080 * window_height, x2=1580/1920 * window_width, y2=510/1080 * window_height, width = 1)
+    line5 = pyglet.shapes.Line(x=1580/1920 * window_width, y=510/1080 * window_height, x2=1562/1920 * window_width, y2=548/1080 * window_height, width = 1)
+    line6 = pyglet.shapes.Line(x=1562/1920 * window_width, y=548/1080 * window_height, x2=1571/1920 * window_width, y2=584/1080 * window_height, width = 1)
+    line7 = pyglet.shapes.Line(x=1571/1920 * window_width, y=584/1080 * window_height, x2=1707/1920 * window_width, y2=690/1080 * window_height, width = 1)
+    line8 = pyglet.shapes.Line(x=1707/1920 * window_width, y=690/1080 * window_height, x2=1765/1920 * window_width, y2=800/1080 * window_height, width = 1)
+    line9 = pyglet.shapes.Line(x=1765/1920 * window_width, y=800/1080 * window_height, x2=1760/1920 * window_width, y2=901/1080 * window_height, width = 1)
+    line10 = pyglet.shapes.Line(x=1760/1920 * window_width, y=901/1080 * window_height, x2=1696/1920 * window_width, y2=984/1080 * window_height, width = 1)
+    line11 = pyglet.shapes.Line(x=1696/1920 * window_width, y=984/1080 * window_height, x2=1632/1920 * window_width, y2=1021/1080 * window_height, width = 1)
+    line12 = pyglet.shapes.Line(x=1632/1920 * window_width, y=1021/1080 * window_height, x2=1462/1920 * window_width, y2=1022/1080 * window_height, width = 1)
+    line13 = pyglet.shapes.Line(x=1462/1920 * window_width, y=1022/1080 * window_height, x2=1193/1920 * window_width, y2=906/1080 * window_height, width = 1)
+    line14 = pyglet.shapes.Line(x=1193/1920 * window_width, y=906/1080 * window_height, x2=892/1920 * window_width, y2=771/1080 * window_height, width = 1)
+    line15 = pyglet.shapes.Line(x=892/1920 * window_width, y=771/1080 * window_height, x2=802/1920 * window_width, y2=777/1080 * window_height, width = 1)
+    line16 = pyglet.shapes.Line(x=802/1920 * window_width, y=777/1080 * window_height, x2=746/1920 * window_width, y2=883/1080 * window_height, width = 1)
+    line17 = pyglet.shapes.Line(x=746/1920 * window_width, y=883/1080 * window_height, x2=711/1920 * window_width, y2=995/1080 * window_height, width = 1)
+    line18 = pyglet.shapes.Line(x=711/1920 * window_width, y=995/1080 * window_height, x2=628/1920 * window_width, y2=1050/1080 * window_height, width = 1)
+    line19 = pyglet.shapes.Line(x=628/1920 * window_width, y=1050/1080 * window_height, x2=494/1920 * window_width, y2=1031/1080 * window_height, width = 1)
+    line20 = pyglet.shapes.Line(x=494/1920 * window_width, y=1031/1080 * window_height, x2=384/1920 * window_width, y2=964/1080 * window_height, width = 1)
+    line21 = pyglet.shapes.Line(x=384/1920 * window_width, y=964/1080 * window_height, x2=364/1920 * window_width, y2=832/1080 * window_height, width = 1)
+    line22 = pyglet.shapes.Line(x=364/1920 * window_width, y=832/1080 * window_height, x2=462/1920 * window_width, y2=624/1080 * window_height, width = 1)
+    line23 = pyglet.shapes.Line(x=462/1920 * window_width, y=624/1080 * window_height, x2=453/1920 * window_width, y2=555/1080 * window_height, width = 1)
+    line24 = pyglet.shapes.Line(x=453/1920 * window_width, y=555/1080 * window_height, x2=269/1920 * window_width, y2=478/1080 * window_height, width = 1)
+    line25 = pyglet.shapes.Line(x=269/1920 * window_width, y=478/1080 * window_height, x2=211/1920 * window_width, y2=370/1080 * window_height, width = 1)
+    line26 = pyglet.shapes.Line(x=211/1920 * window_width, y=370/1080 * window_height, x2=207/1920 * window_width, y2=245/1080 * window_height, width = 1)
+    line27 = pyglet.shapes.Line(x=207/1920 * window_width, y=245/1080 * window_height, x2=278/1920 * window_width, y2=98/1080 * window_height, width = 1)
+    line28 = pyglet.shapes.Line(x=278/1920 * window_width, y=98/1080 * window_height, x2=355/1920 * window_width, y2=36/1080 * window_height, width = 1)
+    line29 = pyglet.shapes.Line(x=355/1920 * window_width, y=36/1080 * window_height, x2=472/1920 * window_width, y2=23/1080 * window_height, width = 1)
 
-    line_list = [line, line1, line2]
-    return line_list
+    #inside lines
+    line30 = pyglet.shapes.Line(x=470/1920 *window_width, y=181/1080 *window_height, x2=1525/1920 *window_width, y2=325/1080 *window_height, width = 1)
+    line31 = pyglet.shapes.Line(x=1525/1920 *window_width, y=325/1080 *window_height, x2=1526/1920 *window_width, y2=363/1080 *window_height, width = 1)
+    line32 = pyglet.shapes.Line(x=1526/1920 *window_width, y=363/1080 *window_height, x2=1383/1920 *window_width, y2=435/1080 *window_height, width = 1)
+    line33 = pyglet.shapes.Line(x=1383/1920 *window_width, y=435/1080 *window_height, x2=1354/1920 *window_width, y2=554/1080 *window_height, width = 1)
+    line34 = pyglet.shapes.Line(x=1354/1920 *window_width, y=554/1080 *window_height, x2=1414/1920 *window_width, y2=644/1080 *window_height, width = 1)
+    line35 = pyglet.shapes.Line(x=1414/1920 *window_width, y=644/1080 *window_height, x2=1569/1920 *window_width, y2=758/1080 *window_height, width = 1)
+    line36 = pyglet.shapes.Line(x=1569/1920 *window_width, y=758/1080 *window_height, x2=1596/1920 *window_width, y2=838/1080 *window_height, width = 1)
+    line37 = pyglet.shapes.Line(x=1596/1920 *window_width, y=838/1080 *window_height, x2=1545/1920 *window_width, y2=891/1080 *window_height, width = 1)
+    line38 = pyglet.shapes.Line(x=1545/1920 *window_width, y=891/1080 *window_height, x2=1457/1920 *window_width, y2=882/1080 *window_height, width = 1)
+    line39 = pyglet.shapes.Line(x=1457/1920 *window_width, y=882/1080 *window_height, x2=969/1920 *window_width, y2=639/1080 *window_height, width = 1)
+    line40 = pyglet.shapes.Line(x=969/1920 *window_width, y=639/1080 *window_height, x2=801/1920 *window_width, y2=629/1080 *window_height, width = 1)
+    line41 = pyglet.shapes.Line(x=801/1920 *window_width, y=629/1080 *window_height, x2=676/1920 *window_width, y2=676/1080 *window_height, width = 1)
+    line42 = pyglet.shapes.Line(x=676/1920 *window_width, y=676/1080 *window_height, x2=618/1920 *window_width, y2=739/1080 *window_height, width = 1)
+    line43 = pyglet.shapes.Line(x=618/1920 *window_width, y=739/1080 *window_height, x2=585/1920 *window_width, y2=793/1080 *window_height, width = 1)
+    line44 = pyglet.shapes.Line(x=585/1920 *window_width, y=793/1080 *window_height, x2=581/1920 *window_width, y2=848/1080 *window_height, width = 1)
+    line45 = pyglet.shapes.Line(x=581/1920 *window_width, y=848/1080 *window_height, x2=566/1920 *window_width, y2=864/1080 *window_height, width = 1)
+    line46 = pyglet.shapes.Line(x=566/1920 *window_width, y=864/1080 *window_height, x2=555/1920 *window_width, y2=854/1080 *window_height, width = 1)
+    line47 = pyglet.shapes.Line(x=555/1920 *window_width, y=854/1080 *window_height, x2=554/1920 *window_width, y2=840/1080 *window_height, width = 1)
+    line48 = pyglet.shapes.Line(x=554/1920 *window_width, y=840/1080 *window_height, x2=581/1920 *window_width, y2=785/1080 *window_height, width = 1)
+    line49 = pyglet.shapes.Line(x=581/1920 *window_width, y=785/1080 *window_height, x2=608/1920 *window_width, y2=697/1080 *window_height, width = 1)
+    line50 = pyglet.shapes.Line(x=608/1920 *window_width, y=697/1080 *window_height, x2=612/1920 *window_width, y2=548/1080 *window_height, width = 1)
+    line51 = pyglet.shapes.Line(x=612/1920 *window_width, y=548/1080 *window_height, x2=565/1920 *window_width, y2=452/1080 *window_height, width = 1)
+    line52 = pyglet.shapes.Line(x=565/1920 *window_width, y=452/1080 *window_height, x2=440/1920 *window_width, y2=399/1080 *window_height, width = 1)
+    line53 = pyglet.shapes.Line(x=440/1920 *window_width, y=399/1080 *window_height, x2=400/1920 *window_width, y2=364/1080 *window_height, width = 1)
+    line54 = pyglet.shapes.Line(x=400/1920 *window_width, y=364/1080 *window_height, x2=383/1920 *window_width, y2=277/1080 *window_height, width = 1)
+    line55 = pyglet.shapes.Line(x=383/1920 *window_width, y=277/1080 *window_height, x2=404/1920 *window_width, y2=217/1080 *window_height, width = 1)
+    line56 = pyglet.shapes.Line(x=404/1920 *window_width, y=217/1080 *window_height, x2=470/1920 *window_width, y2=181/1080 *window_height, width = 1)
+
+    barrierLineList = [line, line1, line2, line3, line4, line5, line6, line7, line8, line9, line10, line11, line12, line13, line14, line15, line16, line17, line18, line19, line20, line21, line22, line23, line24, line25, line26, line27, line28, line29, line30, line31, line32, line33, line34, line35, line36, line37, line38, line39, line40, line41, line42, line43, line44, line45, line46, line47, line48, line49, line50, line51, line52, line53, line54, line55, line56]
+    return barrierLineList
+
+
+pyglet.app.run()
