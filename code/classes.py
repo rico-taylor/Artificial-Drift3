@@ -6,15 +6,195 @@ from pyglet import sprite, image
 from pyglet.window import key, mouse
 from math import sin, cos, atan, acos, asin, radians, sqrt, tanh
 
-from walls import get_lines
-
 #main window
 window = pyglet.window.Window(resizable = False, caption="Artificial Drift")
 window.set_fullscreen(True)
 
-lines = pyglet.graphics.Batch()
+#batches
+wall_lines = pyglet.graphics.Batch()
+gate_lines = pyglet.graphics.Batch()
 
 scale_factor = (window.width/1920)%1
+
+
+#creating all of the walls
+def get_walls(window_width, window_height):
+    line = pyglet.shapes.Line(x=472/1920 * window_width, y=23/1080 * window_height, x2=1723/1920 * window_width, y2=217/1080 * window_height, width = 1)
+    line1 = pyglet.shapes.Line(x=1723/1920 * window_width, y=217/1080 * window_height, x2=1777/1920 * window_width, y2=295/1080 * window_height, width = 1)
+    line2 = pyglet.shapes.Line(x=1777/1920 * window_width, y=295/1080 * window_height, x2=1764/1920 * window_width, y2=392/1080 * window_height, width = 1)
+    line3 = pyglet.shapes.Line(x=1764/1920 * window_width, y=392/1080 * window_height, x2=1704/1920 * window_width, y2=459/1080 * window_height, width = 1)
+    line4 = pyglet.shapes.Line(x=1704/1920 * window_width, y=459/1080 * window_height, x2=1580/1920 * window_width, y2=510/1080 * window_height, width = 1)
+    line5 = pyglet.shapes.Line(x=1580/1920 * window_width, y=510/1080 * window_height, x2=1562/1920 * window_width, y2=548/1080 * window_height, width = 1)
+    line6 = pyglet.shapes.Line(x=1562/1920 * window_width, y=548/1080 * window_height, x2=1571/1920 * window_width, y2=584/1080 * window_height, width = 1)
+    line7 = pyglet.shapes.Line(x=1571/1920 * window_width, y=584/1080 * window_height, x2=1707/1920 * window_width, y2=690/1080 * window_height, width = 1)
+    line8 = pyglet.shapes.Line(x=1707/1920 * window_width, y=690/1080 * window_height, x2=1765/1920 * window_width, y2=800/1080 * window_height, width = 1)
+    line9 = pyglet.shapes.Line(x=1765/1920 * window_width, y=800/1080 * window_height, x2=1760/1920 * window_width, y2=901/1080 * window_height, width = 1)
+    line10 = pyglet.shapes.Line(x=1760/1920 * window_width, y=901/1080 * window_height, x2=1696/1920 * window_width, y2=984/1080 * window_height, width = 1)
+    line11 = pyglet.shapes.Line(x=1696/1920 * window_width, y=984/1080 * window_height, x2=1632/1920 * window_width, y2=1021/1080 * window_height, width = 1)
+    line12 = pyglet.shapes.Line(x=1632/1920 * window_width, y=1021/1080 * window_height, x2=1462/1920 * window_width, y2=1022/1080 * window_height, width = 1)
+    line13 = pyglet.shapes.Line(x=1462/1920 * window_width, y=1022/1080 * window_height, x2=1193/1920 * window_width, y2=906/1080 * window_height, width = 1)
+    line14 = pyglet.shapes.Line(x=1193/1920 * window_width, y=906/1080 * window_height, x2=892/1920 * window_width, y2=771/1080 * window_height, width = 1)
+    line15 = pyglet.shapes.Line(x=892/1920 * window_width, y=771/1080 * window_height, x2=802/1920 * window_width, y2=777/1080 * window_height, width = 1)
+    line16 = pyglet.shapes.Line(x=802/1920 * window_width, y=777/1080 * window_height, x2=746/1920 * window_width, y2=883/1080 * window_height, width = 1)
+    line17 = pyglet.shapes.Line(x=746/1920 * window_width, y=883/1080 * window_height, x2=711/1920 * window_width, y2=995/1080 * window_height, width = 1)
+    line18 = pyglet.shapes.Line(x=711/1920 * window_width, y=995/1080 * window_height, x2=628/1920 * window_width, y2=1050/1080 * window_height, width = 1)
+    line19 = pyglet.shapes.Line(x=628/1920 * window_width, y=1050/1080 * window_height, x2=494/1920 * window_width, y2=1031/1080 * window_height, width = 1)
+    line20 = pyglet.shapes.Line(x=494/1920 * window_width, y=1031/1080 * window_height, x2=384/1920 * window_width, y2=964/1080 * window_height, width = 1)
+    line21 = pyglet.shapes.Line(x=384/1920 * window_width, y=964/1080 * window_height, x2=364/1920 * window_width, y2=832/1080 * window_height, width = 1)
+    line22 = pyglet.shapes.Line(x=364/1920 * window_width, y=832/1080 * window_height, x2=462/1920 * window_width, y2=624/1080 * window_height, width = 1)
+    line23 = pyglet.shapes.Line(x=462/1920 * window_width, y=624/1080 * window_height, x2=453/1920 * window_width, y2=555/1080 * window_height, width = 1)
+    line24 = pyglet.shapes.Line(x=453/1920 * window_width, y=555/1080 * window_height, x2=269/1920 * window_width, y2=478/1080 * window_height, width = 1)
+    line25 = pyglet.shapes.Line(x=269/1920 * window_width, y=478/1080 * window_height, x2=211/1920 * window_width, y2=370/1080 * window_height, width = 1)
+    line26 = pyglet.shapes.Line(x=211/1920 * window_width, y=370/1080 * window_height, x2=207/1920 * window_width, y2=245/1080 * window_height, width = 1)
+    line27 = pyglet.shapes.Line(x=207/1920 * window_width, y=245/1080 * window_height, x2=278/1920 * window_width, y2=98/1080 * window_height, width = 1)
+    line28 = pyglet.shapes.Line(x=278/1920 * window_width, y=98/1080 * window_height, x2=355/1920 * window_width, y2=36/1080 * window_height, width = 1)
+    line29 = pyglet.shapes.Line(x=355/1920 * window_width, y=36/1080 * window_height, x2=472/1920 * window_width, y2=23/1080 * window_height, width = 1)
+
+    #inside lines
+    line30 = pyglet.shapes.Line(x=470/1920 *window_width, y=181/1080 *window_height, x2=1525/1920 *window_width, y2=325/1080 *window_height, width = 1)
+    line31 = pyglet.shapes.Line(x=1525/1920 *window_width, y=325/1080 *window_height, x2=1526/1920 *window_width, y2=363/1080 *window_height, width = 1)
+    line32 = pyglet.shapes.Line(x=1526/1920 *window_width, y=363/1080 *window_height, x2=1383/1920 *window_width, y2=435/1080 *window_height, width = 1)
+    line33 = pyglet.shapes.Line(x=1383/1920 *window_width, y=435/1080 *window_height, x2=1354/1920 *window_width, y2=554/1080 *window_height, width = 1)
+    line34 = pyglet.shapes.Line(x=1354/1920 *window_width, y=554/1080 *window_height, x2=1414/1920 *window_width, y2=644/1080 *window_height, width = 1)
+    line35 = pyglet.shapes.Line(x=1414/1920 *window_width, y=644/1080 *window_height, x2=1569/1920 *window_width, y2=758/1080 *window_height, width = 1)
+    line36 = pyglet.shapes.Line(x=1569/1920 *window_width, y=758/1080 *window_height, x2=1596/1920 *window_width, y2=838/1080 *window_height, width = 1)
+    line37 = pyglet.shapes.Line(x=1596/1920 *window_width, y=838/1080 *window_height, x2=1545/1920 *window_width, y2=891/1080 *window_height, width = 1)
+    line38 = pyglet.shapes.Line(x=1545/1920 *window_width, y=891/1080 *window_height, x2=1457/1920 *window_width, y2=882/1080 *window_height, width = 1)
+    line39 = pyglet.shapes.Line(x=1457/1920 *window_width, y=882/1080 *window_height, x2=969/1920 *window_width, y2=639/1080 *window_height, width = 1)
+    line40 = pyglet.shapes.Line(x=969/1920 *window_width, y=639/1080 *window_height, x2=801/1920 *window_width, y2=629/1080 *window_height, width = 1)
+    line41 = pyglet.shapes.Line(x=801/1920 *window_width, y=629/1080 *window_height, x2=676/1920 *window_width, y2=676/1080 *window_height, width = 1)
+    line42 = pyglet.shapes.Line(x=676/1920 *window_width, y=676/1080 *window_height, x2=618/1920 *window_width, y2=739/1080 *window_height, width = 1)
+    line43 = pyglet.shapes.Line(x=618/1920 *window_width, y=739/1080 *window_height, x2=585/1920 *window_width, y2=793/1080 *window_height, width = 1)
+    line44 = pyglet.shapes.Line(x=585/1920 *window_width, y=793/1080 *window_height, x2=581/1920 *window_width, y2=848/1080 *window_height, width = 1)
+    line45 = pyglet.shapes.Line(x=581/1920 *window_width, y=848/1080 *window_height, x2=566/1920 *window_width, y2=864/1080 *window_height, width = 1)
+    line46 = pyglet.shapes.Line(x=566/1920 *window_width, y=864/1080 *window_height, x2=555/1920 *window_width, y2=854/1080 *window_height, width = 1)
+    line47 = pyglet.shapes.Line(x=555/1920 *window_width, y=854/1080 *window_height, x2=554/1920 *window_width, y2=840/1080 *window_height, width = 1)
+    line48 = pyglet.shapes.Line(x=554/1920 *window_width, y=840/1080 *window_height, x2=581/1920 *window_width, y2=785/1080 *window_height, width = 1)
+    line49 = pyglet.shapes.Line(x=581/1920 *window_width, y=785/1080 *window_height, x2=608/1920 *window_width, y2=697/1080 *window_height, width = 1)
+    line50 = pyglet.shapes.Line(x=608/1920 *window_width, y=697/1080 *window_height, x2=612/1920 *window_width, y2=548/1080 *window_height, width = 1)
+    line51 = pyglet.shapes.Line(x=612/1920 *window_width, y=548/1080 *window_height, x2=565/1920 *window_width, y2=452/1080 *window_height, width = 1)
+    line52 = pyglet.shapes.Line(x=565/1920 *window_width, y=452/1080 *window_height, x2=440/1920 *window_width, y2=399/1080 *window_height, width = 1)
+    line53 = pyglet.shapes.Line(x=440/1920 *window_width, y=399/1080 *window_height, x2=400/1920 *window_width, y2=364/1080 *window_height, width = 1)
+    line54 = pyglet.shapes.Line(x=400/1920 *window_width, y=364/1080 *window_height, x2=383/1920 *window_width, y2=277/1080 *window_height, width = 1)
+    line55 = pyglet.shapes.Line(x=383/1920 *window_width, y=277/1080 *window_height, x2=404/1920 *window_width, y2=217/1080 *window_height, width = 1)
+    line56 = pyglet.shapes.Line(x=404/1920 *window_width, y=217/1080 *window_height, x2=470/1920 *window_width, y2=181/1080 *window_height, width = 1)
+
+    barrierLineList = [line, line1, line2, line3, line4, line5, line6, line7, line8, line9, line10, line11, line12, line13, line14, line15, line16, line17, line18, line19, line20, line21, line22, line23, line24, line25, line26, line27, line28, line29, line30, line31, line32, line33, line34, line35, line36, line37, line38, line39, line40, line41, line42, line43, line44, line45, line46, line47, line48, line49, line50, line51, line52, line53, line54, line55, line56]
+    return barrierLineList
+
+#creating all of the reward gates
+def get_gates(window_width, window_height):
+    timer1 = pyglet.shapes.Line(x=995/1920 *window_width, y=100/1080 *window_height, x2=985/1920 *window_width, y2=250/1080 *window_height, width = 1, color=(255,165,0))
+    timer2 = pyglet.shapes.Line(x=939/1920 *window_width, y=246/1080 *window_height, x2=947/1920 *window_width, y2=98/1080 *window_height, width = 1, color=(255,165,0))
+    timer3 = pyglet.shapes.Line(x=889/1920 *window_width, y=239/1080 *window_height, x2=898/1920 *window_width, y2=91/1080 *window_height, width = 1, color=(225,165,0))
+    timer4 = pyglet.shapes.Line(x=838/1920 *window_width, y=233/1080 *window_height, x2=844/1920 *window_width, y2=82/1080 *window_height, width = 1, color=(225,165,0))
+    timer5 = pyglet.shapes.Line(x=789/1920 *window_width, y=225/1080 *window_height, x2=793/1920 *window_width, y2=75/1080 *window_height, width = 1, color=(225,165,0))
+    timer6 = pyglet.shapes.Line(x=733/1920 *window_width, y=218/1080 *window_height, x2=742/1920 *window_width, y2=66/1080 *window_height, width = 1, color=(225,165,0))
+    timer7 = pyglet.shapes.Line(x=682/1920 *window_width, y=210/1080 *window_height, x2=690/1920 *window_width, y2=58/1080 *window_height, width = 1, color=(225,165,0))
+    timer8 = pyglet.shapes.Line(x=631/1920 *window_width, y=204/1080 *window_height, x2=637/1920 *window_width, y2=50/1080 *window_height, width = 1, color=(225,165,0))
+    timer9 = pyglet.shapes.Line(x=584/1920 *window_width, y=198/1080 *window_height, x2=590/1920 *window_width, y2=43/1080 *window_height, width = 1, color=(225,165,0))
+    timer10 = pyglet.shapes.Line(x=532/1920 *window_width, y=191/1080 *window_height, x2=542/1920 *window_width, y2=34/1080 *window_height, width = 1, color=(225,165,0))
+    timer11 = pyglet.shapes.Line(x=476/1920 *window_width, y=183/1080 *window_height, x2=479/1920 *window_width, y2=26/1080 *window_height, width = 1, color=(225,165,0))
+    timer12 = pyglet.shapes.Line(x=437/1920 *window_width, y=198/1080 *window_height, x2=381/1920 *window_width, y2=34/1080 *window_height, width = 1, color=(225,165,0))
+    timer13 = pyglet.shapes.Line(x=402/1920 *window_width, y=217/1080 *window_height, x2=308/1920 *window_width, y2=74/1080 *window_height, width = 1, color=(225,165,0))
+    timer14 = pyglet.shapes.Line(x=397/1920 *window_width, y=234/1080 *window_height, x2=253/1920 *window_width, y2=147/1080 *window_height, width = 1, color=(225,165,0))
+    timer15 = pyglet.shapes.Line(x=386/1920 *window_width, y=268/1080 *window_height, x2=213/1920 *window_width, y2=229/1080 *window_height, width = 1, color=(225,165,0))
+    timer16 = pyglet.shapes.Line(x=198/1920 *window_width, y=300/1080 *window_height, x2=390/1920 *window_width, y2=314/1080 *window_height, width = 1, color=(225,165,0))
+    timer17 = pyglet.shapes.Line(x=393/1920 *window_width, y=338/1080 *window_height, x2=210/1920 *window_width, y2=371/1080 *window_height, width = 1, color=(225,165,0))
+    timer18 = pyglet.shapes.Line(x=401/1920 *window_width, y=365/1080 *window_height, x2=243/1920 *window_width, y2=430/1080 *window_height, width = 1, color=(225,165,0))
+    timer19 = pyglet.shapes.Line(x=422/1920 *window_width, y=384/1080 *window_height, x2=270/1920 *window_width, y2=480/1080 *window_height, width = 1, color=(225,165,0))
+    timer20 = pyglet.shapes.Line(x=442/1920 *window_width, y=400/1080 *window_height, x2=337/1920 *window_width, y2=508/1080 *window_height, width = 1, color=(225,165,0))
+    timer21 = pyglet.shapes.Line(x=467/1920 *window_width, y=412/1080 *window_height, x2=394/1920 *window_width, y2=529/1080 *window_height, width = 1, color=(225,165,0))
+    timer22 = pyglet.shapes.Line(x=421/1920 *window_width, y=542/1080 *window_height, x2=500/1920 *window_width, y2=428/1080 *window_height, width = 1, color=(225,165,0))
+    timer23 = pyglet.shapes.Line(x=565/1920 *window_width, y=454/1080 *window_height, x2=451/1920 *window_width, y2=554/1080 *window_height, width = 1, color=(225,165,0))
+    timer24 = pyglet.shapes.Line(x=455/1920 *window_width, y=577/1080 *window_height, x2=591/1920 *window_width, y2=508/1080 *window_height, width = 1, color=(225,165,0))
+    timer25 = pyglet.shapes.Line(x=611/1920 *window_width, y=565/1080 *window_height, x2=458/1920 *window_width, y2=597/1080 *window_height, width = 1, color=(225,165,0))
+    timer26 = pyglet.shapes.Line(x=462/1920 *window_width, y=624/1080 *window_height, x2=608/1920 *window_width, y2=626/1080 *window_height, width = 1, color=(225,165,0))
+    timer27 = pyglet.shapes.Line(x=447/1920 *window_width, y=658/1080 *window_height, x2=607/1920 *window_width, y2=697/1080 *window_height, width = 1, color=(225,165,0))
+    timer28 = pyglet.shapes.Line(x=425/1920 *window_width, y=705/1080 *window_height, x2=589/1920 *window_width, y2=760/1080 *window_height, width = 1, color=(225,165,0))
+    timer29 = pyglet.shapes.Line(x=401/1920 *window_width, y=752/1080 *window_height, x2=565/1920 *window_width, y2=815/1080 *window_height, width = 1, color=(225,165,0))
+    timer30 = pyglet.shapes.Line(x=555/1920 *window_width, y=838/1080 *window_height, x2=364/1920 *window_width, y2=833/1080 *window_height, width = 1, color=(225,165,0))
+    timer31 = pyglet.shapes.Line(x=555/1920 *window_width, y=855/1080 *window_height, x2=384/1920 *window_width, y2=964/1080 *window_height, width = 1, color=(225,165,0))
+    timer32 = pyglet.shapes.Line(x=565/1920 *window_width, y=863/1080 *window_height, x2=495/1920 *window_width, y2=1032/1080 *window_height, width = 1, color=(225,165,0))
+    timer33 = pyglet.shapes.Line(x=627/1920 *window_width, y=1049/1080 *window_height, x2=571/1920 *window_width, y2=859/1080 *window_height, width = 1, color=(225,165,0))
+    timer34 = pyglet.shapes.Line(x=710/1920 *window_width, y=993/1080 *window_height, x2=579/1920 *window_width, y2=850/1080 *window_height, width = 1, color=(225,165,0))
+    timer35 = pyglet.shapes.Line(x=733/1920 *window_width, y=921/1080 *window_height, x2=582/1920 *window_width, y2=839/1080 *window_height, width = 1, color=(225,165,0))
+    timer36 = pyglet.shapes.Line(x=584/1920 *window_width, y=798/1080 *window_height, x2=751/1920 *window_width, y2=872/1080 *window_height, width = 1, color=(225,165,0))
+    timer37 = pyglet.shapes.Line(x=617/1920 *window_width, y=742/1080 *window_height, x2=771/1920 *window_width, y2=842/1080 *window_height, width = 1, color=(225,165,0))
+    timer38 = pyglet.shapes.Line(x=790/1920 *window_width, y=798/1080 *window_height, x2=654/1920 *window_width, y2=700/1080 *window_height, width = 1, color=(225,165,0))
+    timer39 = pyglet.shapes.Line(x=801/1920 *window_width, y=778/1080 *window_height, x2=724/1920 *window_width, y2=660/1080 *window_height, width = 1, color=(225,165,0))
+    timer40 = pyglet.shapes.Line(x=834/1920 *window_width, y=774/1080 *window_height, x2=802/1920 *window_width, y2=629/1080 *window_height, width = 1, color=(225,165,0))
+    timer41 = pyglet.shapes.Line(x=874/1920 *window_width, y=774/1080 *window_height, x2=863/1920 *window_width, y2=635/1080 *window_height, width = 1, color=(225,165,0))
+    timer42 = pyglet.shapes.Line(x=897/1920 *window_width, y=772/1080 *window_height, x2=944/1920 *window_width, y2=639/1080 *window_height, width = 1, color=(225,165,0))
+    timer43 = pyglet.shapes.Line(x=937/1920 *window_width, y=793/1080 *window_height, x2=998/1920 *window_width, y2=655/1080 *window_height, width = 1, color=(225,165,0))
+    timer44 = pyglet.shapes.Line(x=972/1920 *window_width, y=808/1080 *window_height, x2=1043/1920 *window_width, y2=677/1080 *window_height, width = 1, color=(225,165,0))
+    timer45 = pyglet.shapes.Line(x=1011/1920 *window_width, y=826/1080 *window_height, x2=1083/1920 *window_width, y2=699/1080 *window_height, width = 1, color=(225,165,0))
+    timer46 = pyglet.shapes.Line(x=1049/1920 *window_width, y=841/1080 *window_height, x2=1125/1920 *window_width, y2=720/1080 *window_height, width = 1, color=(225,165,0))
+    timer47 = pyglet.shapes.Line(x=1094/1920 *window_width, y=863/1080 *window_height, x2=1173/1920 *window_width, y2=744/1080 *window_height, width = 1, color=(225,165,0))
+    timer48 = pyglet.shapes.Line(x=1227/1920 *window_width, y=770/1080 *window_height, x2=1145/1920 *window_width, y2=886/1080 *window_height, width = 1, color=(225,165,0))
+    timer49 = pyglet.shapes.Line(x=1198/1920 *window_width, y=909/1080 *window_height, x2=1281/1920 *window_width, y2=798/1080 *window_height, width = 1, color=(225,165,0))
+    timer50 = pyglet.shapes.Line(x=1277/1920 *window_width, y=942/1080 *window_height, x2=1346/1920 *window_width, y2=831/1080 *window_height, width = 1, color=(225,165,0))
+    timer51 = pyglet.shapes.Line(x=1341/1920 *window_width, y=970/1080 *window_height, x2=1398/1920 *window_width, y2=857/1080 *window_height, width = 1, color=(225,165,0))
+    timer52 = pyglet.shapes.Line(x=1384/1920 *window_width, y=990/1080 *window_height, x2=1442/1920 *window_width, y2=877/1080 *window_height, width = 1, color=(225,165,0))
+    timer53 = pyglet.shapes.Line(x=1467/1920 *window_width, y=884/1080 *window_height, x2=1431/1920 *window_width, y2=1009/1080 *window_height, width = 1, color=(225,165,0))
+    timer54 = pyglet.shapes.Line(x=1486/1920 *window_width, y=1023/1080 *window_height, x2=1496/1920 *window_width, y2=888/1080 *window_height, width = 1, color=(225,165,0))
+    timer55 = pyglet.shapes.Line(x=1536/1920 *window_width, y=893/1080 *window_height, x2=1537/1920 *window_width, y2=1023/1080 *window_height, width = 1, color=(225,165,0))
+    timer56 = pyglet.shapes.Line(x=1555/1920 *window_width, y=882/1080 *window_height, x2=1631/1920 *window_width, y2=1022/1080 *window_height, width = 1, color=(225,165,0))
+    timer57 = pyglet.shapes.Line(x=1697/1920 *window_width, y=983/1080 *window_height, x2=1563/1920 *window_width, y2=873/1080 *window_height, width = 1, color=(225,165,0))
+    timer58 = pyglet.shapes.Line(x=1758/1920 *window_width, y=904/1080 *window_height, x2=1576/1920 *window_width, y2=857/1080 *window_height, width = 1, color=(225,165,0))
+    timer59 = pyglet.shapes.Line(x=1594/1920 *window_width, y=837/1080 *window_height, x2=1763/1920 *window_width, y2=848/1080 *window_height, width = 1, color=(225,165,0))
+    timer60 = pyglet.shapes.Line(x=1761/1920 *window_width, y=793/1080 *window_height, x2=1586/1920 *window_width, y2=810/1080 *window_height, width = 1, color=(225,165,0))
+    timer61 = pyglet.shapes.Line(x=1576/1920 *window_width, y=776/1080 *window_height, x2=1726/1920 *window_width, y2=729/1080 *window_height, width = 1, color=(225,165,0))
+    timer62 = pyglet.shapes.Line(x=1555/1920 *window_width, y=749/1080 *window_height, x2=1688/1920 *window_width, y2=675/1080 *window_height, width = 1, color=(225,165,0))
+    timer63 = pyglet.shapes.Line(x=1633/1920 *window_width, y=635/1080 *window_height, x2=1516/1920 *window_width, y2=720/1080 *window_height, width = 1, color=(225,165,0))
+    timer64 = pyglet.shapes.Line(x=1470/1920 *window_width, y=685/1080 *window_height, x2=1596/1920 *window_width, y2=607/1080 *window_height, width = 1, color=(225,165,0))
+    timer65 = pyglet.shapes.Line(x=1573/1920 *window_width, y=587/1080 *window_height, x2=1415/1920 *window_width, y2=649/1080 *window_height, width = 1, color=(225,165,0))
+    timer66 = pyglet.shapes.Line(x=1563/1920 *window_width, y=549/1080 *window_height, x2=1385/1920 *window_width, y2=601/1080 *window_height, width = 1, color=(225,165,0))
+    timer67 = pyglet.shapes.Line(x=1580/1920 *window_width, y=513/1080 *window_height, x2=1356/1920 *window_width, y2=545/1080 *window_height, width = 1, color=(225,165,0))
+    timer68 = pyglet.shapes.Line(x=1376/1920 *window_width, y=462/1080 *window_height, x2=1595/1920 *window_width, y2=504/1080 *window_height, width = 1, color=(225,165,0))
+    timer69 = pyglet.shapes.Line(x=1434/1920 *window_width, y=412/1080 *window_height, x2=1601/1920 *window_width, y2=504/1080 *window_height, width = 1, color=(225,165,0))
+    timer70 = pyglet.shapes.Line(x=1639/1920 *window_width, y=486/1080 *window_height, x2=1502/1920 *window_width, y2=377/1080 *window_height, width = 1, color=(225,165,0))
+    timer71 = pyglet.shapes.Line(x=1524/1920 *window_width, y=365/1080 *window_height, x2=1709/1920 *window_width, y2=451/1080 *window_height, width = 1, color=(225,165,0))
+    timer72 = pyglet.shapes.Line(x=1525/1920 *window_width, y=347/1080 *window_height, x2=1764/1920 *window_width, y2=391/1080 *window_height, width = 1, color=(225,165,0))
+    timer73 = pyglet.shapes.Line(x=1776/1920 *window_width, y=296/1080 *window_height, x2=1526/1920 *window_width, y2=326/1080 *window_height, width = 1, color=(225,165,0))
+    timer74 = pyglet.shapes.Line(x=1721/1920 *window_width, y=219/1080 *window_height, x2=1526/1920 *window_width, y2=326/1080 *window_height, width = 1, color=(225,165,0))
+    timer75 = pyglet.shapes.Line(x=1516/1920 *window_width, y=324/1080 *window_height, x2=1618/1920 *window_width, y2=203/1080 *window_height, width = 1, color=(225,165,0))
+    timer76 = pyglet.shapes.Line(x=1475/1920 *window_width, y=322/1080 *window_height, x2=1546/1920 *window_width, y2=192/1080 *window_height, width = 1, color=(225,165,0))
+    timer77 = pyglet.shapes.Line(x=1438/1920 *window_width, y=317/1080 *window_height, x2=1493/1920 *window_width, y2=183/1080 *window_height, width = 1, color=(225,165,0))
+    timer78 = pyglet.shapes.Line(x=1389/1920 *window_width, y=309/1080 *window_height, x2=1433/1920 *window_width, y2=175/1080 *window_height, width = 1, color=(225,165,0))
+    timer79 = pyglet.shapes.Line(x=1350/1920 *window_width, y=302/1080 *window_height, x2=1367/1920 *window_width, y2=166/1080 *window_height, width = 1, color=(225,165,0))
+    timer80 = pyglet.shapes.Line(x=1283/1920 *window_width, y=296/1080 *window_height, x2=1315/1920 *window_width, y2=156/1080 *window_height, width = 1, color=(225,165,0))
+    timer81 = pyglet.shapes.Line(x=1208/1920 *window_width, y=286/1080 *window_height, x2=1256/1920 *window_width, y2=149/1080 *window_height, width = 1, color=(225,165,0))
+    timer82 = pyglet.shapes.Line(x=1108/1920 *window_width, y=270/1080 *window_height, x2=1148/1920 *window_width, y2=131/1080 *window_height, width = 1, color=(225,165,0))
+    timer83 = pyglet.shapes.Line(x=1020/1920 *window_width, y=258/1080 *window_height, x2=1054/1920 *window_width, y2=117/1080 *window_height, width = 1, color=(225,165,0))
+
+    timerLineList = [timer1, timer2, timer3, timer4, timer5, timer6, timer7, timer8, timer9, timer10, timer11, timer12, timer13, timer14, timer15, timer16, timer17, timer18, timer19, timer20, timer21, timer22, timer23, timer24, timer25, timer26, timer27, timer28, timer29, timer30, timer31, timer32, timer33, timer34, timer35, timer36, timer37, timer38, timer39, timer40, timer41, timer42, timer43, timer44, timer45, timer46, timer47, timer48, timer49, timer50, timer51, timer52, timer53, timer54, timer55, timer56, timer57, timer58, timer59, timer60, timer61, timer62, timer63, timer64, timer65, timer66, timer67, timer68, timer69, timer70, timer71, timer72, timer73, timer74, timer75, timer76, timer77, timer78, timer79, timer80, timer81, timer82, timer83] 
+    return timerLineList
+
+#distance between two points function
+def distance_points(point1,point2):
+  x1 = point1[0]
+  y1 = point1[1]
+  x2 = point2[0]
+  y2 = point2[1]
+  distance = sqrt((x2-x1)**2+(y2-y1)**2)
+  return distance
+
+#gradient between two points function
+def grad_points(point1,point2):
+  x1 = point1[0]
+  y1 = point1[1]
+  x2 = point2[0]
+  y2 = point2[1]
+  m = (y2-y1)/(x2-x1)
+  return m
+
+#co-ordinates of the midpoint of a line
+def midpoint(line):
+  midpointX = (line.x + line.x2)//2
+  midpointY = (line.y + line.y2)//2
+  return midpointX, midpointY
+
 
 class Car:
     def __init__(self,x,y,r,img): #x,y is the start position of the car, r is the start rotation of the car
@@ -85,23 +265,33 @@ class Car:
             self.car.rotation += self.rotation_speed
 
         
-
+        #moving the postition of the car
         dy = self.velocity * cos(radians(self.car.rotation))
         dx = self.velocity * sin(radians(self.car.rotation))
-
         self.car.y += dy
         self.car.x += dx
 
+#defining players
 player1 = Car(100,100,45,"images/car.png")
 
-walls = get_lines(window.width, window.height)
+walls = get_walls(window.width, window.height)
 for wall in walls:
-    wall.batch = lines
+    wall.batch = wall_lines
+
+gates = get_gates(window.width, window.height)
+for gate in gates:
+    gate.opacity = 40
+    gate.batch = gate_lines
+
+line_list = []
+line_list.append(walls)
+line_list.append(gates)
 
 @window.event
 def on_draw():
     window.clear()
-    lines.draw()
+    wall_lines.draw()
+    gate_lines.draw()
     player1.car.draw()
 
 @window.event
