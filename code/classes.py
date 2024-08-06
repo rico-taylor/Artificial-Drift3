@@ -196,9 +196,20 @@ def midpoint(line):
   return midpointX, midpointY
 
 
+walls = get_walls(window.width, window.height)
+for wall in walls:
+    wall.batch = wall_lines
+
+gates = get_gates(window.width, window.height)
+for gate in gates:
+    gate.opacity = 40
+    gate.batch = gate_lines
+
+line_list = walls + gates
+
 class Car:
     def __init__(self,x,y,r,img): #x,y is the start position of the car, r is the start rotation of the car
-
+        #setting up the car sprite and image
         self.car_image = image.load(img)
 
         self.car_image.anchor_x = self.car_image.width// 2
@@ -208,11 +219,12 @@ class Car:
         self.car.scale = 0.1*scale_factor
         self.car.rotation = r
 
-        self.velocity = 0
+        #variables and booleans which determine the cars movement
         self.forward = False
         self.backward = False
         self.clockwise = False
         self.aclockwise = False
+        self.drift = False
 
         self.velocity = 0 *scale_factor
         self.max_velocity = 8 *scale_factor
@@ -220,7 +232,71 @@ class Car:
         self.acceleration = 0.1 *scale_factor
         self.rotation_speed = 3
         self.drift_time = 8 *scale_factor
-    
+
+        self.sprite_hitbox = [(0,0),(0,0),(0,0),(0,0)]
+
+        self.reward_gate = False
+        self.wall_collision = False
+        self.collList = []
+
+        #constants for later use
+        self.half_width_car = (self.car_image.width)*scale_factor // 20
+        self.half_height_car = (self.car_image.height)*scale_factor// 20
+        self.h = sqrt(self.half_width_car**2 + self.half_height_car**2)
+        self.angle = atan(self.half_width_car/self.half_height_car) - radians(self.car.rotation)
+
+    #function which finds IF two lines intersect, and if they do, finds the distance between the point of intersection and the car
+    def find_intersection(self, line1, line2):
+        x1, y1, x2, y2 = line1.x, line1.y, line1.x2, line1.y2
+        x3, y3, x4, y4 = line2.x, line2.y, line2.x2, line2.y2
+        #first line equation
+        a1 = y2 - y1
+        b1 = x1 - x2
+        c1 = a1 * x1 + b1 * y1
+        #second line equation
+        a2 = y4 - y3
+        b2 = x3 - x4
+        c2 = a2 * x3 + b2 * y3
+        
+        determinant = a1 * b2 - a2 * b1
+
+        if determinant == 0:
+            # Lines are parallel
+            return None
+        else:
+            xi = (b2 * c1 - b1 * c2) / determinant
+            yi = (a1 * c2 - a2 * c1) / determinant
+            # Check if the intersection point is within both line segments
+            if (min(x1, x2) <= xi <= max(x1, x2) and min(y1, y2) <= yi <= max(y1, y2) and
+                min(x3, x4) <= xi <= max(x3, x4) and min(y3, y4) <= yi <= max(y3, y4)):
+                dist = distance_points((self.car.x, self.car.y), (xi,yi))
+                return (xi, yi, dist)
+            else:
+                return None
+
+    #function will check if the line is a gate or a wall. If the line is a gate then it will return true
+    def timerLine(input_line):
+        if input_line in gates:
+            return True
+
+    #this function is ran every tick and checks for the collision between the car and any of the gates or walls.
+    def overlap_check(self, car_hitbox, input_lines):
+        self.hitbox_lines = []
+        for x in range(len(car_hitbox)):
+            a,b = car_hitbox[x%4]
+            c,d = car_hitbox[(x+1)%4]
+            self.hitbox_lines.append(pyglet.shapes.Line(x=a, y=b, x2=c, y2=d, width=1))
+
+        for wall in input_lines:
+            for car_side in self.hitbox_lines:
+                if Car.find_intersection(self, car_side, wall) != None:
+                    if Car.timerLine(wall) == True:
+                        self.reward_gate = True
+                        #lineChecks(wall, car_hitbox)
+                    else:
+                        self.wall_collision = True
+                        return True
+
     def on_key_press(self, symbol,modifiers):
         if symbol == key.UP:
             self.forward = True
@@ -241,8 +317,8 @@ class Car:
         if symbol == key.RIGHT:
             self.clockwise = False
 
-
     def update(self, dt):
+        #----------CAR MOVEMENT----------#
         #slowing the car down due to frction
         if self.velocity > 0:
             self.velocity -= self.friction
@@ -254,15 +330,27 @@ class Car:
         if self.velocity < -(self.max_velocity-3):
             self.velocity = -(self.max_velocity-3)
         #making the car go forwards and backwards
-        if self.forward == True:
+        if self.forward == True and Car.overlap_check(self, self.sprite_hitbox, line_list) != True:
             self.velocity += self.acceleration
-        if self.backward == True:
+        if self.backward == True and Car.overlap_check(self, self.sprite_hitbox, line_list) != True:
             self.velocity -= self.acceleration/1.3
         #making the car turn left and right
         if self.aclockwise == True:
             self.car.rotation -= self.rotation_speed
         if self.clockwise == True:
             self.car.rotation += self.rotation_speed
+        
+        #checks if the car has collided with a call, and if it has, stops the car
+        if Car.overlap_check(self, self.sprite_hitbox,line_list) == True:
+            self.car.x, self.car.y = self.collList[int(-self.velocity//3)-2]
+            self.drift = False
+            self.velocity = 0
+        
+        #this system is used so that the car doesn't get stuck in the wall and respawns slightly back from the wall
+        new = (self.car.x, self.car.y)
+        self.collList.append(new)
+        if len(self.collList) > 13:
+            del self.collList[0]
 
         
         #moving the postition of the car
@@ -271,21 +359,20 @@ class Car:
         self.car.y += dy
         self.car.x += dx
 
+        #----------CAR COLLISIONS----------#
+        #car hitbox
+        self.sprite_top_left = (self.h*cos(1.57 +self.angle) + self.car.x, self.h*sin(1.57 +self.angle) + self.car.y)
+        self.sprite_top_right = (self.h*cos(1.57 - self.angle) + self.car.x, self.h*sin(1.57 - self.angle) + self.car.y)
+        self.sprite_bottom_left = (self.h*cos(4.71 -self.angle) + self.car.x, self.h*sin(4.71 -self.angle) + self.car.y)
+        self.sprite_bottom_right = (self.h*cos(-1.57 + self.angle) + self.car.x, self.h*sin(-1.57 + self.angle) + self.car.y)
+
+        self.sprite_hitbox = [self.sprite_top_left,self.sprite_top_right,self.sprite_bottom_left,self.sprite_bottom_right ]
+
+        Car.overlap_check(self, self.sprite_hitbox, line_list)
+
 #defining players
 player1 = Car(100,100,45,"images/car.png")
 
-walls = get_walls(window.width, window.height)
-for wall in walls:
-    wall.batch = wall_lines
-
-gates = get_gates(window.width, window.height)
-for gate in gates:
-    gate.opacity = 40
-    gate.batch = gate_lines
-
-line_list = []
-line_list.append(walls)
-line_list.append(gates)
 
 @window.event
 def on_draw():

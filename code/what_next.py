@@ -45,13 +45,6 @@ triangle1 = sprite.Sprite(triangle_img, x=100, y=100, batch=entryDisplay)
 triangle1.rotation = 30
 triangle1.scale = 0.3*scale_factor
 
-
-#constant values - having them as callable variables should make the update function faster
-half_width_car = (car_image.width)*scale_factor // 20
-half_height_car = (car_image.height)*scale_factor// 20
-h = sqrt(half_width_car**2 + half_height_car**2)
-angle = atan(half_width_car/half_height_car) - radians(car.rotation)
-
 #defining variables, lists, and dictionaries - PLAYER 1 ---------------
 sprite_hitbox = [(0,0),(0,0),(0,0),(0,0)]
 forward = False
