@@ -168,8 +168,8 @@ def get_gates(window_width, window_height):
     timer82 = pyglet.shapes.Line(x=1108/1920 *window_width, y=270/1080 *window_height, x2=1148/1920 *window_width, y2=131/1080 *window_height, width = 1, color=(225,165,0))
     timer83 = pyglet.shapes.Line(x=1020/1920 *window_width, y=258/1080 *window_height, x2=1054/1920 *window_width, y2=117/1080 *window_height, width = 1, color=(225,165,0))
 
-    timerLineList = [timer1, timer2, timer3, timer4, timer5, timer6, timer7, timer8, timer9, timer10, timer11, timer12, timer13, timer14, timer15, timer16, timer17, timer18, timer19, timer20, timer21, timer22, timer23, timer24, timer25, timer26, timer27, timer28, timer29, timer30, timer31, timer32, timer33, timer34, timer35, timer36, timer37, timer38, timer39, timer40, timer41, timer42, timer43, timer44, timer45, timer46, timer47, timer48, timer49, timer50, timer51, timer52, timer53, timer54, timer55, timer56, timer57, timer58, timer59, timer60, timer61, timer62, timer63, timer64, timer65, timer66, timer67, timer68, timer69, timer70, timer71, timer72, timer73, timer74, timer75, timer76, timer77, timer78, timer79, timer80, timer81, timer82, timer83] 
-    return timerLineList
+    gates = [timer1, timer2, timer3, timer4, timer5, timer6, timer7, timer8, timer9, timer10, timer11, timer12, timer13, timer14, timer15, timer16, timer17, timer18, timer19, timer20, timer21, timer22, timer23, timer24, timer25, timer26, timer27, timer28, timer29, timer30, timer31, timer32, timer33, timer34, timer35, timer36, timer37, timer38, timer39, timer40, timer41, timer42, timer43, timer44, timer45, timer46, timer47, timer48, timer49, timer50, timer51, timer52, timer53, timer54, timer55, timer56, timer57, timer58, timer59, timer60, timer61, timer62, timer63, timer64, timer65, timer66, timer67, timer68, timer69, timer70, timer71, timer72, timer73, timer74, timer75, timer76, timer77, timer78, timer79, timer80, timer81, timer82, timer83] 
+    return gates
 
 #distance between two points function
 def distance_points(point1,point2):
@@ -238,6 +238,27 @@ class Car:
         self.reward_gate = False
         self.wall_collision = False
         self.collList = []
+        self.checkerList = []
+
+        self.backDict = {}
+        self.rounds = 0
+
+        #Booleans for timing
+        self.noStart = False
+        self.started = False
+        self.swap = False
+        self.going = False
+        self.lapCompleted = False
+        self.new_gate_signal = False
+        self.going = 0
+        self.start = 0
+        self.elapsed = 0
+
+        self.lap_list = []
+
+        for x in gates:
+            self.checkerList.append(False)
+
 
         #constants for later use
         self.half_width_car = (self.car_image.width)*scale_factor // 20
@@ -274,11 +295,66 @@ class Car:
             else:
                 return None
 
+    #uses the gate to set up some things for the timings
+    def lineChecks(self, input_line):
+        self.noStart = False
+        if input_line == gates[0]:
+            for x in self.checkerList:
+                if x != False:
+                    self.noStart = True
+                    break
+            if self.noStart == False:
+                if self.started == False:
+                    self.started = True
+                    self.checkerList[0] = True
+                    self.swap = True
+                    self.going = True
+            
+            if self.checkerList[gates.index(input_line)-1] == True or self.checkerList[gates.index(input_line)-2] == True or self.checkerList[gates.index(input_line)-3] == True or self.checkerList[gates.index(input_line)-4] == True or self.checkerList[gates.index(input_line)-5] == True or self.checkerList[gates.index(input_line)-6] == True:
+                self.swap = True
+                self.started = False
+                self.lapCompleted = True
+                for x in range(1,len(self.checkerList)+1):
+                    self.checkerList[x-1] = False
+                
+                for line in gates:
+                    line.color = (255,165,0)
+                
+                if self.going == False:
+                    self.going = True
+                else:
+                    self.going = False
+            
+        else:
+            if self.checkerList[gates.index(input_line)-1] == True or self.checkerList[gates.index(input_line)-2] == True or self.checkerList[gates.index(input_line)-3] == True or self.checkerList[gates.index(input_line)-4] == True or self.checkerList[gates.index(input_line)-5] == True or self.checkerList[gates.index(input_line)-6] == True:
+                input_line.color = (255,255,255)
+                if self.checkerList[gates.index(input_line)] == False:
+                    self.new_gate_signal = True
+                    self.checkerList[gates.index(input_line)] = True
+
     #function will check if the line is a gate or a wall. If the line is a gate then it will return true
     def timerLine(input_line):
         if input_line in gates:
             return True
 
+    #this function finds the time for one lap
+    def stopwatch(self):
+        if self.lapCompleted == True:
+            print("HERE")
+            self.lap_list.append(float("{:#.2f}".format(self.elapsed)))
+            self.lapCompleted = False
+
+        self.current = time.time()
+        if self.going == True:
+            if self.swap == True:
+                self.start = time.time()
+        elif self.going == False:
+            self.current = self.start
+        self.elapsed = self.current - self.start
+        self.swap = False
+
+        return "{:#.2f}".format(self.elapsed)
+    
     #this function is ran every tick and checks for the collision between the car and any of the gates or walls.
     def overlap_check(self, car_hitbox, input_lines):
         self.hitbox_lines = []
@@ -292,7 +368,7 @@ class Car:
                 if Car.find_intersection(self, car_side, wall) != None:
                     if Car.timerLine(wall) == True:
                         self.reward_gate = True
-                        #lineChecks(wall, car_hitbox)
+                        Car.lineChecks(self, wall)
                     else:
                         self.wall_collision = True
                         return True
@@ -306,6 +382,10 @@ class Car:
             self.aclockwise = True
         if symbol == key.RIGHT:
             self.clockwise = True
+        if symbol == key.LSHIFT:
+            self.drift = True
+            self.rotation_speed = 3.5
+            self.rounds = 0
 
     def on_key_release(self, symbol, modifiers):
         if symbol == key.UP:
@@ -316,6 +396,9 @@ class Car:
             self.aclockwise = False
         if symbol == key.RIGHT:
             self.clockwise = False
+        if symbol == key.LSHIFT:
+            self.drift = False
+            self.rotation_speed = 3
 
     def update(self, dt):
         #----------CAR MOVEMENT----------#
@@ -335,10 +418,11 @@ class Car:
         if self.backward == True and Car.overlap_check(self, self.sprite_hitbox, line_list) != True:
             self.velocity -= self.acceleration/1.3
         #making the car turn left and right
-        if self.aclockwise == True:
-            self.car.rotation -= self.rotation_speed
-        if self.clockwise == True:
-            self.car.rotation += self.rotation_speed
+        if self.forward == True or self.backward == True or self.velocity > self.friction or self.velocity < -self.friction: #this is so that the car only turns if it is moving forwards or backwards
+            if self.aclockwise == True:
+                self.car.rotation -= self.rotation_speed
+            if self.clockwise == True:
+                self.car.rotation += self.rotation_speed
         
         #checks if the car has collided with a call, and if it has, stops the car
         if Car.overlap_check(self, self.sprite_hitbox,line_list) == True:
@@ -356,8 +440,24 @@ class Car:
         #moving the postition of the car
         dy = self.velocity * cos(radians(self.car.rotation))
         dx = self.velocity * sin(radians(self.car.rotation))
-        self.car.y += dy
-        self.car.x += dx
+
+        #drift code
+        new = {dy:dx}
+        self.backDict.update(new)
+        if len(self.backDict) > self.drift_time:
+            self.backDict.pop(list(self.backDict)[0])
+        
+        self.rounds += 1
+        if self.drift == True:
+            if self.rounds >= self.drift_time:
+                self.car.y += list(self.backDict)[0]
+                self.car.x += self.backDict[list(self.backDict)[1]]
+            else:
+                self.car.y += dy
+                self.car.x += dx
+        else:
+            self.car.y += dy
+            self.car.x += dx
 
         #----------CAR COLLISIONS----------#
         #car hitbox
@@ -370,8 +470,15 @@ class Car:
 
         Car.overlap_check(self, self.sprite_hitbox, line_list)
 
+        #----------TIMING CODE----------#
+        Car.stopwatch(self)
+
+#finding the start position for player 1
+car_start_x =  1020/1920 *window.width
+car_start_y =  185/1080 *window.height
+
 #defining players
-player1 = Car(100,100,45,"images/car.png")
+player1 = Car(car_start_x,car_start_y,260,"images/car.png")
 
 
 @window.event

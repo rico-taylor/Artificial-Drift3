@@ -308,6 +308,7 @@ def lineChecks(input_line, car_hitbox): #STILL NEEDS PLAYER THINGS (maybe not an
           going = True
       
       if checkerList[timerLineList.index(input_line)-1] == True or checkerList[timerLineList.index(input_line)-2] == True or checkerList[timerLineList.index(input_line)-3] == True or checkerList[timerLineList.index(input_line)-4] == True or checkerList[timerLineList.index(input_line)-5] == True or checkerList[timerLineList.index(input_line)-6] == True:
+        print("here")
         swap = True
         started = False
         for x in range(1,len(checkerList)+1):
