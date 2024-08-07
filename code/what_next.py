@@ -45,36 +45,6 @@ triangle1 = sprite.Sprite(triangle_img, x=100, y=100, batch=entryDisplay)
 triangle1.rotation = 30
 triangle1.scale = 0.3*scale_factor
 
-#defining variables, lists, and dictionaries - PLAYER 1 ---------------
-sprite_hitbox = [(0,0),(0,0),(0,0),(0,0)]
-forward = False
-backward = False
-aclockwise = False
-clockwise = False
-drift = False
-backDict = {}
-collList = []
-rounds = 0
-
-lapCompleted = False
-
-#tunable variables 
-velocity = 0 *scale_factor
-max_velocity = 8 *scale_factor
-friction = 0.07 *scale_factor
-acceleration = 0.1 *scale_factor
-rotation_speed = 3
-drift_time = 8 *scale_factor
-
-#timer code
-going = False
-start = 0
-current= 0
-elapsed = 0
-swap = False
-started = False
-checkerList = []
-
 #AI specific code
 lineLength = 100000000
 reward_gate = False
@@ -84,35 +54,6 @@ oldCollisionPointsList = [(car_start_x,car_start_y),(car_start_x,car_start_y),(c
 
 
 aiVisionList = []
-
-#line overlap function
-def find_intersection(line1, line2):
-    x1, y1, x2, y2 = line1.x, line1.y, line1.x2, line1.y2
-    x3, y3, x4, y4 = line2.x, line2.y, line2.x2, line2.y2
-    #first line equation
-    a1 = y2 - y1
-    b1 = x1 - x2
-    c1 = a1 * x1 + b1 * y1
-    #second line equation
-    a2 = y4 - y3
-    b2 = x3 - x4
-    c2 = a2 * x3 + b2 * y3
-    
-    determinant = a1 * b2 - a2 * b1
-
-    if determinant == 0:
-        # Lines are parallel
-        return None
-    else:
-        xi = (b2 * c1 - b1 * c2) / determinant
-        yi = (a1 * c2 - a2 * c1) / determinant
-        # Check if the intersection point is within both line segments
-        if (min(x1, x2) <= xi <= max(x1, x2) and min(y1, y2) <= yi <= max(y1, y2) and
-            min(x3, x4) <= xi <= max(x3, x4) and min(y3, y4) <= yi <= max(y3, y4)):
-            dist = distance_points((car.x, car.y), (xi,yi))
-            return (xi, yi, dist)
-        else:
-            return None
 
 #AI vision function - checks line overlaps
 def aiVision():
@@ -128,8 +69,7 @@ def aiVision():
             smallest = min(overlapList, key=lambda t: t[2])
             intersectList.append((smallest[0], smallest[1]))
     return intersectList
-
-            
+         
 #function for displaying the number of laps completed
 def lap_displays():
   global lap_list
@@ -282,63 +222,6 @@ def on_draw():
     circle6.draw()
     circle7.draw()
 
-@window.event
-def on_key_press(symbol, modifiers):
-  #PLAYER 1 code -----
-  global forward
-  global backward
-  global clockwise
-  global aclockwise
-  global drift
-  global rounds
-  global rotation_speed
-  global max_velocity
-  global velocity
-
-  if symbol == key.UP:
-    forward = True
-  if symbol == key.DOWN:
-    backward = True
-
-  if symbol == key.LEFT:
-    aclockwise = True
-  if symbol == key.RIGHT:
-    clockwise = True
-
-  if symbol == key.RSHIFT:
-    if len(backDict) > drift_time:
-      drift = True
-      #max_velocity = 11 
-      rotation_speed = 3.5
-      rounds = 0
-  
-  #PLAYER 1 code -----
-  global forward2
-  global backward2
-  global clockwise2
-  global aclockwise2
-  global drift2
-  global rounds2
-  global rotation_speed2
-  global max_velocity2
-  global velocity2
-
-  if symbol == key.W:
-    forward2 = True
-  if symbol == key.S:
-    backward2 = True
-
-  if symbol == key.A:
-    aclockwise2 = True
-  if symbol == key.D:
-    clockwise2 = True
-
-  if symbol == key.LSHIFT:
-    if len(backDict2) > drift_time2:
-      drift2 = True
-      #max_velocity2 = 11 
-      rotation_speed2 = 3.5
-      rounds2 = 0
 
 @window.event   
 def on_mouse_press(x,y,button, modifiers):
@@ -350,52 +233,6 @@ def on_mouse_press(x,y,button, modifiers):
     print(lap_list)
     print(lap_list2)
     reset()
-
-@window.event
-def on_key_release(symbol, modifiers):
-  #PLAYER 1 code ---------
-  global forward
-  global backward
-  global clockwise
-  global aclockwise
-  global drift
-  global rotation_speed
-  global max_velocity
-
-  if symbol == key.UP:
-    forward = False
-  if symbol == key.DOWN:
-    backward = False
-  if symbol == key.LEFT:
-    aclockwise = False
-  if symbol == key.RIGHT:
-    clockwise = False
-  if symbol == key.RSHIFT:
-    drift = False
-    rotation_speed = 3
-    #max_velocity = 8
-  
-  #PLAYER 2 code ---------
-  global forward2
-  global backward2
-  global clockwise2
-  global aclockwise2
-  global drift2
-  global rotation_speed2
-  global max_velocity2
-
-  if symbol == key.W:
-    forward2 = False
-  if symbol == key.S:
-    backward2 = False
-  if symbol == key.A:
-    aclockwise2 = False
-  if symbol == key.D:
-    clockwise2 = False
-  if symbol == key.LSHIFT:
-    drift2 = False
-    rotation_speed2 = 3
-    #max_velocity2 = 8
 
 def update(dt):
   #display code
@@ -576,79 +413,7 @@ def update(dt):
   for x in range(len(collisionPointsList)):
     aiVisionList += collisionPointsList[x]
   observation_space = [car.x, car.y, car.rotation, velocity] + aiVisionList
-  #PLAYER 2 ------------------
-  stopwatch2()
-  #car code
-  global velocity2
-  global rounds2
-  global sprite_hitbox2
-  global circle4
-  global circle5
-  global circle6
-  global circle7
-  global drift2
-
-  if velocity2 > 0:
-    velocity2 -= friction2
-  if velocity2 < 0:
-    velocity2 += friction2
-  if velocity2 > max_velocity2:
-    velocity2 = max_velocity2
-  if velocity2 < -(max_velocity2-3):
-    velocity2 = -(max_velocity2-3)
-
-  if forward2 == True and overlap_check(sprite_hitbox2, line_list) != True:
-    velocity2 += acceleration2
-  if backward2 == True and overlap_check(sprite_hitbox2, line_list) != True:
-    velocity2 -= acceleration2/1.3
-
-  new = (car2.x, car2.y)
-  collList2.append(new)
-  if len(collList2) > 13:
-    del collList2[0]
-
-  if overlap_check(sprite_hitbox2,line_list) == True:
-    car2.x, car2.y = collList2[int(-velocity2//3)-2]
-    drift2 = False
-    velocity2 = 0
   
-  dy2 = velocity2 * cos(radians(car2.rotation))
-  dx2 = velocity2 * sin(radians(car2.rotation))
-  
-  new = {dy2:dx2}
-  backDict2.update(new)
-  if len(backDict2) > drift_time2:
-    backDict2.pop(list(backDict2)[0])
-  
-  circle4 = pyglet.shapes.Circle(x=h*cos(1.57 +atan(half_width_car/half_height_car) - radians(car2.rotation)) + car2.x, y=h*sin(1.57 +atan(half_width_car/half_height_car) - radians(car2.rotation)) + car2.y, radius=1, color=(255,255,255))
-  circle5 = pyglet.shapes.Circle(x=h*cos(1.57 -atan(half_width_car/half_height_car) - radians(car2.rotation)) + car2.x, y=h*sin(1.57 -atan(half_width_car/half_height_car) - radians(car2.rotation)) + car2.y, radius=1, color=(255,255,255))
-  circle6 = pyglet.shapes.Circle(x=h*cos(4.71 -atan(half_width_car/half_height_car) - radians(car2.rotation)) + car2.x, y=h*sin(4.71 -atan(half_width_car/half_height_car) - radians(car2.rotation)) + car2.y, radius=1, color=(255,255,255))
-  circle7 = pyglet.shapes.Circle(x=h*cos(-1.57 +atan(half_width_car/half_height_car) - radians(car2.rotation)) + car2.x, y=h*sin(-1.57 +atan(half_width_car/half_height_car) - radians(car2.rotation)) + car2.y, radius=1, color=(255,255,255))
-  
-  sprite_top_left2 = (h*cos(1.57 +angle) + car2.x, h*sin(1.57 +angle) + car2.y)
-  sprite_top_right2 = (h*cos(1.57 - angle) + car2.x, h*sin(1.57 - angle) + car2.y)
-  sprite_bottom_left2 = (h*cos(4.71 -angle) + car2.x, h*sin(4.71 -angle) + car2.y)
-  sprite_bottom_right2 = (h*cos(-1.57 + angle) + car2.x, h*sin(-1.57 + angle) + car2.y)
-
-  sprite_hitbox2 = [sprite_top_left2,sprite_top_right2,sprite_bottom_left2,sprite_bottom_right2]
-  
-  rounds2 += 1
-  if drift2 == True:
-    if rounds2 >= drift_time2:
-      car2.y += list(backDict2)[0]
-      car2.x += backDict2[list(backDict2)[1]]
-    else:
-      car2.y += dy2
-      car2.x += dx2
-  else:
-    car2.y += dy2
-    car2.x += dx2
-  
-  if forward2 == True or backward2 == True or velocity2 > friction2 or velocity2 < -friction2:
-    if aclockwise2 == True:
-      car2.rotation -= rotation_speed2
-    if clockwise2 == True:
-      car2.rotation += rotation_speed2
   
 pyglet.clock.schedule_interval(update, 1/60)
 pyglet.app.run()

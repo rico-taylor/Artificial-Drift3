@@ -8,11 +8,12 @@ from math import sin, cos, atan, acos, asin, radians, sqrt, tanh
 
 #main window
 window = pyglet.window.Window(resizable = False, caption="Artificial Drift")
-window.set_fullscreen(True)
+#window.set_fullscreen(True)
 
 #batches
 wall_lines = pyglet.graphics.Batch()
 gate_lines = pyglet.graphics.Batch()
+
 
 scale_factor = (window.width/1920)%1
 
@@ -205,7 +206,7 @@ for gate in gates:
     gate.opacity = 40
     gate.batch = gate_lines
 
-line_list = walls + gates
+#line_list = walls + gates
 
 class Car:
     def __init__(self,x,y,r,img, forward, backward, left, right, drift): #x,y is the start position of the car, r is the start rotation of the car
@@ -487,7 +488,7 @@ car_start_x =  1020/1920 *window.width
 car_start_y =  185/1080 *window.height
 
 #defining players
-player1 = Car(car_start_x,car_start_y,260,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
+#player1 = Car(car_start_x,car_start_y,260,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
 
 class RacingEnv():
     def __init__(self):
@@ -514,8 +515,7 @@ class RacingEnv():
         self.player2 = Car(car_start_x,car_start_y + 20 ,260,"images/car2.png", key.W, key.S, key.A, key.D, key.SPACE)
         self.player_list = [self.player1, self.player2]
 
-    def render(self, dt):
-        print("HERE")
+    def render(self):
         wall_lines.draw()
         gate_lines.draw()
         for player in self.player_list:
@@ -531,32 +531,32 @@ class RacingEnv():
 
     def update(self,dt):
         #update the cars
-        
+        RacingEnv.render(self)
         for player in self.player_list:
             player.update
         
         
 
-#screen = RacingEnv()
+screen = RacingEnv()
 #screen.render()
 #pyglet.clock.schedule_interval(screen.update, 1/60)
 #pyglet.clock.schedule_interval(screen.render, 1/60)
 
-@window.event
-def on_draw():
-    window.clear()
-    wall_lines.draw()
-    gate_lines.draw()
-    player1.car.draw()
+#@window.event
+#def on_draw():
+#    window.clear()
+#    wall_lines.draw()
+#    gate_lines.draw()
+#    player1.car.draw()
 
-@window.event
-def on_key_press(symbol, modifiers):
-    player1.on_key_press(symbol, modifiers)
+#@window.event
+#def on_key_press(symbol, modifiers):
+#    screen.on_key_press(symbol, modifiers)
 
-@window.event
-def on_key_release(symbol, modifiers):
-    player1.on_key_release(symbol, modifiers)
+#@window.event
+#def on_key_release(symbol, modifiers):
+#    screen.on_key_release(symbol, modifiers)
 
-pyglet.clock.schedule_interval(player1.update, 1/60)
+pyglet.clock.schedule_interval(screen.update, 1/60)
 
 pyglet.app.run()
