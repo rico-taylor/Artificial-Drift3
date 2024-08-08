@@ -106,22 +106,6 @@ def leader():
     else:
       return old_leader
 
-#AI reward function
-def reward():
-  global reward_gate
-  global wall_collision
-  global new_gate_signal
-  reward = 0
-  if reward_gate == True and new_gate_signal == True:
-    reward += 10
-  if wall_collision == True:
-    reward -= 15
-
-  new_gate_signal = False
-  reward_gate = False
-  wall_collision = False
-
-  return reward
 
 #AI reset function
 def reset(): #making this in a class will make it easy to reset both of the cars.

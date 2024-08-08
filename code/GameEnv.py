@@ -366,6 +366,20 @@ class Car:
         
         return "{:#.2f}".format(self.elapsed)
     
+    #function calculates the reward of each tick
+    def reward(self):
+        reward = 0
+        if self.reward_gate == True and self.new_gate_signal == True:
+            reward += 2
+        if self.wall_collision == True:
+            reward -= 3
+
+        self.new_gate_signal = False
+        self.reward_gate = False
+        self.wall_collision = False
+
+        return reward
+
     #this function is ran every tick and checks for the collision between the car and any of the gates or walls.
     def overlap_check(self, car_hitbox, input_lines):
         self.hitbox_lines = []
@@ -385,7 +399,7 @@ class Car:
                         return True
 
     #function for when the user presses a key
-    def on_key_press(self, symbol):
+    def on_key_press(self, symbol, modifiers):
         if symbol == self.forward_key:
             self.forward = True
         if symbol == self.backward_key:
@@ -402,7 +416,7 @@ class Car:
         self.action_list = [self.forward, self.backward, self.clockwise, self.aclockwise, self.drift]
 
     #function for when the user realeses the key
-    def on_key_release(self, symbol):
+    def on_key_release(self, symbol, modifiers):
         if symbol == self.forward_key:
             self.forward = False
         if symbol == self.backward_key:
@@ -495,10 +509,6 @@ class Car:
 #finding the start position for player 1
 car_start_x =  1020/1920 *windowwidth
 car_start_y =  185/1080 *windowheight
-#loading in all of the racers and adding them to a list of all racers
-player1 = Car(car_start_x,car_start_y,260,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
-player2 = Car(car_start_x,car_start_y + 20 ,260,"images/car2.png", key.W, key.S, key.A, key.D, key.SPACE)
-player_list = [player1, player2]
 
 class RacingEnv(pyglet.window.Window):
     def __init__(self):
@@ -510,11 +520,7 @@ class RacingEnv(pyglet.window.Window):
 
         self.player1 = Car(car_start_x,car_start_y,260,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
         self.user_action = [False,False,False,False,False]
-        
 
-    def reset(self):
-        self.player1 = Car(car_start_x,car_start_y,260,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
-        
         #loading in walls
         self.walls = get_walls(windowwidth, windowheight)
         for wall in self.walls:
@@ -528,55 +534,55 @@ class RacingEnv(pyglet.window.Window):
         
         #defining the line list
         self.line_list = self.walls + self.gates
+        
+    def reset(self):
+        self.player1 = Car(car_start_x,car_start_y,260,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
+        
+        #reloading in walls
+        self.walls = get_walls(windowwidth, windowheight)
+        for wall in self.walls:
+            wall.batch = self.wall_lines
+        
+        #reloading in gates
+        self.gates = get_gates(windowwidth, windowheight)
+        for gate in self.gates:
+            gate.opacity = 40
+            gate.batch = self.gate_lines
+        
+        #redefining the line list
+        self.line_list = self.walls + self.gates
 
     def step(self, action):
         done = False
         self.player1.action(action)
 
+
     def render(self):
         self.clear()
-        wall_lines.draw()
-        gate_lines.draw()
+        self.wall_lines.draw()
+        self.gate_lines.draw()
         self.player1.car.draw()
     
-    def on_key_press(self, symbol):
-        self.player1.on_key_press(symbol)
-        self.user_action = player1.action_list
+    def on_key_press(self, symbol, modifiers):
+        self.player1.on_key_press(symbol, modifiers)
+        self.user_action = self.player1.action_list
     
-    def on_key_release(self, symbol):
-        self.player1.on_key_release(symbol)
-        self.user_action = player1.action_list
+    def on_key_release(self, symbol, modifiers):
+        self.player1.on_key_release(symbol, modifiers)
+        self.user_action = self.player1.action_list
 
     def update(self,dt):
         self.step(self.user_action)
         self.render()
+    
+    def close(self):
+        self.close()
 
-        
 
-#defining players
-#player1 = Car(car_start_x,car_start_y,260,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
 if __name__ == '__main__':
     screen = RacingEnv()
-    pyglet.clock.schedule_interval(screen.on_key_press, 1/60)
-    pyglet.clock.schedule_interval(screen.on_key_release, 1/60)
     pyglet.clock.schedule_interval(screen.update, 1/60)
     pyglet.app.run()
 
-#screen.render()
-#pyglet.clock.schedule_interval(screen.update, 1/60)
-#pyglet.clock.schedule_interval(screen.render, 1/60)
+print("surely this still comes after")
 
-#@window.event
-#def on_draw():
-#    window.clear()
-#    wall_lines.draw()
-#    gate_lines.draw()
-#    player1.car.draw()
-
-#@window.event
-#def on_key_press(symbol, modifiers):
-#    screen.on_key_press(symbol, modifiers)
-
-#@window.event
-#def on_key_release(symbol, modifiers):
-#    screen.on_key_release(symbol, modifiers)
