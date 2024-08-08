@@ -16,7 +16,7 @@ gate_lines = pyglet.graphics.Batch()
 
 scale_factor = (window.width/1920)%1
 
-
+print(window.width, window.height, scale_factor)
 #creating all of the walls
 def get_walls(window_width, window_height):
     line = pyglet.shapes.Line(x=472/1920 * window_width, y=23/1080 * window_height, x2=1723/1920 * window_width, y2=217/1080 * window_height, width = 1)

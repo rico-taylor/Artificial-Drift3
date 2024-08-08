@@ -7,16 +7,18 @@ from pyglet.window import key, mouse
 from math import sin, cos, atan, acos, asin, radians, sqrt, tanh
 
 #main window
-window = pyglet.window.Window(resizable = False, caption="Artificial Drift")
+#window = pyglet.window.Window(resizable = False, caption="Artificial Drift")
 #window.set_fullscreen(True)
+
 
 #batches
 wall_lines = pyglet.graphics.Batch()
 gate_lines = pyglet.graphics.Batch()
 
 
-scale_factor = (window.width/1920)%1
+#scale_factor = (windowwidth/1920)%1
 
+windowwidth, windowheight, scale_factor = 1440, 900, 0.75
 
 #creating all of the walls
 def get_walls(window_width, window_height):
@@ -197,16 +199,16 @@ def midpoint(line):
   return midpointX, midpointY
 
 
-walls = get_walls(window.width, window.height)
+walls = get_walls(windowwidth, windowheight)
 for wall in walls:
     wall.batch = wall_lines
 
-gates = get_gates(window.width, window.height)
+gates = get_gates(windowwidth, windowheight)
 for gate in gates:
     gate.opacity = 40
     gate.batch = gate_lines
 
-#line_list = walls + gates
+line_list = walls + gates
 
 class Car:
     def __init__(self,x,y,r,img, forward, backward, left, right, drift): #x,y is the start position of the car, r is the start rotation of the car
@@ -233,6 +235,8 @@ class Car:
         self.clockwise = False
         self.aclockwise = False
         self.drift = False
+
+        self.action_list = [self.forward, self.backward, self.clockwise, self.aclockwise, self.drift]
 
         self.velocity = 0 *scale_factor
         self.max_velocity = 8 *scale_factor
@@ -381,7 +385,7 @@ class Car:
                         return True
 
     #function for when the user presses a key
-    def on_key_press(self, symbol,modifiers):
+    def on_key_press(self, symbol):
         if symbol == self.forward_key:
             self.forward = True
         if symbol == self.backward_key:
@@ -394,9 +398,11 @@ class Car:
             self.drift = True
             self.rotation_speed = 3.5
             self.rounds = 0
+        
+        self.action_list = [self.forward, self.backward, self.clockwise, self.aclockwise, self.drift]
 
     #function for when the user realeses the key
-    def on_key_release(self, symbol, modifiers):
+    def on_key_release(self, symbol):
         if symbol == self.forward_key:
             self.forward = False
         if symbol == self.backward_key:
@@ -408,9 +414,12 @@ class Car:
         if symbol == self.drift_key:
             self.drift = False
             self.rotation_speed = 3
+        
+        self.action_list = [self.forward, self.backward, self.clockwise, self.aclockwise, self.drift]
 
     #update function that is called every tick. Is used for the car movement, timing, collisions, etc.
-    def update(self, dt):
+    def action(self, actions):
+        self.actions = actions
         #----------CAR MOVEMENT----------#
         #slowing the car down due to frction
         if self.velocity > 0:
@@ -423,21 +432,21 @@ class Car:
         if self.velocity < -(self.max_velocity-3):
             self.velocity = -(self.max_velocity-3)
         #making the car go forwards and backwards
-        if self.forward == True and Car.overlap_check(self, self.sprite_hitbox, line_list) != True:
+        if self.actions[0] == True and Car.overlap_check(self, self.sprite_hitbox, line_list) != True:
             self.velocity += self.acceleration
-        if self.backward == True and Car.overlap_check(self, self.sprite_hitbox, line_list) != True:
+        if self.actions[1] == True and Car.overlap_check(self, self.sprite_hitbox, line_list) != True:
             self.velocity -= self.acceleration/1.3
         #making the car turn left and right
-        if self.forward == True or self.backward == True or self.velocity > self.friction or self.velocity < -self.friction: #this is so that the car only turns if it is moving forwards or backwards
-            if self.aclockwise == True:
+        if self.actions[0] == True or self.actions[1] == True or self.velocity > self.friction or self.velocity < -self.friction: #this is so that the car only turns if it is moving forwards or backwards
+            if self.actions[3] == True:
                 self.car.rotation -= self.rotation_speed
-            if self.clockwise == True:
+            if self.actions[2] == True:
                 self.car.rotation += self.rotation_speed
         
         #checks if the car has collided with a call, and if it has, stops the car
         if Car.overlap_check(self, self.sprite_hitbox,line_list) == True:
             self.car.x, self.car.y = self.collList[int(-self.velocity//3)-2]
-            self.drift = False
+            self.actions[4] = False
             self.velocity = 0
         
         #this system is used so that the car doesn't get stuck in the wall and respawns slightly back from the wall
@@ -458,7 +467,7 @@ class Car:
             self.backDict.pop(list(self.backDict)[0])
         
         self.rounds += 1
-        if self.drift == True:
+        if self.actions[4] == True:
             if self.rounds >= self.drift_time:
                 self.car.y += list(self.backDict)[0]
                 self.car.x += self.backDict[list(self.backDict)[1]]
@@ -484,60 +493,75 @@ class Car:
         Car.stopwatch(self)
 
 #finding the start position for player 1
-car_start_x =  1020/1920 *window.width
-car_start_y =  185/1080 *window.height
+car_start_x =  1020/1920 *windowwidth
+car_start_y =  185/1080 *windowheight
+#loading in all of the racers and adding them to a list of all racers
+player1 = Car(car_start_x,car_start_y,260,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
+player2 = Car(car_start_x,car_start_y + 20 ,260,"images/car2.png", key.W, key.S, key.A, key.D, key.SPACE)
+player_list = [player1, player2]
 
-#defining players
-#player1 = Car(car_start_x,car_start_y,260,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
-
-class RacingEnv():
+class RacingEnv(pyglet.window.Window):
     def __init__(self):
-        #setting up the window
-        self.window = pyglet.window.Window(resizable = False, caption="Artificial Drift")
-        self.window.set_fullscreen(True)
+        super().__init__(resizable=False, caption="Artificial Drift", fullscreen=True)
+
+        self.set_fullscreen(True)
         self.wall_lines = pyglet.graphics.Batch()
         self.gate_lines = pyglet.graphics.Batch()
+
+        self.player1 = Car(car_start_x,car_start_y,260,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
+        self.user_action = [False,False,False,False,False]
+        
+
+    def reset(self):
+        self.player1 = Car(car_start_x,car_start_y,260,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
         
         #loading in walls
-        self.walls = get_walls(window.width, window.height)
+        self.walls = get_walls(windowwidth, windowheight)
         for wall in self.walls:
             wall.batch = self.wall_lines
+        
         #loading in gates
-        self.gates = get_gates(window.width, window.height)
+        self.gates = get_gates(windowwidth, windowheight)
         for gate in self.gates:
             gate.opacity = 40
             gate.batch = self.gate_lines
+        
         #defining the line list
         self.line_list = self.walls + self.gates
 
-        #loading in all of the racers and adding them to a list of all racers
-        self.player1 = Car(car_start_x,car_start_y,260,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
-        self.player2 = Car(car_start_x,car_start_y + 20 ,260,"images/car2.png", key.W, key.S, key.A, key.D, key.SPACE)
-        self.player_list = [self.player1, self.player2]
+    def step(self, action):
+        done = False
+        self.player1.action(action)
 
     def render(self):
+        self.clear()
         wall_lines.draw()
         gate_lines.draw()
-        for player in self.player_list:
-            player.car.draw()
+        self.player1.car.draw()
     
-    def on_key_press(self, symbol, modifiers):
-        for player in self.player_list:
-            player.on_key_press(symbol, modifiers)
+    def on_key_press(self, symbol):
+        self.player1.on_key_press(symbol)
+        self.user_action = player1.action_list
     
-    def on_key_release(self, symbol, modifiers):
-        for player in self.player_list:
-            player.on_key_release(symbol, modifiers)
+    def on_key_release(self, symbol):
+        self.player1.on_key_release(symbol)
+        self.user_action = player1.action_list
 
     def update(self,dt):
-        #update the cars
-        RacingEnv.render(self)
-        for player in self.player_list:
-            player.update
-        
+        self.step(self.user_action)
+        self.render()
+
         
 
-screen = RacingEnv()
+#defining players
+#player1 = Car(car_start_x,car_start_y,260,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
+if __name__ == '__main__':
+    screen = RacingEnv()
+    pyglet.clock.schedule_interval(screen.on_key_press, 1/60)
+    pyglet.clock.schedule_interval(screen.on_key_release, 1/60)
+    pyglet.clock.schedule_interval(screen.update, 1/60)
+    pyglet.app.run()
+
 #screen.render()
 #pyglet.clock.schedule_interval(screen.update, 1/60)
 #pyglet.clock.schedule_interval(screen.render, 1/60)
@@ -556,7 +580,3 @@ screen = RacingEnv()
 #@window.event
 #def on_key_release(symbol, modifiers):
 #    screen.on_key_release(symbol, modifiers)
-
-pyglet.clock.schedule_interval(screen.update, 1/60)
-
-pyglet.app.run()
