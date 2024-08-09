@@ -354,6 +354,7 @@ class Car:
         if self.lapCompleted == True:
             self.lap_list.append(float("{:#.2f}".format(self.elapsed)))
             self.lapCompleted = False
+            print(self.lap_list)
 
         self.current = time.time()
         if self.going == True:
@@ -555,7 +556,9 @@ class RacingEnv(pyglet.window.Window):
     def step(self, action):
         done = False
         self.player1.action(action)
-
+        
+        reward = self.player1.reward()
+        
 
     def render(self):
         self.clear()
@@ -584,5 +587,4 @@ if __name__ == '__main__':
     pyglet.clock.schedule_interval(screen.update, 1/60)
     pyglet.app.run()
 
-print("surely this still comes after")
 
