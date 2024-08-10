@@ -220,6 +220,7 @@ class Car:
 
         self.car = sprite.Sprite(self.car_image, x, y)
         self.car.scale = 0.1*scale_factor
+        
         self.car.rotation = r
 
         #keys for the direction of the car
@@ -271,12 +272,15 @@ class Car:
         for x in gates:
             self.checkerList.append(False)
 
-
         #constants for later use
         self.half_width_car = (self.car_image.width)*scale_factor // 20
         self.half_height_car = (self.car_image.height)*scale_factor// 20
         self.h = sqrt(self.half_width_car**2 + self.half_height_car**2)
         self.angle = atan(self.half_width_car/self.half_height_car) - radians(self.car.rotation)
+
+        #defining things for the AI
+        self.lineLength = 100000000
+        self.oldCollisionPointsList = [(x,y),(x,y),(x,y),(x,y),(x,y),(x,y),(x,y),(x,y),(x,y),(x,y),(x,y),(x,y),(x,y),(x,y)]
 
     #function which finds IF two lines intersect, and if they do, finds the distance between the point of intersection and the car
     def find_intersection(self, line1, line2):
@@ -345,7 +349,7 @@ class Car:
                     self.checkerList[gates.index(input_line)] = True
 
     #function will check if the line is a gate or a wall. If the line is a gate then it will return true
-    def timerLine(input_line):
+    def timerLine(self,input_line):
         if input_line in gates:
             return True
 
@@ -391,13 +395,117 @@ class Car:
 
         for wall in input_lines:
             for car_side in self.hitbox_lines:
-                if Car.find_intersection(self, car_side, wall) != None:
-                    if Car.timerLine(wall) == True:
+                if self.find_intersection(car_side, wall) != None:
+                    if self.timerLine(wall) == True:
                         self.reward_gate = True
-                        Car.lineChecks(self, wall)
+                        self.lineChecks(wall)
                     else:
                         self.wall_collision = True
                         return True
+
+    #used to update the lines which the AI uses to see
+    def update_rays(self):
+        viewingLine1 = pyglet.shapes.Line(x=self.car.x, y=self.car.y, x2=self.lineLength*sin(radians(self.car.rotation)), y2=self.lineLength*cos(radians(self.car.rotation)))
+        viewingLine2 = pyglet.shapes.Line(x=self.car.x, y=self.car.y, x2=self.lineLength*sin(radians(self.car.rotation) + radians(15)), y2=self.lineLength*cos(radians(self.car.rotation)+ radians(15)))
+        viewingLine3 = pyglet.shapes.Line(x=self.car.x, y=self.car.y, x2=self.lineLength*sin(radians(self.car.rotation) + radians(30)), y2=self.lineLength*cos(radians(self.car.rotation) + radians(30)))
+        viewingLine4 = pyglet.shapes.Line(x=self.car.x, y=self.car.y, x2=self.lineLength*sin(radians(self.car.rotation) + radians(45)), y2=self.lineLength*cos(radians(self.car.rotation) + radians(45)))
+        viewingLine5 = pyglet.shapes.Line(x=self.car.x, y=self.car.y, x2=self.lineLength*sin(radians(self.car.rotation) + radians(60)), y2=self.lineLength*cos(radians(self.car.rotation) + radians(60)))
+        viewingLine6 = pyglet.shapes.Line(x=self.car.x, y=self.car.y, x2=self.lineLength*sin(radians(self.car.rotation) + radians(90)), y2=self.lineLength*cos(radians(self.car.rotation) + radians(90)))
+        viewingLine7 = pyglet.shapes.Line(x=self.car.x, y=self.car.y, x2=self.lineLength*sin(radians(self.car.rotation) + radians(135)), y2=self.lineLength*cos(radians(self.car.rotation) + radians(135)))
+        viewingLine8 = pyglet.shapes.Line(x=self.car.x, y=self.car.y, x2=self.lineLength*sin(radians(self.car.rotation) + radians(180)), y2=self.lineLength*cos(radians(self.car.rotation) + radians(180)))
+        viewingLine9 = pyglet.shapes.Line(x=self.car.x, y=self.car.y, x2=self.lineLength*sin(radians(self.car.rotation) + radians(225)), y2=self.lineLength*cos(radians(self.car.rotation) + radians(225)))
+        viewingLine10 = pyglet.shapes.Line(x=self.car.x, y=self.car.y, x2=self.lineLength*sin(radians(self.car.rotation) + radians(270)), y2=self.lineLength*cos(radians(self.car.rotation) + radians(270)))
+        viewingLine11 = pyglet.shapes.Line(x=self.car.x, y=self.car.y, x2=self.lineLength*sin(radians(self.car.rotation) + radians(300)), y2=self.lineLength*cos(radians(self.car.rotation) + radians(300)))
+        viewingLine12 = pyglet.shapes.Line(x=self.car.x, y=self.car.y, x2=self.lineLength*sin(radians(self.car.rotation) + radians(315)), y2=self.lineLength*cos(radians(self.car.rotation) + radians(315)))
+        viewingLine13 = pyglet.shapes.Line(x=self.car.x, y=self.car.y, x2=self.lineLength*sin(radians(self.car.rotation) + radians(330)), y2=self.lineLength*cos(radians(self.car.rotation) + radians(330)))
+        viewingLine14 = pyglet.shapes.Line(x=self.car.x, y=self.car.y, x2=self.lineLength*sin(radians(self.car.rotation) + radians(345)), y2=self.lineLength*cos(radians(self.car.rotation) + radians(345)))
+
+        viewingLineList = [viewingLine1, viewingLine2, viewingLine3, viewingLine4, viewingLine5, viewingLine6, viewingLine7, viewingLine8, viewingLine9, viewingLine10, viewingLine11, viewingLine12, viewingLine13, viewingLine14]
+        return viewingLineList
+
+    #uses the rays to find points of intersection with the closest sides of the track - returns a list of points
+    def aiVision(self, rays):
+        intersectList = []
+        for ray in rays:
+            overlapList = []
+            for wall in walls:
+                overlapPoint = self.find_intersection(ray, wall)
+                if overlapPoint is not None:
+                    overlapList.append(overlapPoint)
+
+            if overlapList:
+                smallest = min(overlapList, key=lambda t: t[2])
+                intersectList.append((smallest[0], smallest[1]))
+        return intersectList
+
+    #resets the car to a random point on the track
+    def reset(self):
+        #TOTAL VARIABLE RESET
+
+        self.forward = False
+        self.backward = False
+        self.clockwise = False
+        self.aclockwise = False
+        self.drift = False
+
+        self.action_list = [self.forward, self.backward, self.clockwise, self.aclockwise, self.drift]
+        
+        self.velocity = 0 *scale_factor
+        self.max_velocity = 8 *scale_factor
+        self.friction = 0.07 *scale_factor
+        self.acceleration = 0.1 *scale_factor
+        self.rotation_speed = 3
+        self.drift_time = 8 *scale_factor
+        
+        self.sprite_hitbox = [(0,0),(0,0),(0,0),(0,0)]
+        
+        self.reward_gate = False
+        self.wall_collision = False
+        self.collList = []
+
+        self.backDict = {}
+        self.rounds = 0
+
+        self.noStart = False
+        self.started = False
+        self.swap = False
+        self.going = False
+        self.lapCompleted = False
+        self.new_gate_signal = False
+        
+        self.going = 0
+        self.start = 0
+        self.elapsed = 0
+
+        self.lap_list = []
+
+        #respawning the car at a random midpoint of a reward gate
+        respawnLine = random.choice(gates)
+        self.car.x, self.car.y = midpoint(respawnLine)
+
+        for x in range(gates.index(respawnLine)):
+            gates.append(gates[0])
+            del gates[0]
+
+        for x in range(len(self.checkerList)):
+            self.checkerList[x] = False
+
+        #getting the car rotation for the respawn
+        a,b = midpoint(respawnLine)
+        c,d = midpoint(gates[(gates.index(respawnLine)+1)%len(gates)])
+        dist = distance_points((a,b), (c,d))
+        vertical_height = d-b
+        ang = (180/3.141)*asin(abs(vertical_height)/dist)
+        if vertical_height > 0:
+            if grad_points((a,b), (c,d)) > 0: #first quadrant
+                self.car.rotation = 90 - ang
+            else: #second quadrant
+                self.car.rotation = 270 + ang
+        else:
+            if grad_points((a,b), (c,d)) > 0: #third quadrant
+                self.car.rotation = 270 - ang
+            else: #fourth quadrant
+                self.car.rotation = 90 + ang
 
     #function for when the user presses a key
     def on_key_press(self, symbol, modifiers):
@@ -434,8 +542,8 @@ class Car:
 
     #update function that is called every tick. Is used for the car movement, timing, collisions, etc.
     def action(self, actions):
-        self.actions = actions
         #----------CAR MOVEMENT----------#
+        self.actions = actions
         #slowing the car down due to frction
         if self.velocity > 0:
             self.velocity -= self.friction
@@ -447,9 +555,9 @@ class Car:
         if self.velocity < -(self.max_velocity-3):
             self.velocity = -(self.max_velocity-3)
         #making the car go forwards and backwards
-        if self.actions[0] == True and Car.overlap_check(self, self.sprite_hitbox, line_list) != True:
+        if self.actions[0] == True and self.overlap_check(self.sprite_hitbox, line_list) != True:
             self.velocity += self.acceleration
-        if self.actions[1] == True and Car.overlap_check(self, self.sprite_hitbox, line_list) != True:
+        if self.actions[1] == True and self.overlap_check(self.sprite_hitbox, line_list) != True:
             self.velocity -= self.acceleration/1.3
         #making the car turn left and right
         if self.actions[0] == True or self.actions[1] == True or self.velocity > self.friction or self.velocity < -self.friction: #this is so that the car only turns if it is moving forwards or backwards
@@ -459,7 +567,7 @@ class Car:
                 self.car.rotation += self.rotation_speed
         
         #checks if the car has collided with a call, and if it has, stops the car
-        if Car.overlap_check(self, self.sprite_hitbox,line_list) == True:
+        if self.overlap_check(self.sprite_hitbox,line_list) == True:
             self.car.x, self.car.y = self.collList[int(-self.velocity//3)-2]
             self.actions[4] = False
             self.velocity = 0
@@ -483,12 +591,13 @@ class Car:
         
         self.rounds += 1
         if self.actions[4] == True:
-            if self.rounds >= self.drift_time:
-                self.car.y += list(self.backDict)[0]
-                self.car.x += self.backDict[list(self.backDict)[1]]
-            else:
-                self.car.y += dy
-                self.car.x += dx
+            if len(self.backDict) > 2:
+                if self.rounds >= self.drift_time:
+                    self.car.y += list(self.backDict)[0]
+                    self.car.x += self.backDict[list(self.backDict)[1]]
+                else:
+                    self.car.y += dy
+                    self.car.x += dx
         else:
             self.car.y += dy
             self.car.x += dx
@@ -502,10 +611,27 @@ class Car:
 
         self.sprite_hitbox = [self.sprite_top_left,self.sprite_top_right,self.sprite_bottom_left,self.sprite_bottom_right ]
 
-        Car.overlap_check(self, self.sprite_hitbox, line_list)
+        self.overlap_check(self.sprite_hitbox, line_list)
 
         #----------TIMING CODE----------#
-        Car.stopwatch(self)
+        self.stopwatch()
+
+        #----------REWARDS----------#
+        self.tick_reward = self.reward() #make sure that this is getting rewards from the actual tick not from the tick beofre
+
+        #----------AI vision code----------#
+        self.new_rays = self.update_rays()
+        if len(self.aiVision(self.new_rays)) < 14:
+            self.collisionPointsList = self.oldCollisionPointsList
+        else:
+            self.collisionPointsList = self.aiVision(self.new_rays)
+            self.oldCollisionPointsList = self.collisionPointsList
+        
+        self.aiVisionList = []
+        for point in self.collisionPointsList:
+            self.aiVisionList.append(distance_points((self.car.x, self.car.y), point))
+        
+        self.observation_space = [self.velocity, self.car.rotation] + self.aiVisionList
 
 #finding the start position for player 1
 car_start_x =  1020/1920 *windowwidth
@@ -518,6 +644,7 @@ class RacingEnv(pyglet.window.Window):
         self.set_fullscreen(True)
         self.wall_lines = pyglet.graphics.Batch()
         self.gate_lines = pyglet.graphics.Batch()
+        self.ai_lines = pyglet.graphics.Batch()
 
         self.player1 = Car(car_start_x,car_start_y,260,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
         self.user_action = [False,False,False,False,False]
@@ -535,6 +662,15 @@ class RacingEnv(pyglet.window.Window):
         
         #defining the line list
         self.line_list = self.walls + self.gates
+
+        #defining boolean which control if each aspect is rendered or not
+        self.SHOW_WALLS = True
+        self.SHOW_CARS = True
+        self.SHOW_GATES = True
+        self.SHOW_RAYS = False
+
+        #amount of wall collisions in one episode
+        self.hits = 0
         
     def reset(self):
         self.player1 = Car(car_start_x,car_start_y,260,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
@@ -555,17 +691,49 @@ class RacingEnv(pyglet.window.Window):
 
     def step(self, action):
         done = False
+
+        #updating the car
         self.player1.action(action)
         
-        reward = self.player1.reward()
+        #finding the reward the car made
+        reward = self.player1.tick_reward
+
+        #getting the new state (observation space)
+        new_state = self.player1.observation_space
+
+        #checking if the edisode is over
+        if reward < 0:
+            self.hits += 1
+        if self.hits > 10:
+            done = True
+            self.hits = 0
+
+        if done == True:
+            new_state = None
+        
+        return new_state, reward, done
         
 
     def render(self):
         self.clear()
-        self.wall_lines.draw()
-        self.gate_lines.draw()
-        self.player1.car.draw()
-    
+        if self.SHOW_WALLS == True:
+            self.wall_lines.draw()
+        if self.SHOW_CARS == True:
+            self.player1.car.draw()
+        if self.SHOW_GATES == True:
+            self.gate_lines.draw()
+        if self.SHOW_RAYS == True:
+            pointsList = []
+            #adding all the rays to the batch
+            for ray in self.player1.new_rays:
+                ray.batch = self.ai_lines
+                ray.opacity = 100
+            #adding all the points where the ray collides with the cloest wall to the batch
+            for point in self.player1.collisionPointsList:
+                pointsList.append(pyglet.shapes.Circle(x=point[0], y=point[1], radius=5, color=(255,0,0), batch=self.ai_lines))
+            
+            self.ai_lines.draw()
+
     def on_key_press(self, symbol, modifiers):
         self.player1.on_key_press(symbol, modifiers)
         self.user_action = self.player1.action_list
@@ -578,7 +746,7 @@ class RacingEnv(pyglet.window.Window):
         self.step(self.user_action)
         self.render()
     
-    def close(self):
+    def end(self):
         self.close()
 
 
