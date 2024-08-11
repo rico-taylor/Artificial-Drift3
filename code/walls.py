@@ -65,7 +65,7 @@ def get_lines(window_width, window_height):
     barrierLineList = [line, line1, line2, line3, line4, line5, line6, line7, line8, line9, line10, line11, line12, line13, line14, line15, line16, line17, line18, line19, line20, line21, line22, line23, line24, line25, line26, line27, line28, line29, line30, line31, line32, line33, line34, line35, line36, line37, line38, line39, line40, line41, line42, line43, line44, line45, line46, line47, line48, line49, line50, line51, line52, line53, line54, line55, line56]
     return barrierLineList
 
-def get_gates(window_width, window_height)
+def get_gates(window_width, window_height):
     timer1 = pyglet.shapes.Line(x=995/1920 *window_width, y=100/1080 *window_height, x2=985/1920 *window_width, y2=250/1080 *window_height, width = 1, color=(255,165,0))
     timer2 = pyglet.shapes.Line(x=939/1920 *window_width, y=246/1080 *window_height, x2=947/1920 *window_width, y2=98/1080 *window_height, width = 1, color=(255,165,0))
     timer3 = pyglet.shapes.Line(x=889/1920 *window_width, y=239/1080 *window_height, x2=898/1920 *window_width, y2=91/1080 *window_height, width = 1, color=(225,165,0))
