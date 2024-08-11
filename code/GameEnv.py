@@ -6,11 +6,6 @@ from pyglet import sprite, image
 from pyglet.window import key, mouse
 from math import sin, cos, atan, acos, asin, radians, sqrt, tanh
 
-#main window
-#window = pyglet.window.Window(resizable = False, caption="Artificial Drift")
-#window.set_fullscreen(True)
-
-
 #batches
 wall_lines = pyglet.graphics.Batch()
 gate_lines = pyglet.graphics.Batch()
