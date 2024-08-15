@@ -8,7 +8,6 @@ N_EPISODES = 1000
 REPLACE_TARGET = 50
 
 game = GameEnv.RacingEnv()
-game.fps = 60
 
 ddqn_agent = DDQNAgent(alpha=0.0005, gamma=0.99, n_actions=5, epsilon=1.00, epsilon_end=0.10, epsilon_dec=0.9995, replace_target=REPLACE_TARGET, batch_size=512, input_dims=16)
 
@@ -20,7 +19,7 @@ ddqn_scores = []
 eps_history = []
 
 def run_episode(e):
-    game.reset()  # Reset env
+    #game.reset()  # Reset env
 
     done = False
     score = 0
@@ -85,5 +84,5 @@ def run():
         run_episode(e)
 
 if __name__ == '__main__':
-    pyglet.clock.schedule_interval(lambda dt: run(), 1/game.fps)
+    pyglet.clock.schedule_interval(lambda dt: run(), 1/60)
     pyglet.app.run()

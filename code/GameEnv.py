@@ -692,7 +692,7 @@ class RacingEnv(pyglet.window.Window):
         
         #finding the reward the car made
         reward = self.player1.tick_reward
-        print("reward")
+
         #getting the new state (observation space)
         new_state = self.player1.observation_space
 
@@ -702,9 +702,6 @@ class RacingEnv(pyglet.window.Window):
         if self.hits > 10:
             done = True
             self.hits = 0
-
-        if done == True:
-            new_state = None
         
         return new_state, reward, done
         
@@ -739,6 +736,7 @@ class RacingEnv(pyglet.window.Window):
     def update(self,dt):
         self.step(self.user_action)
         self.render()
+        
     
     def end(self):
         self.close()
