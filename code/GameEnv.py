@@ -666,6 +666,10 @@ class RacingEnv(pyglet.window.Window):
 
         #amount of wall collisions in one episode
         self.hits = 0
+        #length of the episode
+        self.ticks = 0
+
+        self.MAX_EPISODE_LENGTH = 1000
         
     def reset(self):
         self.player1 = Car(car_start_x,car_start_y,260,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
@@ -683,6 +687,8 @@ class RacingEnv(pyglet.window.Window):
         
         #redefining the line list
         self.line_list = self.walls + self.gates
+
+        return self.player1.observation_space
 
     def step(self, action):
         done = False
@@ -702,6 +708,14 @@ class RacingEnv(pyglet.window.Window):
         if self.hits > 10:
             done = True
             self.hits = 0
+            self.ticks = 0
+        if done == False:
+            self.ticks += 1
+        if self.ticks > self.MAX_EPISODE_LENGTH:
+            done = True
+            self.ticks = 0
+            self.hits = 0
+
         
         return new_state, reward, done
         
@@ -736,8 +750,7 @@ class RacingEnv(pyglet.window.Window):
     def update(self,dt):
         self.step(self.user_action)
         self.render()
-        
-    
+            
     def end(self):
         self.close()
 
