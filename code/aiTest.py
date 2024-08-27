@@ -1,17 +1,28 @@
 import pyglet
 import GameEnv
+import random
 
 game = GameEnv.RacingEnv()
 
+#get random action from a list of five
+def random_action(numb):
+    action_list = []
+    for x in range(1,numb+1):
+        action_list.append(random.choice([True,False]))
+    
+    return action_list
+
 games = 0
 score = 0
+
+game.MAX_EPISODE_LENGTH = 1500
 def run_episode():
     global games
     global score
 
     done = False
 
-    action = [True,False,True,False,False]
+    action = random_action(5)
 
     observation_, reward, done = game.step(action)
     game.render()

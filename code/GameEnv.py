@@ -277,6 +277,9 @@ class Car:
         self.lineLength = 100000000
         self.oldCollisionPointsList = [(x,y),(x,y),(x,y),(x,y),(x,y),(x,y),(x,y),(x,y),(x,y),(x,y),(x,y),(x,y),(x,y),(x,y)]
 
+        #defining the first observation space
+        self.observation_space = [0.0, 260, 540.7883010831061, 248.6026368207048, 122.23394041784448, 84.87471813575465, 68.58619476103772, 58.57323663106676, 80.89115626007674, 575.4958984540862, 89.799454388119, 63.25040349127835, 72.87139630657704, 89.1023960305774, 125.65244082804028, 240.87486636892078]
+
     #function which finds IF two lines intersect, and if they do, finds the distance between the point of intersection and the car
     def find_intersection(self, line1, line2):
         x1, y1, x2, y2 = line1.x, line1.y, line1.x2, line1.y2
@@ -716,7 +719,6 @@ class RacingEnv(pyglet.window.Window):
             self.ticks = 0
             self.hits = 0
 
-        
         return new_state, reward, done
         
     def render(self):
@@ -759,5 +761,6 @@ if __name__ == '__main__':
     screen = RacingEnv()
     pyglet.clock.schedule_interval(screen.update, 1/60)
     pyglet.app.run()
+
 
 
