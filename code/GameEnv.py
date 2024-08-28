@@ -193,6 +193,40 @@ def midpoint(line):
   midpointY = (line.y + line.y2)//2
   return midpointX, midpointY
 
+#if the AI can only output a single digit then this function is used to convert it
+def chooseAction(int):
+    if int == 1:
+        action = [True, False, False, False, False]
+    elif int == 2:
+        action = [True, False, False, False, True]
+    elif int == 3:
+        action = [True, False, True, False, False]
+    elif int == 4:
+        action = [True, False, True, False, True]
+    elif int == 5:
+        action = [True, False, False, True, False]
+    elif int == 6:
+        action = [True, False, False, True, True]
+    elif int == 7:
+        action = [False, True, False, False, False]
+    elif int == 8:
+        action = [False, True, True, False, False]
+    elif int == 9:
+        action = [False, True, False, True, False]
+    elif int == 10:
+        action = [False, False, False, False, False]
+    elif int == 11:
+        action = [False, False, False, False, True]
+    elif int == 12:
+        action = [False, False, True, False, False]
+    elif int == 13:
+        action = [False, False, True, False, True]
+    elif int == 14:
+        action = [False, False, False, True, False]
+    elif int == 15:
+        action = [False, False, False, True, True]
+    
+    return action
 
 walls = get_walls(windowwidth, windowheight)
 for wall in walls:
@@ -541,7 +575,14 @@ class Car:
     #update function that is called every tick. Is used for the car movement, timing, collisions, etc.
     def action(self, actions):
         #----------CAR MOVEMENT----------#
-        self.actions = actions
+        if type(actions) == int:
+            print("here")
+            self.actions = chooseAction(actions)
+        else:
+            print("here2")
+            self.actions = actions
+        print(actions)
+        print(self.actions)
         #slowing the car down due to frction
         if self.velocity > 0:
             self.velocity -= self.friction

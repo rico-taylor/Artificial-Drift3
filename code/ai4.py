@@ -20,6 +20,13 @@ env = GameEnv.RacingEnv()
 states = 16
 actions = 5
 
+def random_action(numb):
+    action_list = []
+    for x in range(1,numb+1):
+        action_list.append(random.choice([True,False]))
+    
+    return action_list
+
 model = Sequential()
 model.add(Flatten(input_shape=(1, states)))
 model.add(Dense(24, activation="relu"))
@@ -42,6 +49,7 @@ results = agent.test(env, nb_episodes=10, visualize=True, verbose=1)
 print(env)
 print(np.mean(results.history["episode_reward"]))
 
+
 episodes = 10
 for episode in range(1, episodes+1):
     state = env.reset()
@@ -49,7 +57,7 @@ for episode in range(1, episodes+1):
     score=0
 
     while not done:
-        action = random.choice([0,1])
+        action = random_action(5)
         _, reward, done, __ = env.step(action)
         score += reward
         env.render()
