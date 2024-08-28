@@ -194,38 +194,39 @@ def midpoint(line):
   return midpointX, midpointY
 
 #if the AI can only output a single digit then this function is used to convert it
-def chooseAction(int):
-    if int == 1:
+def chooseAction(x):
+    if x == 0:
         action = [True, False, False, False, False]
-    elif int == 2:
+    elif x == 1:
         action = [True, False, False, False, True]
-    elif int == 3:
+    elif x == 2:
         action = [True, False, True, False, False]
-    elif int == 4:
+    elif x == 3:
         action = [True, False, True, False, True]
-    elif int == 5:
+    elif x == 4:
         action = [True, False, False, True, False]
-    elif int == 6:
+    elif x == 5:
         action = [True, False, False, True, True]
-    elif int == 7:
+    elif x == 6:
         action = [False, True, False, False, False]
-    elif int == 8:
+    elif x == 7:
         action = [False, True, True, False, False]
-    elif int == 9:
+    elif x == 8:
         action = [False, True, False, True, False]
-    elif int == 10:
+    elif x == 9:
         action = [False, False, False, False, False]
-    elif int == 11:
+    elif x == 10:
         action = [False, False, False, False, True]
-    elif int == 12:
+    elif x == 11:
         action = [False, False, True, False, False]
-    elif int == 13:
+    elif x == 12:
         action = [False, False, True, False, True]
-    elif int == 14:
+    elif x == 13:
         action = [False, False, False, True, False]
-    elif int == 15:
+    elif x == 14:
         action = [False, False, False, True, True]
-    
+    else:
+        action = x
     return action
 
 walls = get_walls(windowwidth, windowheight)
@@ -575,14 +576,9 @@ class Car:
     #update function that is called every tick. Is used for the car movement, timing, collisions, etc.
     def action(self, actions):
         #----------CAR MOVEMENT----------#
-        if type(actions) == int:
-            print("here")
-            self.actions = chooseAction(actions)
-        else:
-            print("here2")
-            self.actions = actions
-        print(actions)
-        print(self.actions)
+        self.actions = chooseAction(actions) #turns the ai input into a list, or keeps the user list the same.
+        #print(actions)
+        #print(self.actions)
         #slowing the car down due to frction
         if self.velocity > 0:
             self.velocity -= self.friction
@@ -736,7 +732,7 @@ class RacingEnv(pyglet.window.Window):
 
     def step(self, action):
         done = False
-
+        info = {}
         #updating the car
         self.player1.action(action)
         
@@ -760,7 +756,7 @@ class RacingEnv(pyglet.window.Window):
             self.ticks = 0
             self.hits = 0
 
-        return new_state, reward, done
+        return new_state, reward, done, info
         
     def render(self):
         self.clear()

@@ -72,10 +72,10 @@ agent = DQNAgent(
 agent.compile(Adam(learning_rate=0.001), metrics=["mae"])
 
 # Fit the agent
-agent.fit(game, nb_steps=1, visualize=False, verbose=1)
+agent.fit(game, nb_steps=10000, visualize=False, verbose=1)
 
 # Test the agent
-results = agent.test(game, nb_episodes=10, visualize=True, verbose=1)
+results = agent.test(game, nb_episodes=10, visualize=False, verbose=1)
 
 # Example output interpretation
 for _ in range(10):
