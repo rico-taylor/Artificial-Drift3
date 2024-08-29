@@ -16,7 +16,7 @@ game = GameEnv.RacingEnv()
 
 # Define the state space and number of actions
 states = 16
-actions = 15  # Now corresponds to 5 binary actions
+actions = 15 
 
 def chooseAction(int):
     if int == 1:
@@ -72,7 +72,7 @@ agent = DQNAgent(
 agent.compile(Adam(learning_rate=0.001), metrics=["mae"])
 
 # Fit the agent
-agent.fit(game, nb_steps=10000, visualize=False, verbose=1)
+agent.fit(game, nb_steps=20000, visualize=False, verbose=1)
 
 # Test the agent
 results = agent.test(game, nb_episodes=10, visualize=False, verbose=1)

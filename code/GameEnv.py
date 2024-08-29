@@ -712,7 +712,8 @@ class RacingEnv(pyglet.window.Window):
         self.MAX_EPISODE_LENGTH = 1000
         
     def reset(self):
-        self.player1 = Car(car_start_x,car_start_y,260,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
+        self.random_rotation = random.randint(25500,26500)/100
+        self.player1 = Car(car_start_x,car_start_y,self.random_rotation,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
         
         #reloading in walls
         self.walls = get_walls(windowwidth, windowheight)
