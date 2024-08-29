@@ -715,19 +715,21 @@ class RacingEnv(pyglet.window.Window):
         self.random_rotation = random.randint(25500,26500)/100
         self.player1 = Car(car_start_x,car_start_y,self.random_rotation,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
         
+        self.render()
+
         #reloading in walls
-        self.walls = get_walls(windowwidth, windowheight)
-        for wall in self.walls:
-            wall.batch = self.wall_lines
+        #self.walls = get_walls(windowwidth, windowheight)
+        #for wall in self.walls:
+        #    wall.batch = self.wall_lines
         
         #reloading in gates
-        self.gates = get_gates(windowwidth, windowheight)
-        for gate in self.gates:
-            gate.opacity = 40
-            gate.batch = self.gate_lines
+        #self.gates = get_gates(windowwidth, windowheight)
+        #for gate in self.gates:
+        #    gate.opacity = 40
+        #    gate.batch = self.gate_lines
         
         #redefining the line list
-        self.line_list = self.walls + self.gates
+        #self.line_list = self.walls + self.gates
 
         return self.player1.observation_space
 
@@ -759,7 +761,7 @@ class RacingEnv(pyglet.window.Window):
 
         return new_state, reward, done, info
         
-    def render(self):
+    def render(self, mode="human"):
         self.clear()
         if self.SHOW_WALLS == True:
             self.wall_lines.draw()
@@ -778,6 +780,7 @@ class RacingEnv(pyglet.window.Window):
                 pointsList.append(pyglet.shapes.Circle(x=point[0], y=point[1], radius=5, color=(255,0,0), batch=self.ai_lines))
             
             self.ai_lines.draw()
+        self.flip()
 
     def on_key_press(self, symbol, modifiers):
         self.player1.on_key_press(symbol, modifiers)
@@ -786,6 +789,9 @@ class RacingEnv(pyglet.window.Window):
     def on_key_release(self, symbol, modifiers):
         self.player1.on_key_release(symbol, modifiers)
         self.user_action = self.player1.action_list
+
+    def on_mouse_press(self, x,y,button, modifiers): #just for testing the reset function works
+        self.reset()
 
     def update(self,dt):
         self.step(self.user_action)

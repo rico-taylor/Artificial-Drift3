@@ -72,18 +72,18 @@ agent = DQNAgent(
 agent.compile(Adam(learning_rate=0.001), metrics=["mae"])
 
 # Fit the agent
-agent.fit(game, nb_steps=20000, visualize=False, verbose=1)
+agent.fit(game, nb_steps=10000, visualize=True, verbose=1)
 
 # Test the agent
-results = agent.test(game, nb_episodes=10, visualize=False, verbose=1)
+results = agent.test(game, nb_episodes=10, visualize=True, verbose=1)
 
 # Example output interpretation
-for _ in range(10):
-    action_probs = agent.forward(game.reset())
-    action_bools = action_probs > 0.5  # Threshold at 0.5 to decide True/False
-    print(action_bools)
+#for _ in range(10):
+#    action_probs = agent.forward(game.reset())
+#    action_bools = action_probs > 0.5  # Threshold at 0.5 to decide True/False
+#    print(action_bools)
 
-print(np.mean(results.history["episode_reward"]))
+#print(np.mean(results.history["episode_reward"]))
 
 #get random action from a list of five
 def random_action(numb):
@@ -93,10 +93,11 @@ def random_action(numb):
     
     return action_list
 
-games = 0
-score = 0
+##########------------------this is other stuff not traing so can comment out
+#games = 0
+#score = 0
 
-game.MAX_EPISODE_LENGTH = 1000
+#game.MAX_EPISODE_LENGTH = 1000
 def run_episode():
     global games
     global score
@@ -122,6 +123,6 @@ def run_episode():
 def run():
     run_episode()
 
-if __name__ == '__main__':
-    pyglet.clock.schedule_interval(lambda dt: run(), 1/60)
-    pyglet.app.run()
+#if __name__ == '__main__':
+#    pyglet.clock.schedule_interval(lambda dt: run(), 1/60)
+#    pyglet.app.run()
