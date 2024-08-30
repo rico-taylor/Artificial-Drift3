@@ -704,6 +704,12 @@ class RacingEnv(pyglet.window.Window):
         self.SHOW_GATES = True
         self.SHOW_RAYS = False
 
+        #defining booleans which control the type of reset
+        self.SIMPLE_RESET = False
+        self.LOCATION_RESET = True
+        self.SLIGHT_ROT_RESET = False
+        self.RANDOM_ROT_RESET = True
+
         #amount of wall collisions in one episode
         self.hits = 0
         #length of the episode
@@ -712,24 +718,76 @@ class RacingEnv(pyglet.window.Window):
         self.MAX_EPISODE_LENGTH = 1000
         
     def reset(self):
-        self.random_rotation = random.randint(25500,26500)/100
-        self.player1 = Car(car_start_x,car_start_y,self.random_rotation,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
-        
-        self.render()
+        if self.SIMPLE_RESET == True: #respawning the car at the start line
+            if self.SLIGHT_ROT_RESET == True: #respawning the car facing forwards but at a slihgtly different rotation
+                self.random_rotation = random.randint(25500,26500)/100
+                self.player1 = Car(car_start_x,car_start_y,self.random_rotation,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
 
-        #reloading in walls
-        #self.walls = get_walls(windowwidth, windowheight)
-        #for wall in self.walls:
-        #    wall.batch = self.wall_lines
+            if self.RANDOM_ROT_RESET == True: #respawning the car at a complete random rotation
+                self.random_rotation = random.randint(0,360)
+                self.player1 = Car(car_start_x,car_start_y,self.random_rotation,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
+
+            else: #no rotation reset, just facing straight forward
+                self.player1 = Car(car_start_x,car_start_y,260,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
         
-        #reloading in gates
-        #self.gates = get_gates(windowwidth, windowheight)
-        #for gate in self.gates:
-        #    gate.opacity = 40
-        #    gate.batch = self.gate_lines
-        
-        #redefining the line list
-        #self.line_list = self.walls + self.gates
+        elif self.LOCATION_RESET == True: #respawning the car at a random midpoint of a gate
+            #respawning the car at a random midpoint of a reward gate
+            respawnLine = random.choice(gates)
+            self.car_respawn_x, self.car_respawn_y = midpoint(respawnLine)
+            
+            for x in range(gates.index(respawnLine)):
+                gates.append(gates[0])
+                del gates[0]
+            
+            for x in range(len(self.player1.checkerList)):
+                self.player1.checkerList[x] = False
+
+            if self.SLIGHT_ROT_RESET == True:
+                #getting the car rotation for the respawn
+                a,b = midpoint(respawnLine)
+                c,d = midpoint(gates[(gates.index(respawnLine)+1)%len(gates)])
+                dist = distance_points((a,b), (c,d))
+                vertical_height = d-b
+                ang = (180/3.141)*asin(abs(vertical_height)/dist)
+                if vertical_height > 0:
+                    if grad_points((a,b), (c,d)) > 0: #first quadrant
+                        self.car_base_rotation = 90 - ang
+                    else: #second quadrant
+                        self.car_base_rotation = 270 + ang
+                else:
+                    if grad_points((a,b), (c,d)) > 0: #third quadrant
+                        self.car_base_rotation = 270 - ang
+                    else: #fourth quadrant
+                        self.car_base_rotation = 90 + ang
+
+                self.car_respawn_rotation = random.randint(int(self.car_base_rotation*100 -500),int(self.car_base_rotation*100 +500))/100
+                self.player1 = Car(self.car_respawn_x,self.car_respawn_y,self.car_respawn_rotation,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
+
+            elif self.RANDOM_ROT_RESET == True:
+                self.car_respawn_rotation = random.randint(0, 360)
+                self.player1 = Car(self.car_respawn_x,self.car_respawn_y,self.car_respawn_rotation,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
+
+            else: #no rotation reset
+                #getting the car rotation for the respawn
+                a,b = midpoint(respawnLine)
+                c,d = midpoint(gates[(gates.index(respawnLine)+1)%len(gates)])
+                dist = distance_points((a,b), (c,d))
+                vertical_height = d-b
+                ang = (180/3.141)*asin(abs(vertical_height)/dist)
+                if vertical_height > 0:
+                    if grad_points((a,b), (c,d)) > 0: #first quadrant
+                        self.car_respawn_rotation = 90 - ang
+                    else: #second quadrant
+                        self.car_respawn_rotation = 270 + ang
+                else:
+                    if grad_points((a,b), (c,d)) > 0: #third quadrant
+                        self.car_respawn_rotation = 270 - ang
+                    else: #fourth quadrant
+                        self.car_respawn_rotation = 90 + ang
+                
+                self.player1 = Car(self.car_respawn_x,self.car_respawn_y,self.car_respawn_rotation,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
+
+        self.render()
 
         return self.player1.observation_space
 
@@ -780,7 +838,7 @@ class RacingEnv(pyglet.window.Window):
                 pointsList.append(pyglet.shapes.Circle(x=point[0], y=point[1], radius=5, color=(255,0,0), batch=self.ai_lines))
             
             self.ai_lines.draw()
-        self.flip()
+        #self.flip() #for the ai, can be removed for casual play
 
     def on_key_press(self, symbol, modifiers):
         self.player1.on_key_press(symbol, modifiers)
