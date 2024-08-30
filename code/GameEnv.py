@@ -720,15 +720,16 @@ class RacingEnv(pyglet.window.Window):
     def reset(self):
         if self.SIMPLE_RESET == True: #respawning the car at the start line
             if self.SLIGHT_ROT_RESET == True: #respawning the car facing forwards but at a slihgtly different rotation
-                self.random_rotation = random.randint(25500,26500)/100
-                self.player1 = Car(car_start_x,car_start_y,self.random_rotation,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
+                self.car_respawn_rotation = random.randint(25500,26500)/100
+                self.player1 = Car(car_start_x,car_start_y,self.car_respawn_rotation,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
 
             if self.RANDOM_ROT_RESET == True: #respawning the car at a complete random rotation
-                self.random_rotation = random.randint(0,360)
-                self.player1 = Car(car_start_x,car_start_y,self.random_rotation,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
+                self.car_respawn_rotation = random.randint(0,360)
+                self.player1 = Car(car_start_x,car_start_y,self.car_respawn_rotation,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
 
             else: #no rotation reset, just facing straight forward
-                self.player1 = Car(car_start_x,car_start_y,260,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
+                self.car_respawn_rotation = 260
+                self.player1 = Car(car_start_x,car_start_y,self.car_respawn_rotation,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
         
         elif self.LOCATION_RESET == True: #respawning the car at a random midpoint of a gate
             #respawning the car at a random midpoint of a reward gate
