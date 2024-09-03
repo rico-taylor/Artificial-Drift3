@@ -839,7 +839,7 @@ class RacingEnv(pyglet.window.Window):
                 pointsList.append(pyglet.shapes.Circle(x=point[0], y=point[1], radius=5, color=(255,0,0), batch=self.ai_lines))
             
             self.ai_lines.draw()
-        #self.flip() #for the ai, can be removed for casual play
+        self.flip() #for the ai, can be removed for casual play
 
     def on_key_press(self, symbol, modifiers):
         self.player1.on_key_press(symbol, modifiers)

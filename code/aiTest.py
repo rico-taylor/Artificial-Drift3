@@ -72,10 +72,11 @@ agent = DQNAgent(
 agent.compile(Adam(learning_rate=0.001), metrics=["mae"])
 
 # Fit the agent
-agent.fit(game, nb_steps=1000, visualize=True, verbose=1)
+agent.fit(game, nb_steps=1000, visualize=False, verbose=1)
 
+#NOTE: need to make a system so that I can see that the car actually moves after trainings such as a system where I can trace the cars movement
 # Test the agent
-results = agent.test(game, nb_episodes=10, visualize=True, verbose=1)
+results = agent.test(game, nb_episodes=1000, visualize=True, verbose=1)
 
 # Example output interpretation
 #for _ in range(10):
