@@ -404,6 +404,42 @@ class Car:
         
         return "{:#.2f}".format(self.elapsed)
     
+    #function to find how close the car is to pointing directly forwards
+    def car_direction(self):
+        #finding the next gate
+        count = 0
+        while True:
+            count += 1
+            if self.checkerList[count-1] == False:
+                break
+            if count >= 83:
+                count = 1
+                break
+        
+        print(count)
+        
+        #getting the directly forward car rotation
+        a,b = self.car.x, self.car.y
+        c,d = midpoint(gates[count])
+        dist = distance_points((a,b), (c,d))
+        vertical_height = d-b
+        ang = (180/3.141)*asin(abs(vertical_height)/dist)
+        if vertical_height > 0:
+            if grad_points((a,b), (c,d)) > 0: #first quadrant
+                ideal_rotation = 90 - ang
+            else: #second quadrant
+                ideal_rotation = 270 + ang
+        else:
+            if grad_points((a,b), (c,d)) > 0: #third quadrant
+                ideal_rotation = 270 - ang
+            else: #fourth quadrant
+                ideal_rotation = 90 + ang
+        
+        angle_change = abs((self.car.rotation%360) - ideal_rotation) / 180
+        print(self.car.rotation%360)
+        print(ideal_rotation)
+        print(angle_change)
+
     #function calculates the reward of each tick
     def reward(self):
         reward = 0
@@ -577,8 +613,7 @@ class Car:
     def action(self, actions):
         #----------CAR MOVEMENT----------#
         self.actions = chooseAction(actions) #turns the ai input into a list, or keeps the user list the same.
-        #print(actions)
-        #print(self.actions)
+
         #slowing the car down due to frction
         if self.velocity > 0:
             self.velocity -= self.friction
@@ -850,7 +885,7 @@ class RacingEnv(pyglet.window.Window):
         self.user_action = self.player1.action_list
 
     def on_mouse_press(self, x,y,button, modifiers): #just for testing the reset function works
-        self.reset()
+        self.player1.car_direction()
 
     def update(self,dt):
         self.step(self.user_action)

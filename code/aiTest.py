@@ -72,7 +72,7 @@ agent = DQNAgent(
 agent.compile(Adam(learning_rate=0.001), metrics=["mae"])
 
 # Fit the agent
-agent.fit(game, nb_steps=1000, visualize=False, verbose=1)
+agent.fit(game, nb_steps=10000, visualize=True, verbose=1)
 
 #NOTE: need to make a system so that I can see that the car actually moves after trainings such as a system where I can trace the cars movement
 # Test the agent
@@ -98,7 +98,7 @@ def random_action(numb):
 #games = 0
 #score = 0
 
-#game.MAX_EPISODE_LENGTH = 1000
+game.MAX_EPISODE_LENGTH = 1000
 def run_episode():
     global games
     global score
