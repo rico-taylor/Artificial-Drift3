@@ -15,7 +15,7 @@ from rl.memory import SequentialMemory
 game = GameEnv.RacingEnv()
 
 # Define the state space and number of actions
-states = 16
+states = 17
 actions = 15 
 
 def chooseAction(int):
@@ -68,11 +68,13 @@ agent = DQNAgent(
     target_model_update=0.01
 )
 
+game.MAX_EPISODE_LENGTH = 3000
+
 # Compile the agent
 agent.compile(Adam(learning_rate=0.001), metrics=["mae"])
 
 # Fit the agent
-agent.fit(game, nb_steps=10000, visualize=True, verbose=1)
+agent.fit(game, nb_steps=100000, visualize=True, verbose=1)
 
 #NOTE: need to make a system so that I can see that the car actually moves after trainings such as a system where I can trace the cars movement
 # Test the agent
@@ -98,7 +100,6 @@ def random_action(numb):
 #games = 0
 #score = 0
 
-game.MAX_EPISODE_LENGTH = 1000
 def run_episode():
     global games
     global score
