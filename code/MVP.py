@@ -728,6 +728,8 @@ class RacingEnv(pyglet.window.Window):
         self.gate_lines = pyglet.graphics.Batch()
         self.ai_lines = pyglet.graphics.Batch()
 
+        self.entry = pyglet.graphics.Batch()
+
         self.player1 = Car(car_start_x,car_start_y,260,"images/car.png", key.W, key.S, key.A, key.D, key.LSHIFT)
         self.user_action = [False,False,False,False,False]
 
@@ -757,13 +759,42 @@ class RacingEnv(pyglet.window.Window):
         self.SLIGHT_ROT_RESET = False
         self.RANDOM_ROT_RESET = True
 
+        #origional pages open
+        self.screenOn = [1,0,0,0] #entry screen, pop-up log in, pop-up leaderboard, game play screen
+
+        #log in
+        self.logged = False
+
         #amount of wall collisions in one episode
         self.hits = 0
         #length of the episode
         self.ticks = 0
 
         self.MAX_EPISODE_LENGTH = 1000
-        
+
+        #ENTRY SCREEN CODE
+        #logo
+        self.logo_img = image.load("images/logo_finished.png")
+        self.logo_img.anchor_x = self.logo_img.width//2
+        self.logo_img.anchor_y = self.logo_img.height//2
+        self.logo = sprite.Sprite(self.logo_img, x=windowwidth//2, y=windowheight//2 +100, batch=self.entry)
+        self.logo.scale = scale_factor
+
+        #play button
+        self.play_img = image.load("images/text_play.png")
+        self.play_img.anchor_x = self.play_img.width//2
+        self.play_img.anchor_y = self.play_img.height//2
+        self.playButton = sprite.Sprite(self.play_img, x=windowwidth//2, y=windowheight//2 -200, batch=self.entry)
+        self.playButton.scale = 0.5*scale_factor
+
+        #triangle decoration
+        self.triangle_img = image.load("images/triangle1_translucent.png")
+        self.triangle_img.anchor_x = self.triangle_img.width//2
+        self.triangle_img.anchor_y = self.triangle_img.height//2
+        self.triangle1 = sprite.Sprite(self.triangle_img, x=100, y=100, batch=self.entry)
+        self.triangle1.rotation = 30
+        self.triangle1.scale = 0.3*scale_factor
+
     def reset(self):
         if self.SIMPLE_RESET == True: #respawning the car at the start line
             if self.SLIGHT_ROT_RESET == True: #respawning the car facing forwards but at a slihgtly different rotation
@@ -869,24 +900,28 @@ class RacingEnv(pyglet.window.Window):
         
     def render(self, mode="human"):
         self.clear()
-        if self.SHOW_WALLS == True:
-            self.wall_lines.draw()
-        if self.SHOW_CARS == True:
-            self.player1.car.draw()
-        if self.SHOW_GATES == True:
-            self.gate_lines.draw()
-        if self.SHOW_RAYS == True:
-            pointsList = []
-            #adding all the rays to the batch
-            for ray in self.player1.new_rays:
-                ray.batch = self.ai_lines
-                ray.opacity = 100
-            #adding all the points where the ray collides with the cloest wall to the batch
-            for point in self.player1.collisionPointsList:
-                pointsList.append(pyglet.shapes.Circle(x=point[0], y=point[1], radius=5, color=(255,0,0), batch=self.ai_lines))
-            
-            self.ai_lines.draw()
-        self.flip() #for the ai, can be removed for casual play
+        #rendering dependant on the window
+        if self.screenOn[0] == 1:
+            self.entry.draw()
+        else:
+            if self.SHOW_WALLS == True:
+                self.wall_lines.draw()
+            if self.SHOW_CARS == True:
+                self.player1.car.draw()
+            if self.SHOW_GATES == True:
+                self.gate_lines.draw()
+            if self.SHOW_RAYS == True:
+                pointsList = []
+                #adding all the rays to the batch
+                for ray in self.player1.new_rays:
+                    ray.batch = self.ai_lines
+                    ray.opacity = 100
+                #adding all the points where the ray collides with the cloest wall to the batch
+                for point in self.player1.collisionPointsList:
+                    pointsList.append(pyglet.shapes.Circle(x=point[0], y=point[1], radius=5, color=(255,0,0), batch=self.ai_lines))
+                
+                self.ai_lines.draw()
+            #self.flip() #for the ai, can be removed for casual play
 
     def on_key_press(self, symbol, modifiers):
         self.player1.on_key_press(symbol, modifiers)
@@ -896,8 +931,15 @@ class RacingEnv(pyglet.window.Window):
         self.player1.on_key_release(symbol, modifiers)
         self.user_action = self.player1.action_list
 
-    def on_mouse_press(self, x,y,button, modifiers): #just for testing the reset function works
-        self.player1.car_direction()
+    def on_mouse_press(self, x,y,button, modifiers):
+        if button == mouse.LEFT:
+            if self.screenOn[0] == 1:
+                if x > 525 and x < 930:
+                    if y > 195 and y < 300:
+                        if self.logged == True:
+                            self.screenOn = [0,0,0,1]
+                        else:
+                            self.screenOn = [1,1,0,0]
 
     def update(self,dt):
         self.step(self.user_action)
