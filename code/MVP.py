@@ -729,6 +729,7 @@ class RacingEnv(pyglet.window.Window):
         self.ai_lines = pyglet.graphics.Batch()
 
         self.entry = pyglet.graphics.Batch()
+        self.loginDisplays = pyglet.graphics.Batch()
 
         self.player1 = Car(car_start_x,car_start_y,260,"images/car.png", key.W, key.S, key.A, key.D, key.LSHIFT)
         self.user_action = [False,False,False,False,False]
@@ -794,6 +795,14 @@ class RacingEnv(pyglet.window.Window):
         self.triangle1 = sprite.Sprite(self.triangle_img, x=100, y=100, batch=self.entry)
         self.triangle1.rotation = 30
         self.triangle1.scale = 0.3*scale_factor
+
+        #LOG IN SCREEN
+        #heading
+        login_img = image.load("images/text_log-in.png")
+        login_img.anchor_x = login_img.windowwidth//2
+        login_img.anchor_y = login_img.windowheight//2
+        loginHeading = sprite.Sprite(login_img, x=windowwidth//2, y=windowheight//2, batch=loginDisplays)
+        loginHeading.scale = 0.5*scale_factor
 
     def reset(self):
         if self.SIMPLE_RESET == True: #respawning the car at the start line
