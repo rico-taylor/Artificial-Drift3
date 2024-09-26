@@ -5,38 +5,76 @@ from pyglet import sprite, image
 from pyglet.window import key, mouse
 from math import sin, cos, atan, acos, asin, radians, sqrt, tanh
 
+text_input = str()
+
 #main window
 window = pyglet.window.Window(resizable = False, caption="Artificial Drift")
 window.set_fullscreen(True)
 
+window.canvas
+
 #scaling so that all screen sizes can play
 scale_factor = (window.width/1920)%1
+windowwidth = window.width
+windowheight = window.height
+scale_factor = 0.75
 
 #defining batches
-lines = pyglet.graphics.Batch()
-displays = pyglet.graphics.Batch()
-entryDisplay = pyglet.graphics.Batch()
-aiLines = pyglet.graphics.Batch()
+loginDisplays = pyglet.graphics.Batch()
+
 
 #entry images
-#logo
-logo_img = image.load("images/logo_finished.png")
-logo_img.anchor_x = logo_img.width//2
-logo_img.anchor_y = logo_img.height//2
-logo = sprite.Sprite(logo_img, x=window.width//2, y=window.height//2 +100, batch=loginDisplays)
-logo.scale = scale_factor
+rectangle3 = pyglet.shapes.Rectangle(x=0, y=0, width=windowwidth, height=windowheight, color=(0, 106, 36), batch=loginDisplays)
+rectangle3.opacity = 20
+#inner box
+rectangle2= pyglet.shapes.Rectangle(x=398, y=148, width=windowwidth-(400*2)+4, height=554, color=(0, 0, 0), batch=loginDisplays)
+rectangle2.opacity = 16
 
-#play button
+#box
+rectangle = pyglet.shapes.Rectangle(x=400, y=150, width=windowwidth-(400*2), height=550, color=(254, 106, 36), batch=loginDisplays)
+rectangle.opacity = 16
+
+#header
 login_img = image.load("images/text_log-in.png")
-login_img.anchor_x = login_img.windowwidth//2
-login_img.anchor_y = login_img.windowheight//2
-loginHeading = sprite.Sprite(login_img, x=windowwidth//2, y=windowheight//2, batch=loginDisplays)
-loginHeading.scale = 0.5*scale_factor
+login_img.anchor_x = login_img.width//2
+login_img.anchor_y = login_img.height//2
+loginHeading = sprite.Sprite(login_img, x=windowwidth//2, y=windowheight//2 +200, batch=loginDisplays)
+loginHeading.scale = 0.26*scale_factor
 
-#triangle decoration
-triangle_img = image.load("images/triangle1_translucent.png")
-triangle_img.anchor_x = triangle_img.width//2
-triangle_img.anchor_y = triangle_img.height//2
-triangle1 = sprite.Sprite(triangle_img, x=100, y=100, batch=entryDisplay)
-triangle1.rotation = 30
-triangle1.scale = 0.3*scale_factor
+#label
+label = pyglet.text.Label(text_input, font_name='Arial', font_size=20, x=700, y=400, batch=loginDisplays)
+
+
+@window.event
+def on_draw():
+    loginDisplays.draw()
+
+next_letter = False
+@window.event
+def on_key_press(symbol,modifiers):
+    global text_input
+    global next_letter
+    global label
+    if symbol == key.LSHIFT or symbol == key.RSHIFT:
+        next_letter = True
+    if next_letter == True:
+        if key.A <= symbol <= key.Z:
+            text_input = text_input + str(chr(symbol)).upper()
+            next_letter = False
+    else:
+        if symbol == key.BACKSPACE:
+            text_input = text_input[:-1]
+        elif key.A <= symbol <= key.Z or symbol == key.SPACE:
+            text_input = text_input + str(chr(symbol))
+
+    label = pyglet.text.Label(text_input, font_name='Arial', font_size=20, x=700, y=400, batch=loginDisplays)
+
+
+@window.event
+def on_mouse_press(x,y,button, modifiers):
+    global text_input
+    if button == mouse.LEFT:
+        print(text_input)
+        text_input = str()
+
+pyglet.app.run()
