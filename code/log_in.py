@@ -24,8 +24,9 @@ loginDisplays = pyglet.graphics.Batch()
 
 
 #entry images
-rectangle3 = pyglet.shapes.Rectangle(x=0, y=0, width=windowwidth, height=windowheight, color=(0, 106, 36), batch=loginDisplays)
-rectangle3.opacity = 20
+rectangle4 = pyglet.shapes.Rectangle(x=0, y=0, width=windowwidth, height=windowheight, color=(0, 106, 36), batch=loginDisplays)
+rectangle4.opacity = 20
+
 #inner box
 rectangle2= pyglet.shapes.Rectangle(x=398, y=148, width=windowwidth-(400*2)+4, height=554, color=(0, 0, 0), batch=loginDisplays)
 rectangle2.opacity = 16
@@ -41,8 +42,19 @@ login_img.anchor_y = login_img.height//2
 loginHeading = sprite.Sprite(login_img, x=windowwidth//2, y=windowheight//2 +200, batch=loginDisplays)
 loginHeading.scale = 0.26*scale_factor
 
+#"username"
+username_img = image.load("images/text_username.png")
+username_img.anchor_x = username_img.width//2
+username_img.anchor_y = username_img.height//2
+usernameHeading = sprite.Sprite(username_img, x=windowwidth//2-200, y=windowheight//2 +140, batch=loginDisplays)
+usernameHeading.scale = 0.1*scale_factor
+
+#textbox1
+rectangle3 = pyglet.shapes.Rectangle(x=450, y=520, width=500, height=50, color=(255, 255, 255), batch=loginDisplays)
+rectangle3.opacity = 50
+
 #label
-label = pyglet.text.Label(text_input, font_name='Arial', font_size=20, x=700, y=400, batch=loginDisplays)
+label = pyglet.text.Label(text_input, font_name='Arial', font_size=20, x=700, y=800, batch=loginDisplays)
 
 
 @window.event
@@ -67,7 +79,7 @@ def on_key_press(symbol,modifiers):
         elif key.A <= symbol <= key.Z or symbol == key.SPACE:
             text_input = text_input + str(chr(symbol))
 
-    label = pyglet.text.Label(text_input, font_name='Arial', font_size=20, x=700, y=400, batch=loginDisplays)
+    label = pyglet.text.Label(text_input, font_name='Arial', font_size=20, x=500, y=500, batch=loginDisplays)
 
 
 @window.event
