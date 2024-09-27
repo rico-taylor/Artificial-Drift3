@@ -15,8 +15,6 @@ selected_textbox = 1
 window = pyglet.window.Window(resizable = False, caption="Artificial Drift")
 window.set_fullscreen(True)
 
-window.canvas
-
 #scaling so that all screen sizes can play
 scale_factor = (window.width/1920)%1
 windowwidth = window.width
@@ -79,6 +77,16 @@ rectangle5.opacity = 50
 rectangle6 = pyglet.shapes.Rectangle(x=450, y=300, width=500, height=50, color=(255, 255, 255), batch=loginDisplays)
 rectangle6.opacity = 50
 
+#enter button
+rectangle7 = pyglet.shapes.Rectangle(x=770, y=180, width=180, height=50, color=(0, 0, 0), batch=loginDisplays)
+rectangle7.opacity = 50
+
+enter_img = image.load("images/text_enter....png")
+enter_img.anchor_x = enter_img.width//2
+enter_img.anchor_y = enter_img.height//2
+enterHeading = sprite.Sprite(enter_img, x=860, y=205, batch=loginDisplays)
+enterHeading.scale = 0.15*scale_factor
+
 #label
 label1 = pyglet.text.Label(text_input1, font_name='Arial', font_size=20, x=700, y=700, batch=loginDisplays)
 label2 = pyglet.text.Label(text_input2, font_name='Arial', font_size=20, x=700, y=700, batch=loginDisplays)
@@ -127,7 +135,7 @@ def on_key_press(symbol,modifiers):
     else:
         if symbol == key.BACKSPACE:
             print("here")
-            text_input2 = text_input3[:-1]
+            text_input3 = text_input3[:-1]
         else:
             text_input3 = text_input3 + str(chr(symbol))
 
@@ -158,9 +166,20 @@ def on_mouse_press(x,y,button, modifiers):
                 rectangle3.color = (255,255,255)
                 rectangle5.color = (255, 255, 255)
                 rectangle6.color = (0, 0, 0)
+            #for the enter button
+            if 769 < x < 951:
+                if 179 < y < 231:
+                    print("ENTER ENTER")
 
+@window.event
+def on_mouse_motion(x, y, dx, dy):
+    if 769 < x < 951:
+        if 179 < y < 231:
+            rectangle7.opacity = 150
+    if not 769 < x < 951 or not 179 < y < 231:
+            rectangle7.opacity = 50
 
+    
         
-        print(x,y)
 
 pyglet.app.run()
