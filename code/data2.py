@@ -10,15 +10,17 @@ DEFAULT_TIME = 0
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS lap_times(
     gamer_name TEXT,
+    password VARCHAR, 
+    date VARCHAR,
     time FLOAT
 )
 """)
 
-def new_player_db(player_name):
+def new_player_db(player_name, password):
     cursor.execute("""
     INSERT INTO lap_times VALUES
-    ('{}', {})             
-    """.format(player_name, 0))
+    ('{}', '{}', {}, {})             
+    """.format(player_name, password, 0, 0))
 
     connection.commit()
 
@@ -39,5 +41,6 @@ def get_db():
     return results
 
 
-new_player_db("Rico Taylor")
+#new_player_db("Rico Taylor", "password123")
+delete_player_db("Rico Taylor")
 print(get_db())
