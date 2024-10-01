@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS lap_times(
 def new_player_db(player_name, password):
     cursor.execute("""
     INSERT INTO lap_times VALUES
-    ('{}', '{}', {}, {})             
+    ('{}', '{}', '{}', {})             
     """.format(player_name, password, 0, 0))
 
     connection.commit()
@@ -35,6 +35,22 @@ def delete_player_db(player_name):
 def new_pb():
     pass
 
+def check_if_in_db(player_name, password):
+    cursor.execute("""
+    SELECT * FROM lap_times
+    WHERE gamer_name = '{}'
+""".format(player_name))
+    players = cursor.fetchall() 
+    try:
+        player = players[0]
+        if password == player[1]:
+            print("the passwords match")
+        else:
+            print("the passwords don't match")
+    except:
+        print("username not found")
+
+
 def get_db():
     cursor.execute("SELECT * FROM lap_times")
     results = cursor.fetchall()
@@ -42,5 +58,7 @@ def get_db():
 
 
 #new_player_db("Rico Taylor", "password123")
-delete_player_db("Rico Taylor")
-print(get_db())
+#delete_player_db("Rico Taylor")
+
+check_if_in_db("Steve Jobs", "password123")
+#print(get_db())

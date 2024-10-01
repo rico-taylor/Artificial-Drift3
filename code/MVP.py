@@ -2,6 +2,7 @@
 import pyglet
 import time
 import random
+import sqlite3
 from pyglet import sprite, image
 from pyglet.window import key, mouse
 from math import sin, cos, atan, acos, asin, radians, sqrt, tanh
@@ -729,7 +730,9 @@ class RacingEnv(pyglet.window.Window):
         self.ai_lines = pyglet.graphics.Batch()
 
         self.entry = pyglet.graphics.Batch()
-        self.loginDisplays = pyglet.graphics.Batch()
+        self.logsignDisplays = pyglet.graphics.Batch()
+        self.logExtras = pyglet.graphics.Batch()
+        self.signExtras = pyglet.graphics.Batch()
 
         self.player1 = Car(car_start_x,car_start_y,260,"images/car.png", key.W, key.S, key.A, key.D, key.LSHIFT)
         self.user_action = [False,False,False,False,False]
@@ -797,103 +800,156 @@ class RacingEnv(pyglet.window.Window):
         self.triangle1.scale = 0.3*scale_factor
 
         #LOG IN SCREEN------------------------------
-        self.textbox_states = [2,0] #0=white (no hover and not selected) 1=grey (hover, but not selected) 2=black (selected)
+        self.textbox_states = [2,0,0] #0=white (no hover and not selected) 1=grey (hover, but not selected) 2=black (selected)
         
-        self.text_input1 = str()
-        self.text_input2 = str()
+        self.text_log_input1 = str()
+        self.text_log_input2 = str()
         #self.text_input3 = str()
 
         self.next_letter = False
         self.next_letter2 = False
         
-        self.selected_textbox = 1
+        self.selected_textbox_log = 1
 
         self.MAXIMUM_CHARACTER_LIMIT = 20
 
         #backdrop box
         #entry images
-        self.backdrop = pyglet.shapes.Rectangle(x=0, y=0, width=windowwidth, height=windowheight, color=(0, 0, 0), batch=self.loginDisplays)
+        self.backdrop = pyglet.shapes.Rectangle(x=0, y=0, width=windowwidth, height=windowheight, color=(0, 0, 0), batch=self.logsignDisplays)
         self.backdrop.opacity = 190
 
         #inner box
-        self.rectangle2= pyglet.shapes.Rectangle(x=398, y=148, width=windowwidth-(400*2)+4, height=554, color=(0, 0, 0), batch=self.loginDisplays)
+        self.rectangle2= pyglet.shapes.Rectangle(x=398, y=148, width=windowwidth-(400*2)+4, height=554, color=(0, 0, 0), batch=self.logsignDisplays)
         self.rectangle2.opacity = 160
 
         #box
-        self.rectangle = pyglet.shapes.Rectangle(x=400, y=150, width=windowwidth-(400*2), height=550, color=(240, 90, 25), batch=self.loginDisplays)
+        self.rectangle = pyglet.shapes.Rectangle(x=400, y=150, width=windowwidth-(400*2), height=550, color=(240, 90, 25), batch=self.logsignDisplays)
         self.rectangle.opacity = 160
 
         #header
         self.login_img = image.load("images/text_log-in.png")
         self.login_img.anchor_x = self.login_img.width//2
         self.login_img.anchor_y = self.login_img.height//2
-        self.loginHeading = sprite.Sprite(self.login_img, x=windowwidth//2, y=windowheight//2 +200, batch=self.loginDisplays)
+        self.loginHeading = sprite.Sprite(self.login_img, x=windowwidth//2, y=windowheight//2 +200, batch=self.logExtras)
         self.loginHeading.scale = 0.26*scale_factor
 
         #"username"
         self.username_img = image.load("images/text_username.png")
         self.username_img.anchor_x = self.username_img.width//2
         self.username_img.anchor_y = self.username_img.height//2
-        self.usernameHeading = sprite.Sprite(self.username_img, x=windowwidth//2-200, y=windowheight//2 +140, batch=self.loginDisplays)
+        self.usernameHeading = sprite.Sprite(self.username_img, x=windowwidth//2-200, y=windowheight//2 +140, batch=self.logsignDisplays)
         self.usernameHeading.scale = 0.1*scale_factor
 
         #"password"
         self.password_img = image.load("images/text_password.png")
         self.password_img.anchor_x = self.password_img.width//2
         self.password_img.anchor_y = self.password_img.height//2
-        self.passwordHeading = sprite.Sprite(self.password_img, x=windowwidth//2-200, y=windowheight//2 +30, batch=self.loginDisplays)
+        self.passwordHeading = sprite.Sprite(self.password_img, x=windowwidth//2-200, y=windowheight//2 +30, batch=self.logsignDisplays)
         self.passwordHeading.scale = 0.1*scale_factor
 
         #"don't have an account?"
         self.no_account_img = image.load("images/tex_no_account.png")
         self.no_account_img.anchor_x = self.no_account_img.width//2
         self.no_account_img.anchor_y = self.no_account_img.height//2
-        self.no_accountHeading = sprite.Sprite(self.no_account_img, x=windowwidth//2, y=windowheight//2 -100, batch=self.loginDisplays)
+        self.no_accountHeading = sprite.Sprite(self.no_account_img, x=windowwidth//2, y=windowheight//2 -100, batch=self.logExtras)
         self.no_accountHeading.scale = 0.2*scale_factor
 
         #sign up button
-        self.rectangle8 = pyglet.shapes.Rectangle(x=650, y=304, width=141, height=32, color=(0, 0, 0), batch=self.loginDisplays)
+        self.rectangle8 = pyglet.shapes.Rectangle(x=650, y=304, width=141, height=32, color=(0, 0, 0), batch=self.logExtras)
         self.rectangle8.opacity = 50
 
         self.sign_up_img = image.load("images/text_sign-up.png")
         self.sign_up_img.anchor_x = self.sign_up_img.width//2
         self.sign_up_img.anchor_y = self.sign_up_img.height//2
-        self.sign_upHeading = sprite.Sprite(self.sign_up_img, x=windowwidth//2, y=windowheight//2 -130, batch=self.loginDisplays)
+        self.sign_upHeading = sprite.Sprite(self.sign_up_img, x=windowwidth//2, y=windowheight//2 -130, batch=self.logExtras)
         self.sign_upHeading.scale = 0.13*scale_factor
         
         #"confirm password"
-        #self.confirm_img = image.load("images/text_confirm-password.png")
-        #self.confirm_img.anchor_x = self.confirm_img.width//2
-        #self.confirm_img.anchor_y = self.confirm_img.height//2
-        #self.confirmHeading = sprite.Sprite(self.confirm_img, x=windowwidth//2-140, y=windowheight//2 -80, batch=self.loginDisplays)
-        #self.confirmHeading.scale = 0.15*scale_factor
+        self.confirm_img = image.load("images/text_confirm-password.png")
+        self.confirm_img.anchor_x = self.confirm_img.width//2
+        self.confirm_img.anchor_y = self.confirm_img.height//2
+        self.confirmHeading = sprite.Sprite(self.confirm_img, x=windowwidth//2-140, y=windowheight//2 -80, batch=self.signExtras)
+        self.confirmHeading.scale = 0.15*scale_factor
 
         #textbox1
-        self.rectangle3 = pyglet.shapes.Rectangle(x=450, y=520, width=500, height=50, color=(255, 255, 255), batch=self.loginDisplays)
+        self.rectangle3 = pyglet.shapes.Rectangle(x=450, y=520, width=500, height=50, color=(255, 255, 255), batch=self.logsignDisplays)
         self.rectangle3.opacity = 150
 
         #textbox2
-        self.rectangle5 = pyglet.shapes.Rectangle(x=450, y=410, width=500, height=50, color=(255, 255, 255), batch=self.loginDisplays)
+        self.rectangle5 = pyglet.shapes.Rectangle(x=450, y=410, width=500, height=50, color=(255, 255, 255), batch=self.logsignDisplays)
         self.rectangle5.opacity = 150
 
-        ##textbox3
-        #self.rectangle6 = pyglet.shapes.Rectangle(x=450, y=300, width=500, height=50, color=(255, 255, 255), batch=self.loginDisplays)
-        #self.rectangle6.opacity = 150
+        #textbox3
+        self.rectangle6 = pyglet.shapes.Rectangle(x=450, y=300, width=500, height=50, color=(255, 255, 255), batch=self.signExtras)
+        self.rectangle6.opacity = 150
 
         #label
-        self.label1 = pyglet.text.Label(self.text_input1, font_name='Arial', font_size=20, x=700, y=700, batch=self.loginDisplays)
-        self.label2 = pyglet.text.Label(self.text_input2, font_name='Arial', font_size=20, x=700, y=700, batch=self.loginDisplays)
-        #self.label3 = pyglet.text.Label(self.text_input3, font_name='Arial', font_size=20, x=700, y=700, batch=self.loginDisplays)
+        self.label1 = pyglet.text.Label(self.text_log_input1, font_name='Arial', font_size=20, x=700, y=700, batch=self.logExtras)
+        self.label2 = pyglet.text.Label(self.text_log_input2, font_name='Arial', font_size=20, x=700, y=700, batch=self.logExtras)
 
         #enter button
-        self.rectangle7 = pyglet.shapes.Rectangle(x=770, y=180, width=180, height=50, color=(0, 0, 0), batch=self.loginDisplays)
+        self.rectangle7 = pyglet.shapes.Rectangle(x=770, y=180, width=180, height=50, color=(0, 0, 0), batch=self.logsignDisplays)
         self.rectangle7.opacity = 50
 
         self.enter_img = image.load("images/text_enter....png")
         self.enter_img.anchor_x = self.enter_img.width//2
         self.enter_img.anchor_y = self.enter_img.height//2
-        self.enterHeading = sprite.Sprite(self.enter_img, x=860, y=205, batch=self.loginDisplays)
+        self.enterHeading = sprite.Sprite(self.enter_img, x=860, y=205, batch=self.logsignDisplays)
         self.enterHeading.scale = 0.15*scale_factor
+
+        #SIGN UP EXTRAS------------------------------
+        self.text_sign_input1 = str()
+        self.text_sign_input2 = str()
+        self.text_sign_input3 = str()
+
+        self.next_letter3 = False
+        self.next_letter4 = False
+        self.next_letter5 = False
+        
+        self.selected_textbox_sign = 1
+        
+        #heading
+        self.sign_up2_img = image.load("images/text_sign-up.png")
+        self.sign_up2_img.anchor_x = self.sign_up2_img.width//2
+        self.sign_up2_img.anchor_y = self.sign_up2_img.height//2
+        self.sign_up2Heading = sprite.Sprite(self.sign_up2_img, x=windowwidth//2, y=windowheight//2 +200, batch=self.signExtras)
+        self.sign_up2Heading.scale = 0.26*scale_factor
+
+        #back button
+        self.rectangle9 = pyglet.shapes.Rectangle(x=450, y=627, width=46, height=46, color=(0, 0, 0), batch=self.signExtras)
+        self.rectangle9.opacity = 50
+
+        #back icon
+        self.back_img = image.load("images/icon_back.png")
+        self.back_img.anchor_x = self.back_img.width//2
+        self.back_img.anchor_y = self.back_img.height//2
+        self.backButton = sprite.Sprite(self.back_img, x=473, y=650, batch=self.signExtras)
+        self.backButton.scale = 0.25*scale_factor
+
+        #labels
+        self.label3 = pyglet.text.Label(self.text_sign_input1, font_name='Arial', font_size=20, x=700, y=700, batch=self.signExtras)
+        self.label4 = pyglet.text.Label(self.text_sign_input2, font_name='Arial', font_size=20, x=700, y=700, batch=self.signExtras)
+        self.label5 = pyglet.text.Label(self.text_sign_input3, font_name='Arial', font_size=20, x=700, y=700, batch=self.signExtras)
+
+        #DATABASE -----------------------------
+        self.connection = sqlite3.connect("data2.db")
+        self.cursor = self.connection.cursor()
+
+    #function for checking if the user name and password pair are in the database
+    def check_if_in_db(self, player_name, password):
+        self.cursor.execute("""
+        SELECT * FROM lap_times
+        WHERE gamer_name = '{}'
+    """.format(player_name))
+        players = self.cursor.fetchall() 
+        try:
+            player = players[0]
+            if password == player[1]:
+                return 0 #the passwords match
+            else:
+                print("the passwords don't match")
+        except:
+            print("username not found")
 
     def reset(self):
         if self.SIMPLE_RESET == True: #respawning the car at the start line
@@ -1006,18 +1062,22 @@ class RacingEnv(pyglet.window.Window):
         else:
             rectangle.color = (0,0,0)
 
-
     def render(self, mode="human"):
         self.clear()
         #rendering dependant on the window
         if self.screenOn[0] == 1:
             self.entry.draw()
         if self.screenOn[1] == 1:
-            self.loginDisplays.draw()
+            self.logsignDisplays.draw()
+            self.logExtras.draw()
             self.textbox_colour(0, self.rectangle3)
             self.textbox_colour(1, self.rectangle5)
         if self.screenOn[2] == 1:
-            pass    
+            self.logsignDisplays.draw()
+            self.signExtras.draw()
+            self.textbox_colour(0, self.rectangle3)    
+            self.textbox_colour(1, self.rectangle5)    
+            self.textbox_colour(2, self.rectangle6)    
         if self.screenOn[4] == 1:
             if self.SHOW_WALLS == True:
                 self.wall_lines.draw()
@@ -1041,53 +1101,92 @@ class RacingEnv(pyglet.window.Window):
     def on_key_press(self, symbol, modifiers):
         #if the log in screen is on
         if self.screenOn[1] == 1:
-            if self.selected_textbox == 1:
+            if self.selected_textbox_log == 1:
                 if symbol == key.LSHIFT or symbol == key.RSHIFT:
                     self.next_letter = True
                 if self.next_letter == True:
                     if key.A <= symbol <= key.Z:
-                        if len(self.text_input1) < 20:
-                            self.text_input1 = self.text_input1 + str(chr(symbol)).upper()
+                        if len(self.text_log_input1) < 20:
+                            self.text_log_input1 = self.text_log_input1 + str(chr(symbol)).upper()
                         self.next_letter = False
                 else:
                     if symbol == key.BACKSPACE:
-                        self.text_input1 = self.text_input1[:-1]
+                        self.text_log_input1 = self.text_log_input1[:-1]
                     elif key.A <= symbol <= key.Z or symbol == key.SPACE:
-                        if len(self.text_input1) < 20:
-                            self.text_input1 = self.text_input1 + str(chr(symbol))
+                        if len(self.text_log_input1) < 20:
+                            self.text_log_input1 = self.text_log_input1 + str(chr(symbol))
 
-                self.label1 = pyglet.text.Label(self.text_input1, font_name='Arial', font_size=20, x=460, y=535, batch=self.loginDisplays)
+                self.label1 = pyglet.text.Label(self.text_log_input1, font_name='Arial', font_size=20, x=460, y=535, batch=self.logExtras)
 
-            elif self.selected_textbox == 2:
+            elif self.selected_textbox_log == 2:
                 if symbol == key.LSHIFT or symbol == key.RSHIFT:
                     self.next_letter2 = True
                 if symbol == key.BACKSPACE:
-                    self.text_input2 = self.text_input2[:-1]
+                    self.text_log_input2 = self.text_log_input2[:-1]
                 if self.next_letter2 == True:
                     if key.A <= symbol <= key.Z:
-                        if len(self.text_input2) < 20:
-                            self.text_input2 = self.text_input2 + str(chr(symbol)).upper()
+                        if len(self.text_log_input2) < 20:
+                            self.text_log_input2 = self.text_log_input2 + str(chr(symbol)).upper()
                         self.next_letter2 = False
                 else:
                     if symbol != key.BACKSPACE:
-                        if len(self.text_input2) < 20:
-                            self.text_input2 = self.text_input2 + str(chr(symbol))
+                        if len(self.text_log_input2) < 20:
+                            self.text_log_input2 = self.text_log_input2 + str(chr(symbol))
 
-                self.label2 = pyglet.text.Label(self.text_input2, font_name='Arial', font_size=20, x=460, y=425, batch=self.loginDisplays)
-
-            #else:
-            #    if symbol == key.BACKSPACE:
-            #        print("here")
-            #        self.text_input3 = self.text_input3[:-1]
-            #    else:
-            #        self.text_input3 = self.text_input3 + str(chr(symbol))
-
-            #    self.label3 = pyglet.text.Label(self.text_input3, font_name='Arial', font_size=20, x=460, y=315, batch=self.loginDisplays)
+                self.label2 = pyglet.text.Label(self.text_log_input2, font_name='Arial', font_size=20, x=460, y=425, batch=self.logExtras)
 
         elif self.screenOn[2] == 1:
-            pass
+            if self.selected_textbox_sign == 1:
+                if symbol == key.LSHIFT or symbol == key.RSHIFT:
+                    self.next_letter3 = True
+                if self.next_letter3 == True:
+                    if key.A <= symbol <= key.Z:
+                        if len(self.text_sign_input1) < 20:
+                            self.text_sign_input1 = self.text_sign_input1 + str(chr(symbol)).upper()
+                        self.next_letter3 = False
+                else:
+                    if symbol == key.BACKSPACE:
+                        self.text_sign_input1 = self.text_sign_input1[:-1]
+                    elif key.A <= symbol <= key.Z or symbol == key.SPACE:
+                        if len(self.text_sign_input1) < 20:
+                            self.text_sign_input1 = self.text_sign_input1 + str(chr(symbol))
+
+                self.label3 = pyglet.text.Label(self.text_sign_input1, font_name='Arial', font_size=20, x=460, y=535, batch=self.signExtras)
+            if self.selected_textbox_sign == 2:
+                if symbol == key.LSHIFT or symbol == key.RSHIFT:
+                    self.next_letter4 = True
+                if symbol == key.BACKSPACE:
+                    self.text_sign_input2 = self.text_sign_input2[:-1]
+                if self.next_letter4 == True:
+                    if key.A <= symbol <= key.Z:
+                        if len(self.text_sign_input2) < 20:
+                            self.text_sign_input2 = self.text_sign_input2 + str(chr(symbol)).upper()
+                        self.next_letter4 = False
+                else:
+                    if symbol != key.BACKSPACE:
+                        if len(self.text_sign_input2) < 20:
+                            self.text_sign_input2 = self.text_sign_input2 + str(chr(symbol))
+
+                self.label4 = pyglet.text.Label(self.text_sign_input2, font_name='Arial', font_size=20, x=460, y=425, batch=self.signExtras)
+            if self.selected_textbox_sign == 3:
+                if symbol == key.LSHIFT or symbol == key.RSHIFT:
+                    self.next_letter5 = True
+                if symbol == key.BACKSPACE:
+                    self.text_sign_input3 = self.text_sign_input2[:-1]
+                if self.next_letter5 == True:
+                    if key.A <= symbol <= key.Z:
+                        if len(self.text_sign_input3) < 20:
+                            self.text_sign_input3 = self.text_sign_input3 + str(chr(symbol)).upper()
+                        self.next_letter5 = False
+                else:
+                    if symbol != key.BACKSPACE:
+                        if len(self.text_sign_input3) < 20:
+                            self.text_sign_input3 = self.text_sign_input3 + str(chr(symbol))
+
+                self.label5 = pyglet.text.Label(self.text_sign_input3, font_name='Arial', font_size=20, x=460, y=315, batch=self.signExtras)
+
         #if the racing screen is on
-        if self.screenOn == [0,0,0,0,0,1]:
+        if self.screenOn == [0,0,0,0,1]:
             self.player1.on_key_press(symbol, modifiers)
             self.user_action = self.player1.action_list
     
@@ -1105,28 +1204,63 @@ class RacingEnv(pyglet.window.Window):
                         else:
                             self.screenOn = [1,1,0,0,0]
             elif self.screenOn[1] == 1:
-                if button == mouse.LEFT:
-                    if 449 < x < 951:
-                        if 519 < y < 571:
-                            self.selected_textbox = 1
-                            self.textbox_states = [2,0]
-                        elif 409 < y < 451:
-                            self.selected_textbox = 2
-                            self.textbox_states = [0,2]
+                #for all buttons
+                if 449 < x < 951:
+                    #for text boxes
+                    if 519 < y < 571:
+                        self.selected_textbox_log = 1
+                        self.textbox_states = [2,0,0]
+                    elif 409 < y < 451:
+                        self.selected_textbox_log = 2
+                        self.textbox_states = [0,2,0]
 
-                        #for the enter button
-                        if 769 < x < 951:
-                            if 179 < y < 231:
-                                print("ENTER ENTER")
+                    #for the enter button
+                    if 769 < x < 951:
+                        if 179 < y < 231:
+                            if self.check_if_in_db(self.text_log_input1, self.text_log_input2) == 0:
+                                self.screenOn = [0,0,0,0,1]
 
-                        #for the sign up button
-                        if 649 < x < 792:
-                            if 303 < y < 337:
-                                self.screenOn[1] = 0
-                                self.screenOn[2] = 1
+                    #for the sign up button
+                    if 649 < x < 792:
+                        if 303 < y < 337:
+                            self.screenOn[1] = 0
+                            self.screenOn[2] = 1
+                            if self.selected_textbox_sign == 1:
+                                self.textbox_states = [2,0,0]
+                            elif self.selected_textbox_sign == 2:
+                                self.textbox_states = [0,2,0]
+                            else:
+                                self.textbox_states = [0,0,2]
+            
+            elif self.screenOn[2] == 1:
+                #for the back button
+                if 449 < x < 497:
+                    if 626 < y < 674:
+                        self.screenOn[1] = 1
+                        self.screenOn[2] = 0
+                        if self.selected_textbox_log == 2:
+                            self.textbox_states = [0,2,0]
+                        else:
+                            self.textbox_states = [2,0,0]
+                        
+                #for the text boxes
+                if 449 < x < 951:
+                    if 519 < y < 571:
+                        self.selected_textbox_sign = 1
+                        self.textbox_states = [2,0,0]
+                    elif 409 < y < 451:
+                        self.selected_textbox_sign = 2
+                        self.textbox_states = [0,2,0]
+                    elif 299 < y < 351:
+                        self.selected_textbox_sign = 3
+                        self.textbox_states = [0,0,2]
+                #for the enter button
+                    if 769 < x < 951:
+                        if 179 < y < 231:
+                            print("ENTER ENTER")
 
     def on_mouse_motion(self, x, y, dx, dy):
-        if self.screenOn[1] == 1:
+        if self.screenOn[1] or self.screenOn[2] == 1:
             #enter button hover effect
             if 769 < x < 951:
                 if 179 < y < 231:
@@ -1142,7 +1276,7 @@ class RacingEnv(pyglet.window.Window):
                     self.rectangle8.opacity = 150
 
             #text boxes (reset)
-            if self.selected_textbox == 1:
+            if self.selected_textbox_log == 1:
                 self.textbox_states[0] = 2
                 self.textbox_states[1] = 0
             else:
@@ -1154,10 +1288,38 @@ class RacingEnv(pyglet.window.Window):
                 if 519 < y < 571:
                     if self.textbox_states[0] == 0:
                         self.textbox_states[0] = 1
-                elif 409 < y < 451:
+                elif 409 < y < 461:
                     if self.textbox_states[1] == 0:
                         self.textbox_states[1] = 1
     
+        if self.screenOn[2] == 1:
+            #back button (reset)
+            self.rectangle9.opacity = 50
+            #back button (change)
+            if 449 < x < 497:
+                if 626 < y < 674:
+                    self.rectangle9.opacity = 150
+            
+            #text boxes (reset)
+            if self.selected_textbox_sign == 1:
+                self.textbox_states = [2,0,0]
+            elif self.selected_textbox_sign == 2:
+                self.textbox_states = [0,2,0]
+            else:
+                self.textbox_states = [0,0,2]
+
+            #text boxes (colour based on location of mouse)
+            if 449 < x < 951:
+                if 519 < y < 571:
+                    if self.textbox_states[0] == 0:
+                        self.textbox_states[0] = 1
+                elif 409 < y < 461:
+                    if self.textbox_states[1] == 0:
+                        self.textbox_states[1] = 1
+                elif 299 < y < 351:
+                    if self.textbox_states[2] == 0:
+                        self.textbox_states[2] = 1
+
     def update(self,dt):
         self.step(self.user_action)
         self.render()
