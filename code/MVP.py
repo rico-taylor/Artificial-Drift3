@@ -730,9 +730,11 @@ class RacingEnv(pyglet.window.Window):
         self.ai_lines = pyglet.graphics.Batch()
 
         self.entry = pyglet.graphics.Batch()
+        self.raceExtras = pyglet.graphics.Batch()
         self.logsignDisplays = pyglet.graphics.Batch()
         self.logExtras = pyglet.graphics.Batch()
         self.signExtras = pyglet.graphics.Batch()
+        self.pauseMenu = pyglet.graphics.Batch()
 
         self.player1 = Car(car_start_x,car_start_y,260,"images/car.png", key.W, key.S, key.A, key.D, key.LSHIFT)
         self.user_action = [False,False,False,False,False]
@@ -764,10 +766,10 @@ class RacingEnv(pyglet.window.Window):
         self.RANDOM_ROT_RESET = True
 
         #origional pages open
-        self.screenOn = [1,0,0,0,0,0] #entry screen, pop-up log in, pop-up sign up, pop-up change password, pop-up leaderboard, game play screen
+        self.screenOn = [1,0,0,0,0,0,0,0] #entry screen, pop-up log in, pop-up sign up, pop-up change password, pop-up leaderboard, pop-up confirm, pause screen, game play screen
 
         #log in
-        self.logged = False
+        self.logged = True
 
         #amount of wall collisions in one episode
         self.hits = 0
@@ -775,8 +777,37 @@ class RacingEnv(pyglet.window.Window):
         self.ticks = 0
 
         self.MAX_EPISODE_LENGTH = 1000
+        
+        #RACING SCREEN ICONS, BUTTONS, DECORATIONS---------------------
+        self.pauseBackdrop = pyglet.shapes.Rectangle(x=1337, y=800, width=71, height=80, color=(255, 255, 255), batch=self.raceExtras)
+        self.pauseBackdrop.opacity = 10
+        
+        self.pause_img = image.load("images/icon_pause.png")
+        self.pause_img.anchor_x = self.pause_img.width//2
+        self.pause_img.anchor_y = self.pause_img.height//2
+        self.pause = sprite.Sprite(self.pause_img, x=1372, y=840, batch=self.raceExtras)
+        self.pause.scale = 0.2*scale_factor
 
-        #ENTRY SCREEN CODE
+        #PAUSE SCREEN-----------------------
+        #box to cover the pause icon on the screen behind
+        self.coverPause = pyglet.shapes.Rectangle(x=1337, y=800, width=71, height=80, color=(0, 0, 0), batch=self.pauseMenu)
+        
+        #header
+        self.paused_header = image.load("images/text_paused.png")
+        self.paused_header.anchor_x = self.paused_header.width//2
+        self.paused_header.anchor_y = self.paused_header.height//2
+        self.paused = sprite.Sprite(self.paused_header, x=windowwidth//2, y=windowheight//2 +350, batch=self.pauseMenu)
+        self.paused.scale = 0.5*scale_factor
+
+        #profile picture
+        self.pp_img = image.load("images/icon_pp.png")
+        self.pp_img.anchor_x = self.pp_img.width//2
+        self.pp_img.anchor_y = self.pp_img.height//2
+        self.profilePicture = sprite.Sprite(self.pp_img, x=windowwidth//2 -550, y=windowheight//2 +350, batch=self.pauseMenu)
+        self.profilePicture.scale = 0.1*scale_factor
+
+
+        #ENTRY SCREEN CODE -------------------------
         #logo
         self.logo_img = image.load("images/logo_finished.png")
         self.logo_img.anchor_x = self.logo_img.width//2
@@ -804,7 +835,6 @@ class RacingEnv(pyglet.window.Window):
         
         self.text_log_input1 = str()
         self.text_log_input2 = str()
-        #self.text_input3 = str()
 
         self.next_letter = False
         self.next_letter2 = False
@@ -816,7 +846,7 @@ class RacingEnv(pyglet.window.Window):
         #backdrop box
         #entry images
         self.backdrop = pyglet.shapes.Rectangle(x=0, y=0, width=windowwidth, height=windowheight, color=(0, 0, 0), batch=self.logsignDisplays)
-        self.backdrop.opacity = 190
+        self.backdrop.opacity = 210 #change back to 190 when done
 
         #inner box
         self.rectangle2= pyglet.shapes.Rectangle(x=398, y=148, width=windowwidth-(400*2)+4, height=554, color=(0, 0, 0), batch=self.logsignDisplays)
@@ -897,6 +927,12 @@ class RacingEnv(pyglet.window.Window):
         self.enterHeading = sprite.Sprite(self.enter_img, x=860, y=205, batch=self.logsignDisplays)
         self.enterHeading.scale = 0.15*scale_factor
 
+        #log in error messages
+        self.dummy = pyglet.text.Label("", font_name='Arial', bold=True, color=(255, 255 ,255, 1000), font_size=12, x=778, y=235)
+        self.noUsername = pyglet.text.Label("username not found...", font_name='Arial', bold=True, color=(255, 255 ,255, 1000), font_size=12, x=778, y=235)
+        self.badPassword = pyglet.text.Label("incorrect password...", font_name='Arial', bold=True, color=(255, 255 ,255, 1000), font_size=12, x=778, y=235)
+        self.log_error_message = self.dummy
+
         #SIGN UP EXTRAS------------------------------
         self.text_sign_input1 = str()
         self.text_sign_input2 = str()
@@ -931,6 +967,12 @@ class RacingEnv(pyglet.window.Window):
         self.label4 = pyglet.text.Label(self.text_sign_input2, font_name='Arial', font_size=20, x=700, y=700, batch=self.signExtras)
         self.label5 = pyglet.text.Label(self.text_sign_input3, font_name='Arial', font_size=20, x=700, y=700, batch=self.signExtras)
 
+        #error messages
+        self.doesNotMatch = pyglet.text.Label("passwords do not match", font_name='Arial', bold=True, color=(255, 255 ,255, 1000), font_size=12, x=765, y=235)
+        self.tooShort = pyglet.text.Label("password must be greater than 8 characters", font_name='Arial', bold=True, color=(255, 255 ,255, 1000), font_size=12, x=695, y=235)
+        self.userExists = pyglet.text.Label("username already exists", font_name='Arial', bold=True, color=(255, 255 ,255, 1000), font_size=12, x=768, y=235)
+        self.sign_error_message = self.dummy
+
         #DATABASE -----------------------------
         self.connection = sqlite3.connect("data2.db")
         self.cursor = self.connection.cursor()
@@ -947,9 +989,30 @@ class RacingEnv(pyglet.window.Window):
             if password == player[1]:
                 return 0 #the passwords match
             else:
-                print("the passwords don't match")
+                return 1 #the passwords DON'T match
         except:
-            print("username not found")
+            return 2 #username not found
+
+    #function that checks if the username is in the database regardless of the password
+    def check_username_db(self, player_name):
+        self.cursor.execute("""
+        SELECT * FROM lap_times
+        WHERE gamer_name = '{}'
+    """.format(player_name))
+        players = self.cursor.fetchall() 
+        if len(players) > 0:
+            return True
+        else:
+            return False
+
+    #function that adds an item to the database
+    def new_player_db(self, player_name, password):
+        self.cursor.execute("""
+        INSERT INTO lap_times VALUES
+        ('{}', '{}', '{}', {})             
+        """.format(player_name, password, 0, 0))
+
+        self.connection.commit()
 
     def reset(self):
         if self.SIMPLE_RESET == True: #respawning the car at the start line
@@ -1070,15 +1133,18 @@ class RacingEnv(pyglet.window.Window):
         if self.screenOn[1] == 1:
             self.logsignDisplays.draw()
             self.logExtras.draw()
+            self.log_error_message.draw()
             self.textbox_colour(0, self.rectangle3)
             self.textbox_colour(1, self.rectangle5)
         if self.screenOn[2] == 1:
             self.logsignDisplays.draw()
             self.signExtras.draw()
+            self.sign_error_message.draw()
             self.textbox_colour(0, self.rectangle3)    
             self.textbox_colour(1, self.rectangle5)    
             self.textbox_colour(2, self.rectangle6)    
-        if self.screenOn[4] == 1:
+        if self.screenOn[7] == 1:
+            self.raceExtras.draw()
             if self.SHOW_WALLS == True:
                 self.wall_lines.draw()
             if self.SHOW_CARS == True:
@@ -1097,6 +1163,9 @@ class RacingEnv(pyglet.window.Window):
                 
                 self.ai_lines.draw()
             #self.flip() #for the ai, can be removed for casual play
+        if self.screenOn[6] == 1:
+            self.backdrop.draw()
+            self.pauseMenu.draw()
 
     def on_key_press(self, symbol, modifiers):
         #if the log in screen is on
@@ -1172,7 +1241,7 @@ class RacingEnv(pyglet.window.Window):
                 if symbol == key.LSHIFT or symbol == key.RSHIFT:
                     self.next_letter5 = True
                 if symbol == key.BACKSPACE:
-                    self.text_sign_input3 = self.text_sign_input2[:-1]
+                    self.text_sign_input3 = self.text_sign_input3[:-1]
                 if self.next_letter5 == True:
                     if key.A <= symbol <= key.Z:
                         if len(self.text_sign_input3) < 20:
@@ -1186,7 +1255,7 @@ class RacingEnv(pyglet.window.Window):
                 self.label5 = pyglet.text.Label(self.text_sign_input3, font_name='Arial', font_size=20, x=460, y=315, batch=self.signExtras)
 
         #if the racing screen is on
-        if self.screenOn == [0,0,0,0,1]:
+        if self.screenOn[7] == 1:
             self.player1.on_key_press(symbol, modifiers)
             self.user_action = self.player1.action_list
     
@@ -1196,13 +1265,13 @@ class RacingEnv(pyglet.window.Window):
 
     def on_mouse_press(self, x,y,button, modifiers):
         if button == mouse.LEFT:
-            if self.screenOn  == [1,0,0,0,0,0]:
+            if self.screenOn == [1,0,0,0,0,0,0,0]:
                 if x > 525 and x < 930:
                     if y > 195 and y < 300:
                         if self.logged == True:
-                            self.screenOn = [0,0,0,0,1]
+                            self.screenOn = [0,0,0,0,0,0,0,1]
                         else:
-                            self.screenOn = [1,1,0,0,0]
+                            self.screenOn = [1,1,0,0,0,0,0,0]
             elif self.screenOn[1] == 1:
                 #for all buttons
                 if 449 < x < 951:
@@ -1218,7 +1287,13 @@ class RacingEnv(pyglet.window.Window):
                     if 769 < x < 951:
                         if 179 < y < 231:
                             if self.check_if_in_db(self.text_log_input1, self.text_log_input2) == 0:
-                                self.screenOn = [0,0,0,0,1]
+                                self.screenOn = [0,0,0,0,0,0,0,1]
+                                self.logged = True
+                                self.log_error_message = self.dummy
+                            elif self.check_if_in_db(self.text_log_input1, self.text_log_input2) == 1:
+                                self.log_error_message = self.badPassword
+                            else:
+                                self.log_error_message = self.noUsername
 
                     #for the sign up button
                     if 649 < x < 792:
@@ -1257,7 +1332,27 @@ class RacingEnv(pyglet.window.Window):
                 #for the enter button
                     if 769 < x < 951:
                         if 179 < y < 231:
-                            print("ENTER ENTER")
+                            if self.text_sign_input2 != self.text_sign_input3:
+                                self.sign_error_message = self.doesNotMatch
+                            elif len(self.text_sign_input2) < 8:
+                                self.sign_error_message = self.tooShort
+                            elif self.check_username_db(self.text_sign_input1) == True:
+                                self.sign_error_message = self.userExists
+                            else:
+                                self.new_player_db(self.text_sign_input1, self.text_sign_input2)
+                                self.screenOn = [0,0,0,0,0,0,0,1]
+                                self.log_error_message = self.dummy
+                                self.logged = True
+
+            elif self.screenOn[6] == 1:
+                pass
+
+            elif self.screenOn[7] == 1:
+                #pause button
+                if 1336 < x < 1409:
+                    if 799 < y < 881:
+                        self.screenOn[6] = 1
+                        print("PAUSED!!!")
 
     def on_mouse_motion(self, x, y, dx, dy):
         if self.screenOn[1] or self.screenOn[2] == 1:
@@ -1291,8 +1386,7 @@ class RacingEnv(pyglet.window.Window):
                 elif 409 < y < 461:
                     if self.textbox_states[1] == 0:
                         self.textbox_states[1] = 1
-    
-        if self.screenOn[2] == 1:
+        elif self.screenOn[2] == 1:
             #back button (reset)
             self.rectangle9.opacity = 50
             #back button (change)
@@ -1319,7 +1413,16 @@ class RacingEnv(pyglet.window.Window):
                 elif 299 < y < 351:
                     if self.textbox_states[2] == 0:
                         self.textbox_states[2] = 1
-
+        elif self.screenOn[6] == 1:
+            pass
+        elif self.screenOn[7] == 1:
+            #pause button (reset)
+            self.pauseBackdrop.opacity = 10
+            #pause button
+            if 1336 < x < 1409:
+                if 799 < y < 881:
+                    self.pauseBackdrop.opacity = 100
+    
     def update(self,dt):
         self.step(self.user_action)
         self.render()

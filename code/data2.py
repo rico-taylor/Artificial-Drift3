@@ -50,6 +50,17 @@ def check_if_in_db(player_name, password):
     except:
         print("username not found")
 
+def check_username_db(player_name):
+    cursor.execute("""
+    SELECT * FROM lap_times
+    WHERE gamer_name = '{}'
+""".format(player_name))
+    players = cursor.fetchall() 
+    if len(players) > 0:
+        return True
+    else:
+        return False
+
 
 def get_db():
     cursor.execute("SELECT * FROM lap_times")
@@ -60,5 +71,5 @@ def get_db():
 #new_player_db("Rico Taylor", "password123")
 #delete_player_db("Rico Taylor")
 
-check_if_in_db("Steve Jobs", "password123")
-#print(get_db())
+#check_username_db("Rico Taylor")
+print(get_db())
