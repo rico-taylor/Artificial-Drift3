@@ -20,16 +20,11 @@ Rico = Person(17, 176, 10)
 b=[True,False]
 
 jack = [(1,10),(2,9),(3,8),(4,7)]
-for x in range(len(jack)*2):
-  print(x%4)
+
 
 def is_list(input_data):
     return type(input_data) == list
 
-# Testing the function
-print(is_list([1, 2, 3]))  # Output: True
-print(is_list(42))         # Output: False
 
-b = 0
-if type(b) == int:
-  print("true")
+integer = float()
+print(integer)

@@ -11,6 +11,8 @@ from math import sin, cos, atan, acos, asin, radians, sqrt, tanh
 wall_lines = pyglet.graphics.Batch()
 gate_lines = pyglet.graphics.Batch()
 
+#loading in custom font - Zen Dots
+pyglet.font.add_file('ZenDots-Regular.ttf')
 
 #scale_factor = (windowwidth/1920)%1
 
@@ -770,6 +772,10 @@ class RacingEnv(pyglet.window.Window):
 
         #log in
         self.logged = True
+        self.account_name = str()
+        self.account_password = str()
+        self.account_best_lap_date = str()
+        self.account_best_lap = float()
 
         #amount of wall collisions in one episode
         self.hits = 0
@@ -805,6 +811,40 @@ class RacingEnv(pyglet.window.Window):
         self.pp_img.anchor_y = self.pp_img.height//2
         self.profilePicture = sprite.Sprite(self.pp_img, x=windowwidth//2 -550, y=windowheight//2 +350, batch=self.pauseMenu)
         self.profilePicture.scale = 0.1*scale_factor
+
+        #play button box
+        self.coverPlay = pyglet.shapes.Rectangle(x=630, y=80, width=170, height=180, color=(126, 126, 126), batch=self.pauseMenu)
+        self.coverPlay.opacity = 0
+
+        #play icon
+        self.play2_img = image.load("images/icon_play.png")
+        self.play2_img.anchor_x = self.play2_img.width//2
+        self.play2_img.anchor_y = self.play2_img.height//2
+        self.resumeButton = sprite.Sprite(self.play2_img, x=720, y=170, batch=self.pauseMenu)
+        self.resumeButton.scale = 0.57*scale_factor
+        self.resumeButton.opacity = 100
+
+        #account display labels (these are updated everytime the pause button is pushed)
+        self.label_accountName = pyglet.text.Label("USERNAME: " + str(self.account_name), font_name='Zen Dots', bold=True, color=(220, 220 ,220, 1000), font_size=13, x=20, y=690, batch=self.pauseMenu)
+        self.label_bestLap = pyglet.text.Label("BEST LAP: " + str(self.account_best_lap), font_name='Zen Dots', bold=True, color=(220, 220 ,220, 1000), font_size=13, x=20, y=650, batch=self.pauseMenu)
+        self.label_bestLapDate = pyglet.text.Label("DATE ACHIEVED: " + str(self.account_best_lap_date), font_name='Zen Dots', bold=True, color=(220, 220 ,220, 1000), font_size=13, x=20, y=610, batch=self.pauseMenu)
+
+        #labe20
+        self.label_restart = pyglet.text.Label("RESTART", font_name='Zen Dots', bold=True, color=(180, 180 ,180, 150), font_size=30, x=585, y=680, batch=self.pauseMenu)
+        self.underline1 = pyglet.shapes.Rectangle(x=582,y=671,height=5, width=268, batch=self.pauseMenu)
+        self.underline1.opacity = 0
+        self.label_leaderboards = pyglet.text.Label("LEADERBOARDS", font_name='Zen Dots', bold=True, color=(180, 180 ,180, 150), font_size=30, x=490, y=590, batch=self.pauseMenu)
+        self.underline2 = pyglet.shapes.Rectangle(x=488,y=581, height = 5, width=459, batch=self.pauseMenu)
+        self.underline2.opacity = 0
+        self.label_btes = pyglet.text.Label("BACK TO ENTRY SCREEN", font_name='Zen Dots', bold=True, color=(180, 180 ,180, 150), font_size=30, x=370, y=500, batch=self.pauseMenu)
+        self.underline3 = pyglet.shapes.Rectangle(x=369,y=491, height=5, width=687, batch=self.pauseMenu)
+        self.underline3.opacity = 0
+        self.label_changePassword = pyglet.text.Label("CHANGE PASSWORD", font_name='Zen Dots', bold=True, color=(180, 180 ,180, 150), font_size=30, x=445, y=410, batch=self.pauseMenu)
+        self.underline4 = pyglet.shapes.Rectangle(x=443, y=401, height=5, width=554, batch=self.pauseMenu)
+        self.underline4.opacity = 0
+        self.label_logOut = pyglet.text.Label("LOG OUT", font_name='Zen Dots', bold=True, color=(180, 180 ,180, 150), font_size=30, x=595, y=320, batch=self.pauseMenu)
+        self.underline5 = pyglet.shapes.Rectangle(x=593,y=311, height=5, width=254, batch=self.pauseMenu)
+        self.underline5.opacity = 0
 
 
         #ENTRY SCREEN CODE -------------------------
@@ -1264,6 +1304,8 @@ class RacingEnv(pyglet.window.Window):
         self.user_action = self.player1.action_list
 
     def on_mouse_press(self, x,y,button, modifiers):
+        if button == mouse.RIGHT:
+            print(x,y)
         if button == mouse.LEFT:
             if self.screenOn == [1,0,0,0,0,0,0,0]:
                 if x > 525 and x < 930:
@@ -1289,6 +1331,8 @@ class RacingEnv(pyglet.window.Window):
                             if self.check_if_in_db(self.text_log_input1, self.text_log_input2) == 0:
                                 self.screenOn = [0,0,0,0,0,0,0,1]
                                 self.logged = True
+                                self.account_name = self.text_log_input1
+                                self.account_password = self.text_log_input2
                                 self.log_error_message = self.dummy
                             elif self.check_if_in_db(self.text_log_input1, self.text_log_input2) == 1:
                                 self.log_error_message = self.badPassword
@@ -1343,15 +1387,27 @@ class RacingEnv(pyglet.window.Window):
                                 self.screenOn = [0,0,0,0,0,0,0,1]
                                 self.log_error_message = self.dummy
                                 self.logged = True
+                                self.account_name = self.text_sign_input1
+                                self.account_password = self.text_sign_input2
 
             elif self.screenOn[6] == 1:
-                pass
+                #resume button
+                if 629 < x < 801:
+                    if 79 < y < 261:     
+                        self.resumeButton.opacity = 100
+                        self.coverPlay.opacity = 0
+                        self.screenOn[6] = 0
 
             elif self.screenOn[7] == 1:
                 #pause button
                 if 1336 < x < 1409:
                     if 799 < y < 881:
                         self.screenOn[6] = 1
+                        self.pauseBackdrop.opacity = 0
+                        #redefining labels so that they can be updated
+                        self.label_accountName = pyglet.text.Label("USERNAME: " + str(self.account_name), font_name='Zen Dots', bold=True, color=(220, 220 ,220, 1000), font_size=13, x=20, y=690, batch=self.pauseMenu)
+                        self.label_bestLap = pyglet.text.Label("BEST LAP: " + str(self.account_best_lap), font_name='Zen Dots', bold=True, color=(220, 220 ,220, 1000), font_size=13, x=20, y=650, batch=self.pauseMenu)
+                        self.label_bestLapDate = pyglet.text.Label("DATE ACHIEVED: " + str(self.account_best_lap_date), font_name='Zen Dots', bold=True, color=(220, 220 ,220, 1000), font_size=13, x=20, y=610, batch=self.pauseMenu)
                         print("PAUSED!!!")
 
     def on_mouse_motion(self, x, y, dx, dy):
@@ -1414,7 +1470,52 @@ class RacingEnv(pyglet.window.Window):
                     if self.textbox_states[2] == 0:
                         self.textbox_states[2] = 1
         elif self.screenOn[6] == 1:
-            pass
+            #play button (reset)
+            self.resumeButton.opacity = 100
+            self.coverPlay.opacity = 0
+            #play button(on hover)
+            if 629 < x < 801:
+                if 79 < y < 261:     
+                    self.resumeButton.opacity = 250
+                    self.coverPlay.opacity = 50
+            
+            #labels (reset) and lines (reset)
+            self.label_restart.color = (180, 180, 180, 150)
+            self.label_leaderboards.color = (180, 180, 180, 150)
+            self.label_btes.color = (180, 180, 180, 150)
+            self.label_changePassword.color = (180, 180, 180, 150)
+            self.label_logOut.color = (180, 180, 180, 150)
+
+            self.underline1.opacity = 0
+            self.underline2.opacity = 0
+            self.underline3.opacity = 0
+            self.underline4.opacity = 0
+            self.underline5.opacity = 0
+
+            #labels (on hover)
+            if 679 < y < 710:
+                if 587 < x < 848:
+                    self.label_restart.color = (255, 255, 255, 1000)
+                    self.underline1.opacity = 255
+            elif 589 < y < 620:
+                if 491 < x < 942:
+                    self.label_leaderboards.color = (255, 255, 255, 1000)
+                    self.underline2.opacity = 255
+            elif 499 < y < 530:
+                if 371 < x < 1053:
+                    self.label_btes.color = (255, 255, 255, 1000)
+                    self.underline3.opacity = 255
+            elif 409 < y < 440:
+                if 443 < x < 1055:
+                    self.label_changePassword.color = (255, 255, 255, 1000)
+                    self.underline4.opacity = 255
+            elif 319 < y < 350:
+                if 597 < x < 843:
+                    self.label_logOut.color = (255, 255, 255, 1000)
+                    self.underline5.opacity = 255
+
+
+        
         elif self.screenOn[7] == 1:
             #pause button (reset)
             self.pauseBackdrop.opacity = 10
