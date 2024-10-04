@@ -243,6 +243,49 @@ for gate in gates:
 
 line_list = walls + gates
 
+import time
+
+class Stopwatch:
+    def __init__(self):
+        self.start_time = None
+        self.elapsed_time = 0
+        self.running = False
+
+    def start(self):
+        if not self.running:
+            # Only set the start time to current time without adjusting for elapsed_time
+            self.start_time = time.time()
+            self.running = True
+
+    def stop(self):
+        if self.running:
+            # Save the total elapsed time without resetting
+            self.elapsed_time += time.time() - self.start_time
+            self.running = False
+
+    def reset(self):
+        self.elapsed_time = 0
+        self.start_time = None
+        self.running = False
+
+    def lap(self, listt):
+        if self.running:
+            # Calculate the lap time based on total elapsed time
+            current_elapsed = self.elapsed_time + (time.time() - self.start_time)
+            listt.append(float("{:.2f}".format(current_elapsed)))
+            # Restart the lap timer
+            self.start_time = time.time()
+            self.elapsed_time = 0  # Reset accumulated time after lap
+
+    def get_time(self):
+        if self.running:
+            # Add the current running time to previously accumulated elapsed time
+            current_elapsed = self.elapsed_time + (time.time() - self.start_time)
+            return "{:.2f}".format(current_elapsed)
+        # Return accumulated elapsed time if stopped
+        return "{:.2f}".format(self.elapsed_time)
+
+
 class Car:
     def __init__(self,x,y,r,img, forward, backward, left, right, drift): #x,y is the start position of the car, r is the start rotation of the car
         #setting up the car sprite and image
@@ -299,8 +342,10 @@ class Car:
         self.going = 0
         self.start = 0
         self.elapsed = 0
+        self.total_lap_time = 0
 
         self.lap_list = []
+        self.timer = Stopwatch()
 
         for x in gates:
             self.checkerList.append(False)
@@ -360,6 +405,7 @@ class Car:
                     break
             if self.noStart == False:
                 if self.started == False:
+                    self.timer.start() #to start the timer
                     self.started = True
                     self.checkerList[0] = True
                     self.swap = True
@@ -395,20 +441,9 @@ class Car:
     #this function finds the time for one lap
     def stopwatch(self):
         if self.lapCompleted == True:
-            self.lap_list.append(float("{:#.2f}".format(self.elapsed)))
             self.lapCompleted = False
+            self.timer.lap(self.lap_list)
             print(self.lap_list)
-
-        self.current = time.time()
-        if self.going == True:
-            if self.swap == True:
-                self.start = time.time()
-        elif self.going == False:
-            self.current = self.start
-        self.elapsed = self.current - self.start
-        self.swap = False
-        
-        return "{:#.2f}".format(self.elapsed)
     
     #function to find how close the car is to pointing directly forwards
     def car_direction(self):
@@ -767,6 +802,10 @@ class RacingEnv(pyglet.window.Window):
         self.SLIGHT_ROT_RESET = False
         self.RANDOM_ROT_RESET = True
 
+        #timer code for the pause screen
+        self.race_paused = False
+        self.pauseSwap = False
+
         #origional pages open
         self.screenOn = [1,0,0,0,0,0,0,0] #entry screen, pop-up log in, pop-up sign up, pop-up change password, pop-up leaderboard, pop-up confirm, pause screen, game play screen
 
@@ -1016,6 +1055,11 @@ class RacingEnv(pyglet.window.Window):
         #DATABASE -----------------------------
         self.connection = sqlite3.connect("data2.db")
         self.cursor = self.connection.cursor()
+
+    def screen_displays(self):
+        total_time = "{:.2f}".format(float(sum(self.player1.lap_list)) + float(self.player1.timer.get_time()))
+        self.time_label1 = pyglet.text.Label("TIME: ", font_name='Zen Dots', font_size=32, x=600, y=835, color=(255,140,0,255), batch=self.raceExtras)
+        self.time_label = pyglet.text.Label(total_time, font_name='Zen Dots', font_size=32, x=780, y=835, batch=self.raceExtras)
 
     #function for checking if the user name and password pair are in the database
     def check_if_in_db(self, player_name, password):
@@ -1294,14 +1338,17 @@ class RacingEnv(pyglet.window.Window):
 
                 self.label5 = pyglet.text.Label(self.text_sign_input3, font_name='Arial', font_size=20, x=460, y=315, batch=self.signExtras)
 
+        elif self.screenOn[6] == 1:
+            pass
         #if the racing screen is on
-        if self.screenOn[7] == 1:
+        elif self.screenOn[7] == 1:
             self.player1.on_key_press(symbol, modifiers)
             self.user_action = self.player1.action_list
     
     def on_key_release(self, symbol, modifiers):
-        self.player1.on_key_release(symbol, modifiers)
-        self.user_action = self.player1.action_list
+        if self.screenOn[6] == 1 or self.screenOn[7] == 1:
+            self.player1.on_key_release(symbol, modifiers)
+            self.user_action = self.player1.action_list
 
     def on_mouse_press(self, x,y,button, modifiers):
         if button == mouse.RIGHT:
@@ -1398,6 +1445,9 @@ class RacingEnv(pyglet.window.Window):
                         self.coverPlay.opacity = 0
                         self.screenOn[6] = 0
 
+                        #timer
+                        self.player1.timer.start()
+
             elif self.screenOn[7] == 1:
                 #pause button
                 if 1336 < x < 1409:
@@ -1408,7 +1458,9 @@ class RacingEnv(pyglet.window.Window):
                         self.label_accountName = pyglet.text.Label("USERNAME: " + str(self.account_name), font_name='Zen Dots', bold=True, color=(220, 220 ,220, 1000), font_size=13, x=20, y=690, batch=self.pauseMenu)
                         self.label_bestLap = pyglet.text.Label("BEST LAP: " + str(self.account_best_lap), font_name='Zen Dots', bold=True, color=(220, 220 ,220, 1000), font_size=13, x=20, y=650, batch=self.pauseMenu)
                         self.label_bestLapDate = pyglet.text.Label("DATE ACHIEVED: " + str(self.account_best_lap_date), font_name='Zen Dots', bold=True, color=(220, 220 ,220, 1000), font_size=13, x=20, y=610, batch=self.pauseMenu)
-                        print("PAUSED!!!")
+
+                        #timer code
+                        self.player1.timer.stop()
 
     def on_mouse_motion(self, x, y, dx, dy):
         if self.screenOn[1] or self.screenOn[2] == 1:
@@ -1525,7 +1577,9 @@ class RacingEnv(pyglet.window.Window):
                     self.pauseBackdrop.opacity = 100
     
     def update(self,dt):
-        self.step(self.user_action)
+        if self.screenOn == [0,0,0,0,0,0,0,1]:
+            self.screen_displays()
+            self.step(self.user_action)
         self.render()
             
     def end(self):
