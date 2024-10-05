@@ -3,6 +3,7 @@ import pyglet
 import time
 import random
 import sqlite3
+import datetime
 from pyglet import sprite, image
 from pyglet.window import key, mouse
 from math import sin, cos, atan, acos, asin, radians, sqrt, tanh
@@ -444,6 +445,17 @@ class Car:
             self.lapCompleted = False
             self.timer.lap(self.lap_list)
             print(self.lap_list)
+
+            #check if it is the users best ever lap
+            date = screen.find_date()
+            if screen.get_data_db(screen.account_name,3) == 0.0:
+                screen.update_lap_and_date_db(screen.account_name, self.lap_list[-1], date)
+                screen.account_best_lap = self.lap_list[-1]
+                screen.account_best_lap_date = date
+            if self.lap_list[-1] < screen.get_data_db(screen.account_name,3):
+                screen.update_lap_and_date_db(screen.account_name, self.lap_list[-1], date)
+                screen.account_best_lap = self.lap_list[-1]
+                screen.account_best_lap_date = date
     
     #function to find how close the car is to pointing directly forwards
     def car_direction(self):
@@ -772,6 +784,7 @@ class RacingEnv(pyglet.window.Window):
         self.logExtras = pyglet.graphics.Batch()
         self.signExtras = pyglet.graphics.Batch()
         self.pauseMenu = pyglet.graphics.Batch()
+        self.cp = pyglet.graphics.Batch()
 
         self.player1 = Car(car_start_x,car_start_y,260,"images/car.png", key.W, key.S, key.A, key.D, key.LSHIFT)
         self.user_action = [False,False,False,False,False]
@@ -797,10 +810,10 @@ class RacingEnv(pyglet.window.Window):
         self.SHOW_RAYS = False
 
         #defining booleans which control the type of reset
-        self.SIMPLE_RESET = False
-        self.LOCATION_RESET = True
+        self.SIMPLE_RESET = True
+        self.LOCATION_RESET = False
         self.SLIGHT_ROT_RESET = False
-        self.RANDOM_ROT_RESET = True
+        self.RANDOM_ROT_RESET = False
 
         #timer code for the pause screen
         self.race_paused = False
@@ -810,7 +823,7 @@ class RacingEnv(pyglet.window.Window):
         self.screenOn = [1,0,0,0,0,0,0,0] #entry screen, pop-up log in, pop-up sign up, pop-up change password, pop-up leaderboard, pop-up confirm, pause screen, game play screen
 
         #log in
-        self.logged = True
+        self.logged = False
         self.account_name = str()
         self.account_password = str()
         self.account_best_lap_date = str()
@@ -833,7 +846,11 @@ class RacingEnv(pyglet.window.Window):
         self.pause = sprite.Sprite(self.pause_img, x=1372, y=840, batch=self.raceExtras)
         self.pause.scale = 0.2*scale_factor
 
+
         #PAUSE SCREEN-----------------------
+        self.backdrop2 = pyglet.shapes.Rectangle(x=0, y=0, width=windowwidth, height=windowheight, color=(0, 0, 0))
+        self.backdrop2.opacity = 220 
+        
         #box to cover the pause icon on the screen behind
         self.coverPause = pyglet.shapes.Rectangle(x=1337, y=800, width=71, height=80, color=(0, 0, 0), batch=self.pauseMenu)
         
@@ -865,10 +882,10 @@ class RacingEnv(pyglet.window.Window):
 
         #account display labels (these are updated everytime the pause button is pushed)
         self.label_accountName = pyglet.text.Label("USERNAME: " + str(self.account_name), font_name='Zen Dots', bold=True, color=(220, 220 ,220, 1000), font_size=13, x=20, y=690, batch=self.pauseMenu)
-        self.label_bestLap = pyglet.text.Label("BEST LAP: " + str(self.account_best_lap), font_name='Zen Dots', bold=True, color=(220, 220 ,220, 1000), font_size=13, x=20, y=650, batch=self.pauseMenu)
+        self.label_bestLap = pyglet.text.Label("BEST LAP: " + str(self.account_best_lap) + "seconds", font_name='Zen Dots', bold=True, color=(220, 220 ,220, 1000), font_size=13, x=20, y=650, batch=self.pauseMenu)
         self.label_bestLapDate = pyglet.text.Label("DATE ACHIEVED: " + str(self.account_best_lap_date), font_name='Zen Dots', bold=True, color=(220, 220 ,220, 1000), font_size=13, x=20, y=610, batch=self.pauseMenu)
 
-        #labe20
+        #labels
         self.label_restart = pyglet.text.Label("RESTART", font_name='Zen Dots', bold=True, color=(180, 180 ,180, 150), font_size=30, x=585, y=680, batch=self.pauseMenu)
         self.underline1 = pyglet.shapes.Rectangle(x=582,y=671,height=5, width=268, batch=self.pauseMenu)
         self.underline1.opacity = 0
@@ -925,7 +942,7 @@ class RacingEnv(pyglet.window.Window):
         #backdrop box
         #entry images
         self.backdrop = pyglet.shapes.Rectangle(x=0, y=0, width=windowwidth, height=windowheight, color=(0, 0, 0), batch=self.logsignDisplays)
-        self.backdrop.opacity = 210 #change back to 190 when done
+        self.backdrop.opacity = 190
 
         #inner box
         self.rectangle2= pyglet.shapes.Rectangle(x=398, y=148, width=windowwidth-(400*2)+4, height=554, color=(0, 0, 0), batch=self.logsignDisplays)
@@ -1052,6 +1069,101 @@ class RacingEnv(pyglet.window.Window):
         self.userExists = pyglet.text.Label("username already exists", font_name='Arial', bold=True, color=(255, 255 ,255, 1000), font_size=12, x=768, y=235)
         self.sign_error_message = self.dummy
 
+        #CHANGE PASSWORD SCREEN --------------------
+        self.textbox_states_cp = [2,0,0]
+        self.selected_textbox_cp = 1
+
+        self.text_cp_input1 = str()
+        self.text_cp_input2 = str()
+        self.text_cp_input3 = str()
+
+        self.next_letter6 = False
+        self.next_letter7 = False
+        self.next_letter8 = False
+        
+        #backdrop
+        self.backdrop3 = pyglet.shapes.Rectangle(x=0, y=0, width=windowwidth, height=windowheight, color=(0, 0, 0), batch=self.cp)
+        self.backdrop3.opacity = 190 
+
+        #inner box
+        self.r2ectangle2= pyglet.shapes.Rectangle(x=398, y=148, width=windowwidth-(400*2)+4, height=554, color=(0, 0, 0), batch=self.cp)
+        self.r2ectangle2.opacity = 160
+
+        #box
+        self.r2ectangle = pyglet.shapes.Rectangle(x=400, y=150, width=windowwidth-(400*2), height=550, color=(240, 90, 25), batch=self.cp)
+        self.r2ectangle.opacity = 160
+        
+        #header
+        self.cp_img = image.load("images/text_change-password.png")
+        self.cp_img.anchor_x = self.cp_img.width//2
+        self.cp_img.anchor_y = self.cp_img.height//2
+        self.cpHeading = sprite.Sprite(self.cp_img, x=windowwidth//2, y=windowheight//2 +200, batch=self.cp)
+        self.cpHeading.scale = 0.26*scale_factor
+
+        #"old password"
+        self.oldp_img = image.load("images/text_old-password.png")
+        self.oldp_img.anchor_x = self.oldp_img.width//2
+        self.oldp_img.anchor_y = self.oldp_img.height//2
+        self.oldpHeading = sprite.Sprite(self.oldp_img, x=windowwidth//2-170, y=windowheight//2 +140, batch=self.cp)
+        self.oldpHeading.scale = 0.12*scale_factor
+
+        #"new password"
+        self.np_img = image.load("images/text_new-password.png")
+        self.np_img.anchor_x = self.np_img.width//2
+        self.np_img.anchor_y = self.np_img.height//2
+        self.newPasswordHeading = sprite.Sprite(self.np_img, x=windowwidth//2-170, y=windowheight//2 +30, batch=self.cp)
+        self.newPasswordHeading.scale = 0.12*scale_factor
+
+        #"confirm new password"
+        self.confirm_new_img = image.load("images/text_confirm-new-password.png")
+        self.confirm_new_img.anchor_x = self.confirm_new_img.width//2
+        self.confirm_new_img.anchor_y = self.confirm_new_img.height//2
+        self.confirmNewHeading = sprite.Sprite(self.confirm_new_img, x=windowwidth//2-117, y=windowheight//2 -80, batch=self.cp)
+        self.confirmNewHeading.scale = 0.18*scale_factor
+
+        #textbox1
+        self.rectangle10 = pyglet.shapes.Rectangle(x=450, y=520, width=500, height=50, color=(255, 255, 255), batch=self.cp)
+        self.rectangle10.opacity = 150
+
+        #textbox2
+        self.rectangle11 = pyglet.shapes.Rectangle(x=450, y=410, width=500, height=50, color=(255, 255, 255), batch=self.cp)
+        self.rectangle11.opacity = 150
+
+        #textbox3
+        self.rectangle12 = pyglet.shapes.Rectangle(x=450, y=300, width=500, height=50, color=(255, 255, 255), batch=self.cp)
+        self.rectangle12.opacity = 150
+        
+        #back button
+        self.rectangle14 = pyglet.shapes.Rectangle(x=450, y=180, width=50, height=50, color=(0, 0, 0), batch=self.cp)
+        self.rectangle14.opacity = 50
+
+        #back icon
+        self.back_img = image.load("images/icon_back.png")
+        self.back_img.anchor_x = self.back_img.width//2
+        self.back_img.anchor_y = self.back_img.height//2
+        self.b2ackButton = sprite.Sprite(self.back_img, x=473, y=205, batch=self.cp)
+        self.b2ackButton.scale = 0.25*scale_factor
+
+        #enter button
+        self.rectangle13 = pyglet.shapes.Rectangle(x=770, y=180, width=180, height=50, color=(0, 0, 0), batch=self.cp)
+        self.rectangle13.opacity = 50
+
+        self.e2nter_img = image.load("images/text_enter....png")
+        self.e2nter_img.anchor_x = self.e2nter_img.width//2
+        self.e2nter_img.anchor_y = self.e2nter_img.height//2
+        self.e2nterHeading = sprite.Sprite(self.e2nter_img, x=860, y=205, batch=self.cp)
+        self.e2nterHeading.scale = 0.15*scale_factor
+
+        #labels
+        self.label6 = pyglet.text.Label(self.text_cp_input1, font_name='Arial', font_size=20, x=700, y=700, batch=self.cp)
+        self.label7 = pyglet.text.Label(self.text_cp_input2, font_name='Arial', font_size=20, x=700, y=700, batch=self.cp)
+        self.label8 = pyglet.text.Label(self.text_cp_input3, font_name='Arial', font_size=20, x=700, y=700, batch=self.cp)
+        
+        #error messages
+        self.incorrect_old_password = pyglet.text.Label("incorrect old password...", font_name='Arial', bold=True, color=(255, 255 ,255, 1000), font_size=12, x=765, y=235)
+        #self.doesNotMatch and self.tooShort can also be used in self.cp_error_message
+        self.cp_error_message = self.dummy
+
         #DATABASE -----------------------------
         self.connection = sqlite3.connect("data2.db")
         self.cursor = self.connection.cursor()
@@ -1060,6 +1172,14 @@ class RacingEnv(pyglet.window.Window):
         total_time = "{:.2f}".format(float(sum(self.player1.lap_list)) + float(self.player1.timer.get_time()))
         self.time_label1 = pyglet.text.Label("TIME: ", font_name='Zen Dots', font_size=32, x=600, y=835, color=(255,140,0,255), batch=self.raceExtras)
         self.time_label = pyglet.text.Label(total_time, font_name='Zen Dots', font_size=32, x=780, y=835, batch=self.raceExtras)
+
+    #function finds the current date
+    def find_date(self):
+        rawDateTime = datetime.datetime.now()
+        rawDate = str(rawDateTime)[:-16]
+        date = rawDate[-2:] + "-" + rawDate[5:7] + "-" + rawDate[:4]
+        
+        return date
 
     #function for checking if the user name and password pair are in the database
     def check_if_in_db(self, player_name, password):
@@ -1098,19 +1218,50 @@ class RacingEnv(pyglet.window.Window):
 
         self.connection.commit()
 
+    #function that changes the password based on the username
+    def update_password_db(self, player_name, new_password):
+        self.cursor.execute("""
+        UPDATE lap_times
+        SET password = '{}'
+        WHERE gamer_name = '{}'
+    """.format(new_password, player_name))
+        
+        self.connection.commit()
+
+    #function that finds the users best lap time
+    def get_data_db(self, player_name, column):
+        self.cursor.execute("""
+        SELECT * FROM lap_times
+        WHERE gamer_name = '{}'
+    """.format(player_name))
+        all = self.cursor.fetchall() 
+        player = all[0]
+        best_time = player[column]
+        return best_time
+
+    #function that updates the lap time and date completed of best lap
+    def update_lap_and_date_db(self, player_name, new_lap_time, new_date):
+        self.cursor.execute("""
+        UPDATE lap_times
+        SET date = '{}', time = {}
+        WHERE gamer_name = '{}'
+    """.format(new_date, new_lap_time, player_name))
+        
+        self.connection.commit()
+
     def reset(self):
         if self.SIMPLE_RESET == True: #respawning the car at the start line
             if self.SLIGHT_ROT_RESET == True: #respawning the car facing forwards but at a slihgtly different rotation
                 self.car_respawn_rotation = random.randint(25500,26500)/100
-                self.player1 = Car(car_start_x,car_start_y,self.car_respawn_rotation,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
+                self.player1 = Car(car_start_x,car_start_y,self.car_respawn_rotation,"images/car.png", key.W, key.S, key.A, key.D, key.LSHIFT)
 
             if self.RANDOM_ROT_RESET == True: #respawning the car at a complete random rotation
                 self.car_respawn_rotation = random.randint(0,360)
-                self.player1 = Car(car_start_x,car_start_y,self.car_respawn_rotation,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
+                self.player1 = Car(car_start_x,car_start_y,self.car_respawn_rotation,"images/car.png", key.W, key.S, key.A, key.D, key.LSHIFT)
 
             else: #no rotation reset, just facing straight forward
                 self.car_respawn_rotation = 260
-                self.player1 = Car(car_start_x,car_start_y,self.car_respawn_rotation,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
+                self.player1 = Car(car_start_x,car_start_y,self.car_respawn_rotation,"images/car.png", key.W, key.S, key.A, key.D, key.LSHIFT)
         
         elif self.LOCATION_RESET == True: #respawning the car at a random midpoint of a gate
             #respawning the car at a random midpoint of a reward gate
@@ -1143,11 +1294,11 @@ class RacingEnv(pyglet.window.Window):
                         self.car_base_rotation = 90 + ang
 
                 self.car_respawn_rotation = random.randint(int(self.car_base_rotation*100 -500),int(self.car_base_rotation*100 +500))/100
-                self.player1 = Car(self.car_respawn_x,self.car_respawn_y,self.car_respawn_rotation,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
+                self.player1 = Car(self.car_respawn_x,self.car_respawn_y,self.car_respawn_rotation,"images/car.png", key.W, key.A, key.S, key.D, key.LSHIFT)
 
             elif self.RANDOM_ROT_RESET == True:
                 self.car_respawn_rotation = random.randint(0, 360)
-                self.player1 = Car(self.car_respawn_x,self.car_respawn_y,self.car_respawn_rotation,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
+                self.player1 = Car(self.car_respawn_x,self.car_respawn_y,self.car_respawn_rotation,"images/car.png", key.W, key.A, key.S, key.D, key.LSHIFT)
 
             else: #no rotation reset
                 #getting the car rotation for the respawn
@@ -1167,7 +1318,7 @@ class RacingEnv(pyglet.window.Window):
                     else: #fourth quadrant
                         self.car_respawn_rotation = 90 + ang
                 
-                self.player1 = Car(self.car_respawn_x,self.car_respawn_y,self.car_respawn_rotation,"images/car.png", key.UP, key.DOWN, key.LEFT, key.RIGHT, key.LSHIFT)
+                self.player1 = Car(self.car_respawn_x,self.car_respawn_y,self.car_respawn_rotation,"images/car.png", key.W, key.A, key.S, key.D, key.LSHIFT)
 
         self.render()
 
@@ -1201,10 +1352,10 @@ class RacingEnv(pyglet.window.Window):
 
         return new_state, reward, done, info
         
-    def textbox_colour(self, numb, rectangle):
-        if self.textbox_states[numb] == 0:
+    def textbox_colour(self, states_list, numb, rectangle):
+        if states_list[numb] == 0:
             rectangle.color = (255,255,255)
-        elif self.textbox_states[numb] == 1:
+        elif states_list[numb] == 1:
             rectangle.color = (126,126,126)
         else:
             rectangle.color = (0,0,0)
@@ -1218,15 +1369,15 @@ class RacingEnv(pyglet.window.Window):
             self.logsignDisplays.draw()
             self.logExtras.draw()
             self.log_error_message.draw()
-            self.textbox_colour(0, self.rectangle3)
-            self.textbox_colour(1, self.rectangle5)
+            self.textbox_colour(self.textbox_states, 0, self.rectangle3)
+            self.textbox_colour(self.textbox_states, 1, self.rectangle5)
         if self.screenOn[2] == 1:
             self.logsignDisplays.draw()
             self.signExtras.draw()
             self.sign_error_message.draw()
-            self.textbox_colour(0, self.rectangle3)    
-            self.textbox_colour(1, self.rectangle5)    
-            self.textbox_colour(2, self.rectangle6)    
+            self.textbox_colour(self.textbox_states, 0, self.rectangle3)    
+            self.textbox_colour(self.textbox_states, 1, self.rectangle5)    
+            self.textbox_colour(self.textbox_states, 2, self.rectangle6)    
         if self.screenOn[7] == 1:
             self.raceExtras.draw()
             if self.SHOW_WALLS == True:
@@ -1248,8 +1399,22 @@ class RacingEnv(pyglet.window.Window):
                 self.ai_lines.draw()
             #self.flip() #for the ai, can be removed for casual play
         if self.screenOn[6] == 1:
-            self.backdrop.draw()
+            self.backdrop2.draw()
             self.pauseMenu.draw()
+            #update labels on screen:
+            self.label_accountName = pyglet.text.Label("username: " + str(self.account_name), font_name='Zen Dots', bold=True, color=(220, 220 ,220, 1000), font_size=13, x=20, y=690, batch=self.pauseMenu)
+            if self.account_best_lap == 0.0:
+                self.label_bestLap = pyglet.text.Label("best lap:  -- ", font_name='Zen Dots', bold=True, color=(220, 220 ,220, 1000), font_size=13, x=20, y=650, batch=self.pauseMenu)
+                self.label_bestLapDate = pyglet.text.Label("achieved on: -- ", font_name='Zen Dots', bold=True, color=(220, 220 ,220, 1000), font_size=13, x=20, y=610, batch=self.pauseMenu)
+            else:
+                self.label_bestLap = pyglet.text.Label("best lap: " + str(self.account_best_lap) + " seconds", font_name='Zen Dots', bold=True, color=(220, 220 ,220, 1000), font_size=13, x=20, y=650, batch=self.pauseMenu)
+                self.label_bestLapDate = pyglet.text.Label("achieved on: " + str(self.account_best_lap_date), font_name='Zen Dots', bold=True, color=(220, 220 ,220, 1000), font_size=13, x=20, y=610, batch=self.pauseMenu)
+        if self.screenOn[3] == 1:
+            self.cp.draw()
+            self.cp_error_message.draw()
+            self.textbox_colour(self.textbox_states_cp, 0, self.rectangle10)    
+            self.textbox_colour(self.textbox_states_cp, 1, self.rectangle11)    
+            self.textbox_colour(self.textbox_states_cp, 2, self.rectangle12)  
 
     def on_key_press(self, symbol, modifiers):
         #if the log in screen is on
@@ -1338,10 +1503,59 @@ class RacingEnv(pyglet.window.Window):
 
                 self.label5 = pyglet.text.Label(self.text_sign_input3, font_name='Arial', font_size=20, x=460, y=315, batch=self.signExtras)
 
-        elif self.screenOn[6] == 1:
-            pass
-        #if the racing screen is on
-        elif self.screenOn[7] == 1:
+        elif self.screenOn[3] == 1:
+            if self.selected_textbox_cp == 1:
+                if symbol == key.LSHIFT or symbol == key.RSHIFT:
+                    self.next_letter6 = True
+                if self.next_letter6 == True:
+                    if key.A <= symbol <= key.Z:
+                        if len(self.text_cp_input1) < 20:
+                            self.text_cp_input1 = self.text_cp_input1 + str(chr(symbol)).upper()
+                        self.next_letter6 = False
+                else:
+                    if symbol == key.BACKSPACE:
+                        self.text_cp_input1 = self.text_cp_input1[:-1]
+                    elif key.A <= symbol <= key.Z or symbol == key.SPACE:
+                        if len(self.text_cp_input1) < 20:
+                            self.text_cp_input1 = self.text_cp_input1 + str(chr(symbol))
+
+                self.label6 = pyglet.text.Label(self.text_cp_input1, font_name='Arial', font_size=20, x=460, y=535, batch=self.cp)
+            if self.selected_textbox_cp == 2:
+                if symbol == key.LSHIFT or symbol == key.RSHIFT:
+                    self.next_letter7 = True
+                if symbol == key.BACKSPACE:
+                    self.text_cp_input2 = self.text_cp_input2[:-1]
+                if self.next_letter7 == True:
+                    if key.A <= symbol <= key.Z:
+                        if len(self.text_cp_input2) < 20:
+                            self.text_cp_input2 = self.text_cp_input2 + str(chr(symbol)).upper()
+                        self.next_letter7 = False
+                else:
+                    if symbol != key.BACKSPACE:
+                        if len(self.text_cp_input2) < 20:
+                            self.text_cp_input2 = self.text_cp_input2 + str(chr(symbol))
+
+                self.label7 = pyglet.text.Label(self.text_cp_input2, font_name='Arial', font_size=20, x=460, y=425, batch=self.cp)
+            if self.selected_textbox_cp == 3:
+                if symbol == key.LSHIFT or symbol == key.RSHIFT:
+                    self.next_letter8 = True
+                if symbol == key.BACKSPACE:
+                    self.text_cp_input3 = self.text_cp_input3[:-1]
+                if self.next_letter8 == True:
+                    if key.A <= symbol <= key.Z:
+                        if len(self.text_cp_input3) < 20:
+                            self.text_cp_input3 = self.text_cp_input3 + str(chr(symbol)).upper()
+                        self.next_letter8 = False
+                else:
+                    if symbol != key.BACKSPACE:
+                        if len(self.text_cp_input3) < 20:
+                            self.text_cp_input3 = self.text_cp_input3 + str(chr(symbol))
+
+                self.label8 = pyglet.text.Label(self.text_cp_input3, font_name='Arial', font_size=20, x=460, y=315, batch=self.cp)
+
+        
+        #if the racing screen is on (or the pause screen so that the user can hold down the keys they want to press before pressing play)
+        if self.screenOn[6] == 1 or self.screenOn[7] == 1:
             self.player1.on_key_press(symbol, modifiers)
             self.user_action = self.player1.action_list
     
@@ -1378,9 +1592,11 @@ class RacingEnv(pyglet.window.Window):
                             if self.check_if_in_db(self.text_log_input1, self.text_log_input2) == 0:
                                 self.screenOn = [0,0,0,0,0,0,0,1]
                                 self.logged = True
+                                self.log_error_message = self.dummy
                                 self.account_name = self.text_log_input1
                                 self.account_password = self.text_log_input2
-                                self.log_error_message = self.dummy
+                                self.account_best_lap = self.get_data_db(self.account_name,3)
+                                self.account_best_lap_date = self.get_data_db(self.account_name,2)
                             elif self.check_if_in_db(self.text_log_input1, self.text_log_input2) == 1:
                                 self.log_error_message = self.badPassword
                             else:
@@ -1436,8 +1652,94 @@ class RacingEnv(pyglet.window.Window):
                                 self.logged = True
                                 self.account_name = self.text_sign_input1
                                 self.account_password = self.text_sign_input2
+                                self.account_best_lap = self.get_data_db(self.account_name,3)
+                                self.account_best_lap_date = self.get_data_db(self.account_name,2)
+
+            elif self.screenOn[3] == 1:
+                #for the text boxes
+                if 449 < x < 951:
+                    if 519 < y < 571:
+                        self.selected_textbox_cp = 1
+                        self.textbox_states_cp = [2,0,0]
+                    elif 409 < y < 451:
+                        self.selected_textbox_cp = 2
+                        self.textbox_states_cp = [0,2,0]
+                    elif 299 < y < 351:
+                        self.selected_textbox_cp = 3
+                        self.textbox_states_cp = [0,0,2]
+                
+                #back button
+                if 449 < x < 501:
+                    if 179 < y < 231:
+                        self.screenOn[3] = 0
+
+                #for the enter button
+                if 769 < x < 951:
+                    if 179 < y < 231:
+                        if self.check_if_in_db(self.account_name, self.text_cp_input1) == 1:
+                            self.cp_error_message = self.incorrect_old_password
+                        elif self.text_cp_input2 != self.text_cp_input3:
+                                self.cp_error_message = self.doesNotMatch
+                        elif len(self.text_cp_input2) < 8:
+                                self.cp_error_message = self.tooShort
+                        else:
+                            self.cp_error_message = self.dummy
+                            self.update_password_db(self.account_name, self.text_cp_input2)
+                            self.screenOn[3] = 0
+                            self.account_password = self.text_cp_input2
 
             elif self.screenOn[6] == 1:
+                #restart button
+                if 679 < y < 710:
+                    if 587 < x < 848:
+                        self.reset()
+                        self.screenOn[6] = 0
+
+                #back to entry button
+                elif 499 < y < 530:
+                    if 371 < x < 1053:
+                        self.reset()
+                        self.screenOn = [1,0,0,0,0,0,0,0]
+                
+                #change password button
+                elif 409 < y < 440:
+                    if 443 < x < 1055:
+                        self.screenOn[3] = 1
+                        self.label_changePassword.color = (180, 180, 180, 150)
+                        self.underline4.opacity = 0
+
+                #log out button
+                elif 319 < y < 350:
+                    if 597 < x < 843:
+                        self.reset()
+                        self.screenOn = [1,0,0,0,0,0,0,0]
+                        self.account_name = ""
+                        self.account_password = ""
+                        self.account_best_lap = 0.0
+                        self.account_best_lap_date = ""
+                        self.logged = False
+                        self.text_log_input1 = str()
+                        self.text_log_input2 = str()
+                        self.text_sign_input1 = str()
+                        self.text_sign_input2 = str()
+                        self.text_sign_input3 = str()
+                        self.text_cp_input1 = str()
+                        self.text_cp_input2 = str()
+                        self.text_cp_input3 = str()
+                        self.selected_textbox_log = 1
+                        self.selected_textbox_sign = 1
+                        self.selected_textbox_cp = 1
+                        self.label1 = pyglet.text.Label(self.text_log_input1, font_name='Arial', font_size=20, x=700, y=700, batch=self.logExtras)
+                        self.label2 = pyglet.text.Label(self.text_log_input2, font_name='Arial', font_size=20, x=700, y=700, batch=self.logExtras)
+                        self.label3 = pyglet.text.Label(self.text_sign_input1, font_name='Arial', font_size=20, x=700, y=700, batch=self.signExtras)
+                        self.label4 = pyglet.text.Label(self.text_sign_input2, font_name='Arial', font_size=20, x=700, y=700, batch=self.signExtras)
+                        self.label5 = pyglet.text.Label(self.text_sign_input3, font_name='Arial', font_size=20, x=700, y=700, batch=self.signExtras)
+                        self.label6 = pyglet.text.Label(self.text_cp_input1, font_name='Arial', font_size=20, x=700, y=700, batch=self.cp)
+                        self.label7 = pyglet.text.Label(self.text_cp_input2, font_name='Arial', font_size=20, x=700, y=700, batch=self.cp)
+                        self.label8 = pyglet.text.Label(self.text_cp_input3, font_name='Arial', font_size=20, x=700, y=700, batch=self.cp)
+
+
+
                 #resume button
                 if 629 < x < 801:
                     if 79 < y < 261:     
@@ -1521,6 +1823,42 @@ class RacingEnv(pyglet.window.Window):
                 elif 299 < y < 351:
                     if self.textbox_states[2] == 0:
                         self.textbox_states[2] = 1
+        elif self.screenOn[3] == 1:
+            #back button (reset)
+            self.rectangle14.opacity = 50
+            #back button (change)
+            if 449 < x < 501:
+                    if 179 < y < 231:
+                        self.rectangle14.opacity = 150
+
+            #enter button (reset)
+            self.rectangle13.opacity = 50
+            #enter button (change)
+            if 769 < x < 951:
+                if 179 < y < 231:
+                    self.rectangle13.opacity = 150
+            
+            #text boxes (reset)
+            if self.selected_textbox_cp == 1:
+                self.textbox_states_cp = [2,0,0]
+            elif self.selected_textbox_cp == 2:
+                self.textbox_states_cp = [0,2,0]
+            else:
+                self.textbox_states_cp = [0,0,2]
+
+            #text boxes (colour based on location of mouse)
+            if 449 < x < 951:
+                if 519 < y < 571:
+                    if self.textbox_states_cp[0] == 0:
+                        self.textbox_states_cp[0] = 1
+                elif 409 < y < 461:
+                    if self.textbox_states_cp[1] == 0:
+                        self.textbox_states_cp[1] = 1
+                elif 299 < y < 351:
+                    if self.textbox_states_cp[2] == 0:
+                        self.textbox_states_cp[2] = 1
+            
+        
         elif self.screenOn[6] == 1:
             #play button (reset)
             self.resumeButton.opacity = 100
@@ -1565,9 +1903,7 @@ class RacingEnv(pyglet.window.Window):
                 if 597 < x < 843:
                     self.label_logOut.color = (255, 255, 255, 1000)
                     self.underline5.opacity = 255
-
-
-        
+ 
         elif self.screenOn[7] == 1:
             #pause button (reset)
             self.pauseBackdrop.opacity = 10

@@ -61,15 +61,53 @@ def check_username_db(player_name):
     else:
         return False
 
+def get_lap_time_db(player_name):
+    cursor.execute("""
+    SELECT * FROM lap_times
+    WHERE gamer_name = '{}'
+""".format(player_name))
+    all = cursor.fetchall() 
+    player = all[0]
+    best_time = player[3]
+    return best_time
+
+def get_lap_date_db(player_name, column):
+    cursor.execute("""
+    SELECT * FROM lap_times
+    WHERE gamer_name = '{}'
+""".format(player_name))
+    all = cursor.fetchall() 
+    player = all[0]
+    date = player[column]
+    return date
+
+def update_lap_and_date_db(player_name, new_lap_time, new_date):
+    cursor.execute("""
+    UPDATE lap_times
+    SET date = '{}', time = {}
+    WHERE gamer_name = '{}'
+""".format(new_date, new_lap_time, player_name))
+    
+    connection.commit()
+
+
+def update_password_db(player_name, new_password):
+    cursor.execute("""
+    UPDATE lap_times
+    SET password = '{}'
+    WHERE gamer_name = '{}'
+""".format(new_password, player_name))
+    
+    connection.commit()
 
 def get_db():
     cursor.execute("SELECT * FROM lap_times")
     results = cursor.fetchall()
     return results
 
-
+#update_password_db("Rico", "passypassy")
 #new_player_db("Rico Taylor", "password123")
 #delete_player_db("Rico Taylor")
-
+print(get_lap_time_db("Rico"))
 #check_username_db("Rico Taylor")
 print(get_db())
