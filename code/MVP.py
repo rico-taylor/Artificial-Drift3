@@ -785,6 +785,7 @@ class RacingEnv(pyglet.window.Window):
         self.signExtras = pyglet.graphics.Batch()
         self.pauseMenu = pyglet.graphics.Batch()
         self.cp = pyglet.graphics.Batch()
+        self.leaderboardDisplays = pyglet.graphics.Batch()
 
         self.player1 = Car(car_start_x,car_start_y,260,"images/car.png", key.W, key.S, key.A, key.D, key.LSHIFT)
         self.user_action = [False,False,False,False,False]
@@ -823,7 +824,7 @@ class RacingEnv(pyglet.window.Window):
         self.screenOn = [1,0,0,0,0,0,0,0] #entry screen, pop-up log in, pop-up sign up, pop-up change password, pop-up leaderboard, pop-up confirm, pause screen, game play screen
 
         #log in
-        self.logged = False
+        self.logged = True
         self.account_name = str()
         self.account_password = str()
         self.account_best_lap_date = str()
@@ -846,6 +847,8 @@ class RacingEnv(pyglet.window.Window):
         self.pause = sprite.Sprite(self.pause_img, x=1372, y=840, batch=self.raceExtras)
         self.pause.scale = 0.2*scale_factor
 
+        self.lap_splits_label = pyglet.text.Label("Lap Splits:", font_name='Zen Dots', font_size=27, x=10, y=800, color=(255,140,0,255), batch=self.raceExtras)
+        self.lap_splits_label2 = pyglet.text.Label("", font_name='Zen Dots', font_size=20, x=10, y=800, color=(220, 220 ,220, 1000), batch=self.raceExtras)
 
         #PAUSE SCREEN-----------------------
         self.backdrop2 = pyglet.shapes.Rectangle(x=0, y=0, width=windowwidth, height=windowheight, color=(0, 0, 0))
@@ -1164,10 +1167,85 @@ class RacingEnv(pyglet.window.Window):
         #self.doesNotMatch and self.tooShort can also be used in self.cp_error_message
         self.cp_error_message = self.dummy
 
+        #LEADERBOARD SCREEN ----------------------------
+        #backdrop
+        self.backdrop4 = pyglet.shapes.Rectangle(x=0, y=0, width=windowwidth, height=windowheight, color=(0, 0, 0), batch=self.leaderboardDisplays)
+        self.backdrop4.opacity = 220 
+
+        #triangle decorations (behind main boxes)
+        self.triangle2 = sprite.Sprite(self.triangle_img, x=1350, y=850, batch=self.leaderboardDisplays)
+        self.triangle2.rotation = 160
+        self.triangle2.scale = 0.4*scale_factor
+        self.triangle2.opacity = 50
+
+        self.triangle3 = sprite.Sprite(self.triangle_img, x=1450, y=750, batch=self.leaderboardDisplays)
+        self.triangle3.rotation = 20
+        self.triangle3.scale = 0.3*scale_factor
+        self.triangle3.opacity = 50
+        
+        #box
+        self.leaderBox = pyglet.shapes.Rectangle(x=10, y=10, width=1420, height=880, color=(240, 90, 25), batch=self.leaderboardDisplays)
+        self.leaderBox.opacity = 210
+
+        #inner box
+        self.leaderBox2 = pyglet.shapes.Rectangle(x=15, y=15, width=1410, height=870, color=(0, 0, 0), batch=self.leaderboardDisplays)
+        self.leaderBox2.opacity = 190
+
+        #heading
+        self.leader_img = image.load("images/text_leaderboard.png")
+        self.leader_img.anchor_x = self.leader_img.width//2
+        self.leader_img.anchor_y = self.leader_img.height//2
+        self.leaderHeading = sprite.Sprite(self.leader_img, x=windowwidth//2, y=windowheight//2 +370, batch=self.leaderboardDisplays)
+        self.leaderHeading.scale = 0.5*scale_factor
+
+        #back button
+        self.rectangle15 = pyglet.shapes.Rectangle(x=50, y=770, width=80, height=80, color=(0, 0, 0), batch=self.leaderboardDisplays)
+        self.rectangle15.opacity = 50
+
+        #back icon
+        self.b3ackButton = sprite.Sprite(self.back_img, x=90, y=810, batch=self.leaderboardDisplays)
+        self.b3ackButton.scale = 0.4*scale_factor
+
+        #column labels
+        self.lable_username = pyglet.text.Label("USERNAME", font_name='Zen Dots', font_size=19, x=345, y=720, color=(255,140,0,255), batch=self.leaderboardDisplays)
+        self.lable_date = pyglet.text.Label("PB DATE", font_name='Zen Dots', font_size=19, x=648, y=720, color=(255,140,0,255), batch=self.leaderboardDisplays)
+        self.lable_time = pyglet.text.Label("BEST LAP", font_name='Zen Dots', font_size=19, x=920, y=720, color=(255,140,0,255), batch=self.leaderboardDisplays)
+
+        #box for table
+        self.tableLine = pyglet.shapes.Line(x=300, y=710, x2=1140, y2=710, width=5, color=(240, 90, 25), batch=self.leaderboardDisplays)
+        self.tableLine2 = pyglet.shapes.Line(x=300, y=110, x2=1140, y2=110, width=5, color=(240, 90, 25), batch=self.leaderboardDisplays)
+        self.tableLine3 = pyglet.shapes.Line(x=303, y=110, x2=303, y2=710, width=5, color=(240, 90, 25), batch=self.leaderboardDisplays)
+        self.tableLine4 = pyglet.shapes.Line(x=1138, y=110, x2=1138, y2=710, width=5, color=(240, 90, 25), batch=self.leaderboardDisplays)
+        
+        self.upstick2 = pyglet.shapes.Line(x=581, y=110, x2=581, y2=710, width=1, color=(240, 90, 25), batch=self.leaderboardDisplays)
+        self.upstick3 = pyglet.shapes.Line(x=859, y=110, x2=859, y2=710, width=1, color=(240, 90, 25), batch=self.leaderboardDisplays)
+
+        #rectangles to judge row size width etc
+        col = (50,50,50)
+        self.listT = []
+        for x in range(0,12):
+            if col == (50,50,50):
+                col = (150,150,150)
+            else:
+                col = (50,50,50)
+            self.listT.append(pyglet.shapes.Rectangle(x=300, y=110+(50*x), width = 840, height=50, color=col, batch=self.leaderboardDisplays))
+
+        #constants for the table
+        self.row_height = 50
+        self.visible_rows = 12
+        self.table_start_y = 710  # Starting Y position for the first row
+        self.scroll_offset = 0
+
         #DATABASE -----------------------------
         self.connection = sqlite3.connect("data2.db")
         self.cursor = self.connection.cursor()
 
+    #function that displays database on screen
+    def show_table(self):
+        data = self.get_db()
+        print(data)
+
+    #function to show the lap times
     def screen_displays(self):
         total_time = "{:.2f}".format(float(sum(self.player1.lap_list)) + float(self.player1.timer.get_time()))
         self.time_label1 = pyglet.text.Label("TIME: ", font_name='Zen Dots', font_size=32, x=600, y=835, color=(255,140,0,255), batch=self.raceExtras)
@@ -1180,6 +1258,18 @@ class RacingEnv(pyglet.window.Window):
         date = rawDate[-2:] + "-" + rawDate[5:7] + "-" + rawDate[:4]
         
         return date
+
+    #function creates a variable which can be printed of lap times
+    def lap_displays(self):
+        laps = ""
+        rounds = 0
+        for x in self.player1.lap_list:
+            rounds += 1
+            text = """
+        Lap {}: {}""".format(rounds,x)
+            laps = laps + text
+                
+        return laps
 
     #function for checking if the user name and password pair are in the database
     def check_if_in_db(self, player_name, password):
@@ -1248,6 +1338,12 @@ class RacingEnv(pyglet.window.Window):
     """.format(new_date, new_lap_time, player_name))
         
         self.connection.commit()
+
+    #function that fetches the whole database
+    def get_db(self):
+        self.cursor.execute("SELECT * FROM lap_times")
+        results = self.cursor.fetchall()
+        return results
 
     def reset(self):
         if self.SIMPLE_RESET == True: #respawning the car at the start line
@@ -1379,6 +1475,7 @@ class RacingEnv(pyglet.window.Window):
             self.textbox_colour(self.textbox_states, 1, self.rectangle5)    
             self.textbox_colour(self.textbox_states, 2, self.rectangle6)    
         if self.screenOn[7] == 1:
+            self.lap_splits_label2 = pyglet.text.Label(self.lap_displays(), multiline=True, width=500, font_name='Zen Dots', font_size=20, x=-61, y=790, color=(220, 220 ,220, 1000), batch=self.raceExtras)
             self.raceExtras.draw()
             if self.SHOW_WALLS == True:
                 self.wall_lines.draw()
@@ -1409,6 +1506,10 @@ class RacingEnv(pyglet.window.Window):
             else:
                 self.label_bestLap = pyglet.text.Label("best lap: " + str(self.account_best_lap) + " seconds", font_name='Zen Dots', bold=True, color=(220, 220 ,220, 1000), font_size=13, x=20, y=650, batch=self.pauseMenu)
                 self.label_bestLapDate = pyglet.text.Label("achieved on: " + str(self.account_best_lap_date), font_name='Zen Dots', bold=True, color=(220, 220 ,220, 1000), font_size=13, x=20, y=610, batch=self.pauseMenu)
+        if self.screenOn[4] == 1:
+            self.leaderboardDisplays.draw()
+            for x in self.listT:
+                x.draw()
         if self.screenOn[3] == 1:
             self.cp.draw()
             self.cp_error_message.draw()
@@ -1648,7 +1749,7 @@ class RacingEnv(pyglet.window.Window):
                             else:
                                 self.new_player_db(self.text_sign_input1, self.text_sign_input2)
                                 self.screenOn = [0,0,0,0,0,0,0,1]
-                                self.log_error_message = self.dummy
+                                self.sign_error_message = self.dummy
                                 self.logged = True
                                 self.account_name = self.text_sign_input1
                                 self.account_password = self.text_sign_input2
@@ -1688,12 +1789,22 @@ class RacingEnv(pyglet.window.Window):
                             self.screenOn[3] = 0
                             self.account_password = self.text_cp_input2
 
+            elif self.screenOn[4] == 1:
+                pass
+
             elif self.screenOn[6] == 1:
                 #restart button
                 if 679 < y < 710:
                     if 587 < x < 848:
                         self.reset()
                         self.screenOn[6] = 0
+
+                #leaderboard button
+                if 589 < y < 620:
+                    if 491 < x < 942:
+                        self.screenOn[4] = 1
+                        self.label_leaderboards.color = (180, 180, 180, 150)
+                        self.underline2.opacity = 0
 
                 #back to entry button
                 elif 499 < y < 530:
@@ -1857,7 +1968,8 @@ class RacingEnv(pyglet.window.Window):
                 elif 299 < y < 351:
                     if self.textbox_states_cp[2] == 0:
                         self.textbox_states_cp[2] = 1
-            
+        elif self.screenOn[4] == 1:
+            pass
         
         elif self.screenOn[6] == 1:
             #play button (reset)
