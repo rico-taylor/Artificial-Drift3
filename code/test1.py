@@ -26,7 +26,7 @@ row_height = 30
 visible_rows = 10
 table_start_y = 350  # Starting Y position for the first row
 scroll_offset = 0
-
+me = 0
 # Create a label for each row in the data
 labels = []
 
@@ -37,7 +37,6 @@ def update_labels():
     end_idx = min(scroll_offset + visible_rows, len(data))
     
     for i, row in enumerate(data[start_idx:end_idx]):
-        print(i)
         username, lap_time, date_completed = row
         y_pos = table_start_y - (i * row_height)
         labels.append(pyglet.text.Label(username, x=50, y=y_pos, batch=batch))

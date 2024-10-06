@@ -4,6 +4,7 @@ import time
 import random
 import sqlite3
 import datetime
+from datetime import datetime
 from pyglet import sprite, image
 from pyglet.window import key, mouse
 from math import sin, cos, atan, acos, asin, radians, sqrt, tanh
@@ -456,6 +457,11 @@ class Car:
                 screen.update_lap_and_date_db(screen.account_name, self.lap_list[-1], date)
                 screen.account_best_lap = self.lap_list[-1]
                 screen.account_best_lap_date = date
+            
+            #add new lap time to lap displays
+            screen.display_times = str(screen.display_times) + """
+Lap {}: {}""".format(len(self.lap_list),self.lap_list[-1])  
+            print(screen.display_times)
     
     #function to find how close the car is to pointing directly forwards
     def car_direction(self):
@@ -490,6 +496,13 @@ class Car:
         
         angle_change = abs((self.car.rotation%360) - ideal_rotation) / 180
         return angle_change
+
+    #function creates a variable which can be printed of lap times
+    def next_lap(self):
+        text = """
+Lap {}: {}""".format(len(self.lap_list),self.lap_list[-1])   
+        
+        return text
 
     #function calculates the reward of each tick
     def reward(self):
@@ -786,6 +799,7 @@ class RacingEnv(pyglet.window.Window):
         self.pauseMenu = pyglet.graphics.Batch()
         self.cp = pyglet.graphics.Batch()
         self.leaderboardDisplays = pyglet.graphics.Batch()
+        self.tableDisplay = pyglet.graphics.Batch()
 
         self.player1 = Car(car_start_x,car_start_y,260,"images/car.png", key.W, key.S, key.A, key.D, key.LSHIFT)
         self.user_action = [False,False,False,False,False]
@@ -809,6 +823,9 @@ class RacingEnv(pyglet.window.Window):
         self.SHOW_CARS = True
         self.SHOW_GATES = True
         self.SHOW_RAYS = False
+
+        #boolean for whether the lap times are displayed or not
+        self.SHOW_LAPS = True
 
         #defining booleans which control the type of reset
         self.SIMPLE_RESET = True
@@ -838,6 +855,8 @@ class RacingEnv(pyglet.window.Window):
         self.MAX_EPISODE_LENGTH = 1000
         
         #RACING SCREEN ICONS, BUTTONS, DECORATIONS---------------------
+        self.display_times = ""
+        
         self.pauseBackdrop = pyglet.shapes.Rectangle(x=1337, y=800, width=71, height=80, color=(255, 255, 255), batch=self.raceExtras)
         self.pauseBackdrop.opacity = 10
         
@@ -848,7 +867,7 @@ class RacingEnv(pyglet.window.Window):
         self.pause.scale = 0.2*scale_factor
 
         self.lap_splits_label = pyglet.text.Label("Lap Splits:", font_name='Zen Dots', font_size=27, x=10, y=800, color=(255,140,0,255), batch=self.raceExtras)
-        self.lap_splits_label2 = pyglet.text.Label("", font_name='Zen Dots', font_size=20, x=10, y=800, color=(220, 220 ,220, 1000), batch=self.raceExtras)
+        self.lap_splits_label2 = pyglet.text.Label(self.display_times, font_name='Zen Dots', font_size=20, x=10, y=800, color=(220, 220 ,220, 1000), batch=self.raceExtras)
 
         #PAUSE SCREEN-----------------------
         self.backdrop2 = pyglet.shapes.Rectangle(x=0, y=0, width=windowwidth, height=windowheight, color=(0, 0, 0))
@@ -905,6 +924,10 @@ class RacingEnv(pyglet.window.Window):
         self.underline5 = pyglet.shapes.Rectangle(x=593,y=311, height=5, width=254, batch=self.pauseMenu)
         self.underline5.opacity = 0
 
+        #button to turn lap displays on and off
+        self.rectangle16 = pyglet.shapes.Rectangle(x=1330, y=10, width=100, height=50, color=(34, 139, 34), batch=self.pauseMenu)
+        self.rectangle16.opacity = 50
+        self.rectangle16.color = (34, 139, 34)
 
         #ENTRY SCREEN CODE -------------------------
         #logo
@@ -1220,30 +1243,104 @@ class RacingEnv(pyglet.window.Window):
         self.upstick2 = pyglet.shapes.Line(x=581, y=110, x2=581, y2=710, width=1, color=(240, 90, 25), batch=self.leaderboardDisplays)
         self.upstick3 = pyglet.shapes.Line(x=859, y=110, x2=859, y2=710, width=1, color=(240, 90, 25), batch=self.leaderboardDisplays)
 
+        #arrows for ordering of table
+        self.selected_arrow = 3 #1-username, 2-date, 3-time
+        self.arrowStates = [0,0,0] #0-not selected, 1-hovering, 2-selected
+
+        self.usernameBox = pyglet.shapes.Rectangle(x=540, y=720, height=16, width=16, color=(255,255,255), batch=self.leaderboardDisplays)
+        self.usernameBox.opacity = 60
+        self.downArrow1 = sprite.Sprite(self.play2_img, x=548, y=728, batch=self.leaderboardDisplays)
+        self.downArrow1.rotation = 90
+        self.downArrow1.scale = 0.04*scale_factor
+        
+        self.dateBox = pyglet.shapes.Rectangle(x=800, y=720, height=16, width=16, color=(255,255,255), batch=self.leaderboardDisplays)
+        self.dateBox.opacity = 60
+        self.downArrow2 = sprite.Sprite(self.play2_img, x=808, y=728, batch=self.leaderboardDisplays)
+        self.downArrow2.rotation = 90
+        self.downArrow2.scale = 0.04*scale_factor
+        
+        self.timeBox = pyglet.shapes.Rectangle(x=1093, y=720, height=16, width=16, color=(255,255,255), batch=self.leaderboardDisplays)
+        self.timeBox.opacity = 60
+        self.downArrow3 = sprite.Sprite(self.play2_img, x=1101, y=728, batch=self.leaderboardDisplays)
+        self.downArrow3.rotation = 90
+        self.downArrow3.scale = 0.04*scale_factor
+
+
         #rectangles to judge row size width etc
-        col = (50,50,50)
-        self.listT = []
-        for x in range(0,12):
-            if col == (50,50,50):
-                col = (150,150,150)
-            else:
-                col = (50,50,50)
-            self.listT.append(pyglet.shapes.Rectangle(x=300, y=110+(50*x), width = 840, height=50, color=col, batch=self.leaderboardDisplays))
+        #col = (50,50,50)
+        #self.listT = []
+        #for x in range(0,12):
+        #    if col == (50,50,50):
+        #        col = (150,150,150)
+        #    else:
+        #        col = (50,50,50)
+        #    self.listT.append(pyglet.shapes.Rectangle(x=300, y=110+(50*x), width = 840, height=50, color=col, batch=self.leaderboardDisplays))
 
         #constants for the table
         self.row_height = 50
         self.visible_rows = 12
-        self.table_start_y = 710  # Starting Y position for the first row
+        self.table_start_y = 678  # Starting Y position for the first row
         self.scroll_offset = 0
+
+        self.MAXIMUM_LABEL_WIDTH = 230
+
+        self.data = []
+        self.labels = []
 
         #DATABASE -----------------------------
         self.connection = sqlite3.connect("data2.db")
         self.cursor = self.connection.cursor()
 
+        self.Order = 3 #0=order by name, 1=order default, 2=order by date, 3=order by lap time
+
     #function that displays database on screen
     def show_table(self):
-        data = self.get_db()
-        print(data)
+        self.labels = []
+        self.data = self.get_db()
+        if self.Order == 1:
+            pass
+        elif self.Order == 0:
+            self.data = self.sort_by_date(self.data)
+            self.data = self.sort_by_lap_times(self.data)
+            self.data = self.sort_alphabetical(self.data)
+        elif self.Order == 2:
+            self.data = self.sort_alphabetical(self.data)
+            self.data = self.sort_by_lap_times(self.data)
+            self.data = self.sort_by_date(self.data)
+        elif self.Order == 3:
+            self.data = self.sort_alphabetical(self.data)
+            self.data = self.sort_by_date(self.data)
+            self.data = self.sort_by_lap_times(self.data)
+        
+        start_value = self.scroll_offset
+        end_value = min(self.scroll_offset + self.visible_rows, len(self.data))
+
+        for x, row in enumerate(self.data[start_value:end_value]):
+            username, password, date, time = row
+            a = pyglet.text.Label(username, x=325, y=self.table_start_y - (x*self.row_height), font_name='Zen Dots', font_size=14, batch=self.leaderboardDisplays)
+            self.shorten_label(a)
+            a
+            if date == '0':
+                date = "N/A"
+            b = pyglet.text.Label(date, x=645, y=self.table_start_y - (x*self.row_height), font_name='Zen Dots', font_size=14, batch=self.leaderboardDisplays)
+            if time == 0.0:
+                time = "N/A"
+            c = pyglet.text.Label(str(time), x=970, y=self.table_start_y - (x*self.row_height), font_name='Zen Dots', font_size=14, batch=self.leaderboardDisplays)
+            self.labels.append(a)
+            self.labels.append(b)
+            self.labels.append(c)
+
+    #function shortens the text in the label
+    def shorten_label(self, label):
+        ellipsis = "..."
+        if label.content_width <= self.MAXIMUM_LABEL_WIDTH:
+            return
+        else:
+            while label.content_width > self.MAXIMUM_LABEL_WIDTH:
+                label.text = label.text[:-1]
+            
+            label.text = label.text + ellipsis
+            return label
 
     #function to show the lap times
     def screen_displays(self):
@@ -1253,23 +1350,11 @@ class RacingEnv(pyglet.window.Window):
 
     #function finds the current date
     def find_date(self):
-        rawDateTime = datetime.datetime.now()
+        rawDateTime = datetime.now()
         rawDate = str(rawDateTime)[:-16]
         date = rawDate[-2:] + "-" + rawDate[5:7] + "-" + rawDate[:4]
         
         return date
-
-    #function creates a variable which can be printed of lap times
-    def lap_displays(self):
-        laps = ""
-        rounds = 0
-        for x in self.player1.lap_list:
-            rounds += 1
-            text = """
-        Lap {}: {}""".format(rounds,x)
-            laps = laps + text
-                
-        return laps
 
     #function for checking if the user name and password pair are in the database
     def check_if_in_db(self, player_name, password):
@@ -1345,7 +1430,74 @@ class RacingEnv(pyglet.window.Window):
         results = self.cursor.fetchall()
         return results
 
+    #gets the row based on the username
+    def get_row_db(self,username):
+        self.cursor.execute("""
+        SELECT * FROM lap_times
+        WHERE gamer_name = '{}'
+    """.format(username))
+        rowList = self.cursor.fetchall() 
+        row = rowList[0]
+        return row
+
+    #sorts the database alphabetically
+    def sort_alphabetical(self, data):
+        name_list = []
+        for row in data:
+            username, password, date, time = row
+            name_list.append(username)
+        ordered_names = sorted(name_list)
+        new_data = []
+        for x in ordered_names:
+            new_data.append(self.get_row_db(x))
+        return new_data
+    
+    #sorting by date
+    def sort_tuples_by_date(self, tuples_list):
+        # Define a function to convert date from DD-MM-YYYY to a sortable format
+        def convert_date(date_str):
+            return datetime.strptime(date_str, "%d-%m-%Y")
+
+        sorted_list = sorted(tuples_list, key=lambda x: convert_date(x[0]), reverse=True)
+        
+        return sorted_list
+
+    #list all data sorted by date
+    def sort_by_date(self, data):
+        date_list = []
+        reject_list = []
+        for row in data:
+            username, password, date, time = row
+            if date == '0':
+                reject_list.append(row)
+            else:
+                date_list.append((date, username, password, time))
+        date_list = self.sort_tuples_by_date(date_list)
+        new_data = []
+        for x in date_list:
+            new_data.append(self.get_row_db(x[1]))
+        
+        new_data += reject_list
+        return new_data
+
+    #list all data sorted by lap times
+    def sort_by_lap_times(self, data):
+        rejects_list = []
+        valid_data_list = []
+        for x in data:
+            if x[3] == 0.0:
+                rejects_list.append(x)
+            else:
+                valid_data_list.append(x)
+
+        sorted_list = sorted(valid_data_list, key=lambda x: x[3])
+        new_data = sorted_list + rejects_list
+
+        return new_data
+
     def reset(self):
+        self.display_times = ""
+
         if self.SIMPLE_RESET == True: #respawning the car at the start line
             if self.SLIGHT_ROT_RESET == True: #respawning the car facing forwards but at a slihgtly different rotation
                 self.car_respawn_rotation = random.randint(25500,26500)/100
@@ -1455,6 +1607,14 @@ class RacingEnv(pyglet.window.Window):
             rectangle.color = (126,126,126)
         else:
             rectangle.color = (0,0,0)
+    
+    def arrow_colour(self, states_list, numb, rectangle):
+        if states_list[numb] == 0:
+            rectangle.opacity = 60
+        elif states_list[numb] == 1:
+            rectangle.opacity = 130
+        else:
+            rectangle.opacity = 250
 
     def render(self, mode="human"):
         self.clear()
@@ -1475,7 +1635,8 @@ class RacingEnv(pyglet.window.Window):
             self.textbox_colour(self.textbox_states, 1, self.rectangle5)    
             self.textbox_colour(self.textbox_states, 2, self.rectangle6)    
         if self.screenOn[7] == 1:
-            self.lap_splits_label2 = pyglet.text.Label(self.lap_displays(), multiline=True, width=500, font_name='Zen Dots', font_size=20, x=-61, y=790, color=(220, 220 ,220, 1000), batch=self.raceExtras)
+            if self.SHOW_LAPS == True:
+                self.lap_splits_label2 = pyglet.text.Label(self.display_times, multiline=True, width=500, font_name='Zen Dots', font_size=20, x=10, y=800, color=(220, 220 ,220, 1000), batch=self.raceExtras)
             self.raceExtras.draw()
             if self.SHOW_WALLS == True:
                 self.wall_lines.draw()
@@ -1508,8 +1669,9 @@ class RacingEnv(pyglet.window.Window):
                 self.label_bestLapDate = pyglet.text.Label("achieved on: " + str(self.account_best_lap_date), font_name='Zen Dots', bold=True, color=(220, 220 ,220, 1000), font_size=13, x=20, y=610, batch=self.pauseMenu)
         if self.screenOn[4] == 1:
             self.leaderboardDisplays.draw()
-            for x in self.listT:
-                x.draw()
+            self.arrow_colour(self.arrowStates, 0, self.usernameBox)
+            self.arrow_colour(self.arrowStates, 1, self.dateBox)
+            self.arrow_colour(self.arrowStates, 2, self.timeBox)
         if self.screenOn[3] == 1:
             self.cp.draw()
             self.cp_error_message.draw()
@@ -1790,7 +1952,28 @@ class RacingEnv(pyglet.window.Window):
                             self.account_password = self.text_cp_input2
 
             elif self.screenOn[4] == 1:
-                pass
+                #back button
+                if 49 < x < 131:
+                    if 769 < y < 851:
+                        self.screenOn[4] = 0
+                
+                #sorting arrows
+                if 719 < y < 737:
+                    if 539 < x < 557:
+                        self.selected_arrow = 1
+                        self.arrowStates = [2,0,0]
+                        self.Order = 0
+                        self.show_table()
+                    elif 799 < x < 817:
+                        self.selected_arrow = 2
+                        self.arrowStates = [0,2,0]
+                        self.Order = 2
+                        self.show_table()
+                    elif 1092 < x < 1110:
+                        self.selected_arrow = 3
+                        self.arrowStates = [0,0,2]
+                        self.Order = 3
+                        self.show_table()
 
             elif self.screenOn[6] == 1:
                 #restart button
@@ -1805,6 +1988,9 @@ class RacingEnv(pyglet.window.Window):
                         self.screenOn[4] = 1
                         self.label_leaderboards.color = (180, 180, 180, 150)
                         self.underline2.opacity = 0
+
+                        #updates the table for the leaderboard screen
+                        self.show_table()
 
                 #back to entry button
                 elif 499 < y < 530:
@@ -1849,8 +2035,6 @@ class RacingEnv(pyglet.window.Window):
                         self.label7 = pyglet.text.Label(self.text_cp_input2, font_name='Arial', font_size=20, x=700, y=700, batch=self.cp)
                         self.label8 = pyglet.text.Label(self.text_cp_input3, font_name='Arial', font_size=20, x=700, y=700, batch=self.cp)
 
-
-
                 #resume button
                 if 629 < x < 801:
                     if 79 < y < 261:     
@@ -1860,6 +2044,18 @@ class RacingEnv(pyglet.window.Window):
 
                         #timer
                         self.player1.timer.start()
+                
+                #turn off lap displays button
+                if 1329 < x < 1431:
+                    if 9 < y < 61:
+                        if self.rectangle16.color == (34, 139, 34, 50): #if green (lap displays are on)
+                            self.rectangle16.color = (210, 43, 43, 50)
+                            self.SHOW_LAPS = False
+                        else: #if red (lap displays are off)
+                            self.rectangle16.color = (34, 139, 34, 50)
+                            self.SHOW_LAPS = True
+                        
+
 
             elif self.screenOn[7] == 1:
                 #pause button
@@ -1969,7 +2165,34 @@ class RacingEnv(pyglet.window.Window):
                     if self.textbox_states_cp[2] == 0:
                         self.textbox_states_cp[2] = 1
         elif self.screenOn[4] == 1:
-            pass
+            #back button (reset)
+            self.rectangle15.opacity = 50
+
+            #50 770, 8080
+            #back button (hover)
+            if 49 < x < 131:
+                if 769 < y < 851:
+                    self.rectangle15.opacity = 150
+            
+            #down arrows (reset)
+            if self.selected_arrow == 1:
+                self.arrowStates = [2,0,0]
+            elif self.selected_arrow == 2:
+                self.arrowStates = [0,2,0]
+            elif self.selected_arrow == 3:
+                self.arrowStates = [0,0,2]
+            
+            #down arrows (hover)
+            if 719 < y < 737:
+                if 539 < x < 557:
+                    if self.selected_arrow != 1:
+                        self.arrowStates[0] = 1
+                elif 799 < x < 817:
+                    if self.selected_arrow != 2:
+                        self.arrowStates[1] = 1
+                elif 1092 < x < 1110:
+                    if self.selected_arrow != 3:
+                        self.arrowStates[2] = 1
         
         elif self.screenOn[6] == 1:
             #play button (reset)
@@ -2015,7 +2238,6 @@ class RacingEnv(pyglet.window.Window):
                 if 597 < x < 843:
                     self.label_logOut.color = (255, 255, 255, 1000)
                     self.underline5.opacity = 255
- 
         elif self.screenOn[7] == 1:
             #pause button (reset)
             self.pauseBackdrop.opacity = 10
@@ -2024,6 +2246,14 @@ class RacingEnv(pyglet.window.Window):
                 if 799 < y < 881:
                     self.pauseBackdrop.opacity = 100
     
+    def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
+        if self.screenOn[4] == 1:
+            if scroll_y > 0 and self.scroll_offset > 0:
+                self.scroll_offset -= 1  # Scroll up
+            elif scroll_y < 0 and self.scroll_offset < len(self.data) - self.visible_rows:
+                self.scroll_offset += 1  # Scroll down
+            self.show_table()
+
     def update(self,dt):
         if self.screenOn == [0,0,0,0,0,0,0,1]:
             self.screen_displays()

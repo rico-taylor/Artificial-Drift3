@@ -32,9 +32,6 @@ def delete_player_db(player_name):
 
     connection.commit()
 
-def new_pb():
-    pass
-
 def check_if_in_db(player_name, password):
     cursor.execute("""
     SELECT * FROM lap_times
@@ -105,9 +102,70 @@ def get_db():
     results = cursor.fetchall()
     return results
 
-#update_password_db("Rico", "passypassy")
-#new_player_db("Rico Taylor", "password123")
-#delete_player_db("Rico Taylor")
-print(get_lap_time_db("Rico"))
-#check_username_db("Rico Taylor")
+def get_row_db(username): #gets the row based on the username
+    cursor.execute("""
+    SELECT * FROM lap_times
+    WHERE gamer_name = '{}'
+""".format(username))
+    players = cursor.fetchall() 
+    player = players[0]
+    return player
+
+def sort_alphabetical(data):
+    name_list = []
+    for row in data:
+        username, password, date, time = row
+        name_list.append(username)
+    ordered_names = sorted(name_list)
+    new_data = []
+    for x in ordered_names:
+        new_data.append(get_row_db(x))
+    return new_data
+
+from datetime import datetime
+
+def sort_tuples_by_date(tuples_list):
+    # Define a function to convert date from DD-MM-YYYY to a sortable format
+    def convert_date(date_str):
+        return datetime.strptime(date_str, "%d-%m-%Y")
+
+    sorted_list = sorted(tuples_list, key=lambda x: convert_date(x[0]), reverse=True)
+    
+    return sorted_list
+
+def sort_by_date(data):
+    date_list = []
+    reject_list = []
+    for row in data:
+        username, password, date, time = row
+        date_list.append((date, username))
+    for x in date_list:
+        if x[0] == '0':
+            reject_list.append(x)
+            date_list.remove(x)
+    date_list = sort_tuples_by_date(date_list)
+    new_data = []
+    for x in date_list:
+        new_data.append(get_row_db(x[1]))
+    new_data += reject_list
+    return new_data
+    
+#list all data sorted by lap times
+def sort_by_lap_times(self, data):
+    rejects_list = []
+    valid_data_list = []
+    for x in data:
+        if x[3] == 0.0:
+            rejects_list.append(x)
+        else:
+            valid_data_list.append(x)
+
+    sorted_list = sorted(valid_data_list, key=lambda x: x[3])
+    new_data = sorted_list + rejects_list
+    
+    return new_data
+
+
 print(get_db())
+print()
+print(sort_by_lap_times(get_db()))
