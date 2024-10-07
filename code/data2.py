@@ -166,6 +166,10 @@ def sort_by_lap_times(self, data):
     return new_data
 
 
+def select(data, input_string):
+    new_list = [t for t in data if any(input_string in str(x) for i, x in enumerate(t) if i != 1)]
+    return new_list
+
 print(get_db())
 print()
-print(sort_by_lap_times(get_db()))
+print(select(get_db(), "d"))

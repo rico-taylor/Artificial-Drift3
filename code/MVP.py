@@ -461,7 +461,6 @@ class Car:
             #add new lap time to lap displays
             screen.display_times = str(screen.display_times) + """
 Lap {}: {}""".format(len(self.lap_list),self.lap_list[-1])  
-            print(screen.display_times)
     
     #function to find how close the car is to pointing directly forwards
     def car_direction(self):
@@ -1247,6 +1246,9 @@ class RacingEnv(pyglet.window.Window):
         self.selected_arrow = 3 #1-username, 2-date, 3-time
         self.arrowStates = [0,0,0] #0-not selected, 1-hovering, 2-selected
 
+        self.text_search = str()
+        self.next_letter9 = False
+
         self.usernameBox = pyglet.shapes.Rectangle(x=540, y=720, height=16, width=16, color=(255,255,255), batch=self.leaderboardDisplays)
         self.usernameBox.opacity = 60
         self.downArrow1 = sprite.Sprite(self.play2_img, x=548, y=728, batch=self.leaderboardDisplays)
@@ -1265,6 +1267,26 @@ class RacingEnv(pyglet.window.Window):
         self.downArrow3.rotation = 90
         self.downArrow3.scale = 0.04*scale_factor
 
+        #"search" label
+        self.searchLabel = pyglet.text.Label("SEARCH: ", x=350, y=50, font_name="Zen Dots", font_size=21, color=(255,140,0,255), batch=self.leaderboardDisplays)
+
+        #search bar
+        self.searchBar = pyglet.shapes.Rectangle(x=525, y=35, width=500, height=50, color=(255, 255, 255), batch=self.leaderboardDisplays)
+        self.searchBar.opacity = 150
+
+        #search button
+        self.searchButton = pyglet.shapes.Rectangle(x=1027, y=35, width=50, height = 50, color=(0,0,0), batch=self.leaderboardDisplays)
+        self.searchButton.opacity = 100
+
+        #serach icon
+        self.search_img = image.load("images/icon_search.png")
+        self.search_img.anchor_x = self.search_img.width//2
+        self.search_img.anchor_y = self.search_img.height//2
+        self.searchIcon = sprite.Sprite(self.search_img, x=1051, y=60, batch=self.leaderboardDisplays)
+        self.searchIcon.scale = 0.15*scale_factor
+        
+        #search text
+        self.label9 = pyglet.text.Label(self.text_search, font_name='Arial', font_size=20, x=540, y=40, batch=self.leaderboardDisplays)
 
         #rectangles to judge row size width etc
         #col = (50,50,50)
@@ -1294,9 +1316,9 @@ class RacingEnv(pyglet.window.Window):
         self.Order = 3 #0=order by name, 1=order default, 2=order by date, 3=order by lap time
 
     #function that displays database on screen
-    def show_table(self):
+    def show_table(self, data):
         self.labels = []
-        self.data = self.get_db()
+        self.data = data
         if self.Order == 1:
             pass
         elif self.Order == 0:
@@ -1495,6 +1517,11 @@ class RacingEnv(pyglet.window.Window):
 
         return new_data
 
+    #creates a new data set which is applicable to the serach
+    def select(self, data, input_string):
+        new_list = [t for t in data if any(input_string in str(x) for i, x in enumerate(t) if i != 1)]
+        return new_list
+
     def reset(self):
         self.display_times = ""
 
@@ -1669,6 +1696,7 @@ class RacingEnv(pyglet.window.Window):
                 self.label_bestLapDate = pyglet.text.Label("achieved on: " + str(self.account_best_lap_date), font_name='Zen Dots', bold=True, color=(220, 220 ,220, 1000), font_size=13, x=20, y=610, batch=self.pauseMenu)
         if self.screenOn[4] == 1:
             self.leaderboardDisplays.draw()
+            self.label9 = pyglet.text.Label(self.text_search, font_name='Arial', font_size=22, x=535, y=50, batch=self.leaderboardDisplays)
             self.arrow_colour(self.arrowStates, 0, self.usernameBox)
             self.arrow_colour(self.arrowStates, 1, self.dateBox)
             self.arrow_colour(self.arrowStates, 2, self.timeBox)
@@ -1816,6 +1844,21 @@ class RacingEnv(pyglet.window.Window):
 
                 self.label8 = pyglet.text.Label(self.text_cp_input3, font_name='Arial', font_size=20, x=460, y=315, batch=self.cp)
 
+        elif self.screenOn[4] == 1:
+            if self.searchBar.color == (0,0,0,150):
+                if symbol == key.LSHIFT or symbol == key.RSHIFT:
+                    self.next_letter9 = True
+                if symbol == key.BACKSPACE:
+                    self.text_search = self.text_search[:-1]
+                if self.next_letter9 == True:
+                    if key.A <= symbol <= key.Z:
+                        if len(self.text_search) < 20:
+                            self.text_search = self.text_search + str(chr(symbol)).upper()
+                        self.next_letter9 = False
+                else:
+                    if symbol != key.BACKSPACE:
+                        if len(self.text_search) < 20:
+                            self.text_search = self.text_search + str(chr(symbol))
         
         #if the racing screen is on (or the pause screen so that the user can hold down the keys they want to press before pressing play)
         if self.screenOn[6] == 1 or self.screenOn[7] == 1:
@@ -1875,8 +1918,7 @@ class RacingEnv(pyglet.window.Window):
                             elif self.selected_textbox_sign == 2:
                                 self.textbox_states = [0,2,0]
                             else:
-                                self.textbox_states = [0,0,2]
-            
+                                self.textbox_states = [0,0,2]            
             elif self.screenOn[2] == 1:
                 #for the back button
                 if 449 < x < 497:
@@ -1917,7 +1959,6 @@ class RacingEnv(pyglet.window.Window):
                                 self.account_password = self.text_sign_input2
                                 self.account_best_lap = self.get_data_db(self.account_name,3)
                                 self.account_best_lap_date = self.get_data_db(self.account_name,2)
-
             elif self.screenOn[3] == 1:
                 #for the text boxes
                 if 449 < x < 951:
@@ -1950,7 +1991,6 @@ class RacingEnv(pyglet.window.Window):
                             self.update_password_db(self.account_name, self.text_cp_input2)
                             self.screenOn[3] = 0
                             self.account_password = self.text_cp_input2
-
             elif self.screenOn[4] == 1:
                 #back button
                 if 49 < x < 131:
@@ -1963,17 +2003,28 @@ class RacingEnv(pyglet.window.Window):
                         self.selected_arrow = 1
                         self.arrowStates = [2,0,0]
                         self.Order = 0
-                        self.show_table()
+                        self.show_table(self.data)
                     elif 799 < x < 817:
                         self.selected_arrow = 2
                         self.arrowStates = [0,2,0]
                         self.Order = 2
-                        self.show_table()
+                        self.show_table(self.data)
                     elif 1092 < x < 1110:
                         self.selected_arrow = 3
                         self.arrowStates = [0,0,2]
                         self.Order = 3
-                        self.show_table()
+                        self.show_table(self.data)
+                
+                #search bar
+                if 525 < x < 1025:
+                    if 35 < y < 85:
+                        self.searchBar.color = (0,0,0)
+                
+                #search button
+                if 1027 < x < 1077:
+                    if 24 < y < 76:
+                        self.show_table(self.select(self.get_db(), self.text_search))
+
 
             elif self.screenOn[6] == 1:
                 #restart button
@@ -1990,7 +2041,7 @@ class RacingEnv(pyglet.window.Window):
                         self.underline2.opacity = 0
 
                         #updates the table for the leaderboard screen
-                        self.show_table()
+                        self.show_table(self.get_db())
 
                 #back to entry button
                 elif 499 < y < 530:
@@ -2193,7 +2244,25 @@ class RacingEnv(pyglet.window.Window):
                 elif 1092 < x < 1110:
                     if self.selected_arrow != 3:
                         self.arrowStates[2] = 1
-        
+            
+            #search bar (reset)
+            if self.searchBar.color != (0,0,0, 150):
+                self.searchBar.color = (255,255,255)
+
+            #search bar (hover)
+            if 524 < x < 1026:
+                if 34 < y < 86:
+                    if self.searchBar.color != (0,0,0,150):
+                        self.searchBar.color = (126,126,126)
+
+            #search button (reset)
+            self.searchButton.color = (0,0,0,100)
+
+            #search button (hover)
+            if 1027 < x < 1077:
+                if 24 < y < 76:
+                    self.searchButton.color = (255,255,255,100)
+
         elif self.screenOn[6] == 1:
             #play button (reset)
             self.resumeButton.opacity = 100
@@ -2252,7 +2321,7 @@ class RacingEnv(pyglet.window.Window):
                 self.scroll_offset -= 1  # Scroll up
             elif scroll_y < 0 and self.scroll_offset < len(self.data) - self.visible_rows:
                 self.scroll_offset += 1  # Scroll down
-            self.show_table()
+            self.show_table(self.data)
 
     def update(self,dt):
         if self.screenOn == [0,0,0,0,0,0,0,1]:
