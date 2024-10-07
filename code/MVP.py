@@ -2042,6 +2042,8 @@ class RacingEnv(pyglet.window.Window):
 
                         #updates the table for the leaderboard screen
                         self.show_table(self.get_db())
+                        self.text_search = str()
+                        self.searchBar.color = (255,255,255,150)
 
                 #back to entry button
                 elif 499 < y < 530:
