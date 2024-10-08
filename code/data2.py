@@ -1,5 +1,7 @@
 import sqlite3
 
+import datetime
+from datetime import datetime
 connection = sqlite3.connect("data2.db")
 
 cursor = connection.cursor()
@@ -15,6 +17,121 @@ CREATE TABLE IF NOT EXISTS lap_times(
     time FLOAT
 )
 """)
+
+
+
+
+
+
+
+
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS actions (
+    action_type TEXT,
+    date VARCHAR
+)
+""")
+
+def new_data_entry_actions(action, date):
+    cursor.execute("""
+    INSERT INTO actions VALUES
+    ('{}', '{}')             
+    """.format(action, date))
+
+    connection.commit()
+
+def data_delete_actions(action,date):
+    cursor.execute("""
+    DELETE FROM actions
+        WHERE action_type = '{}'
+        AND date = '{}'
+    """.format(action,date))
+
+    connection.commit()
+
+def get_actions():
+    cursor.execute("SELECT * FROM actions")
+    results = cursor.fetchall()
+    return results
+
+#data_delete_actions("create_account","08-10-2024")
+#print(get_actions())
+
+def amount_actions_category(category, date):
+    cursor.execute("""
+    SELECT FROM actions
+        WHERE action_type = '{}'
+        AND date
+""")
+
+def select_values(target_string, start_date, end_date):
+    
+    # Convert the dates to the format YYYY-MM-DD for comparison
+    start_date_conv = datetime.strptime(start_date, "%d-%m-%Y").strftime("%Y-%m-%d")
+    end_date_conv = datetime.strptime(end_date, "%d-%m-%Y").strftime("%Y-%m-%d")
+    
+    cursor.execute("""
+    SELECT * FROM actions
+    WHERE action_type = '{}'
+    AND date(substr(date, 7, 4) || '-' || substr(date, 4, 2) || '-' || substr(date, 1, 2))
+    BETWEEN date('{}') AND date('{}');
+    """.format(target_string, start_date_conv, end_date_conv))
+    
+    new_data = cursor.fetchall()
+    
+    return new_data
+
+
+def numb_actions():
+    print("                         ------ WELCOME ADMIN ------                          ")
+    print()
+    print("Here you can view flow through the app and quantity of changes to the database")
+    print()
+    start_date = input("Enter starting date of time range (DD-MM-YYY): ")
+    end_date = input("Enter ending date of time range (DD-MM-YYY): ")
+
+    a = len(select_values("create_account",start_date,end_date))
+    b = len(select_values("delete_account",start_date,end_date))
+    c = len(select_values("update_password",start_date, end_date))
+    d = len(select_values("update_lap_time",start_date, end_date))
+
+    print()
+    print()
+    print("Categories:")
+    print("Account Creations: ", a)
+    print("Account Deletions: ", b)
+    print("Password Updates: ", c)
+    print("Lap Updates: ", d)
+
+    print()
+    if input("Type 1 to redo: ") == "1":
+        numb_actions()
+
+numb_actions()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def new_player_db(player_name, password):
     cursor.execute("""
@@ -169,7 +286,3 @@ def sort_by_lap_times(self, data):
 def select(data, input_string):
     new_list = [t for t in data if any(input_string in str(x) for i, x in enumerate(t) if i != 1)]
     return new_list
-
-print(get_db())
-print()
-print(select(get_db(), "d"))

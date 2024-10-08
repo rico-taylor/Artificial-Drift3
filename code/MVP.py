@@ -4,6 +4,7 @@ import time
 import random
 import sqlite3
 import datetime
+import threading
 from datetime import datetime
 from pyglet import sprite, image
 from pyglet.window import key, mouse
@@ -245,8 +246,6 @@ for gate in gates:
 
 line_list = walls + gates
 
-import time
-
 class Stopwatch:
     def __init__(self):
         self.start_time = None
@@ -453,10 +452,12 @@ class Car:
                 screen.update_lap_and_date_db(screen.account_name, self.lap_list[-1], date)
                 screen.account_best_lap = self.lap_list[-1]
                 screen.account_best_lap_date = date
+                screen.new_data_entry_actions("update_lap_time", date)                
             if self.lap_list[-1] < screen.get_data_db(screen.account_name,3):
                 screen.update_lap_and_date_db(screen.account_name, self.lap_list[-1], date)
                 screen.account_best_lap = self.lap_list[-1]
                 screen.account_best_lap_date = date
+                screen.new_data_entry_actions("update_lap_time", date)
             
             #add new lap time to lap displays
             screen.display_times = str(screen.display_times) + """
@@ -799,6 +800,7 @@ class RacingEnv(pyglet.window.Window):
         self.cp = pyglet.graphics.Batch()
         self.leaderboardDisplays = pyglet.graphics.Batch()
         self.tableDisplay = pyglet.graphics.Batch()
+        self.confirm = pyglet.graphics.Batch()
 
         self.player1 = Car(car_start_x,car_start_y,260,"images/car.png", key.W, key.S, key.A, key.D, key.LSHIFT)
         self.user_action = [False,False,False,False,False]
@@ -840,7 +842,9 @@ class RacingEnv(pyglet.window.Window):
         self.screenOn = [1,0,0,0,0,0,0,0] #entry screen, pop-up log in, pop-up sign up, pop-up change password, pop-up leaderboard, pop-up confirm, pause screen, game play screen
 
         #log in
-        self.logged = True
+        self.admin = False
+
+        self.logged = False
         self.account_name = str()
         self.account_password = str()
         self.account_best_lap_date = str()
@@ -905,6 +909,11 @@ class RacingEnv(pyglet.window.Window):
         self.label_accountName = pyglet.text.Label("USERNAME: " + str(self.account_name), font_name='Zen Dots', bold=True, color=(220, 220 ,220, 1000), font_size=13, x=20, y=690, batch=self.pauseMenu)
         self.label_bestLap = pyglet.text.Label("BEST LAP: " + str(self.account_best_lap) + "seconds", font_name='Zen Dots', bold=True, color=(220, 220 ,220, 1000), font_size=13, x=20, y=650, batch=self.pauseMenu)
         self.label_bestLapDate = pyglet.text.Label("DATE ACHIEVED: " + str(self.account_best_lap_date), font_name='Zen Dots', bold=True, color=(220, 220 ,220, 1000), font_size=13, x=20, y=610, batch=self.pauseMenu)
+
+        #delete account button
+        self.label_delete = pyglet.text.Label("DELETE ACCOUNT", font_name='Zen Dots', color=(255, 0, 0, 145), font_size=11, x=60, y=560, batch=self.pauseMenu)
+        self.delete_underline = pyglet.shapes.Line(x=60, y=556, x2=230, y2=556, color=(255, 0, 0, 255), width=2, batch=self.pauseMenu)
+        self.delete_underline.opacity = 0
 
         #labels
         self.label_restart = pyglet.text.Label("RESTART", font_name='Zen Dots', bold=True, color=(180, 180 ,180, 150), font_size=30, x=585, y=680, batch=self.pauseMenu)
@@ -1189,6 +1198,34 @@ class RacingEnv(pyglet.window.Window):
         #self.doesNotMatch and self.tooShort can also be used in self.cp_error_message
         self.cp_error_message = self.dummy
 
+        #CONFIRM DELETION SCREEN -------------
+        #backdrop
+        self.backdrop5 = pyglet.shapes.Rectangle(x=0, y=0, width=windowwidth, height=windowheight, color=(0, 0, 0), batch=self.confirm)
+        self.backdrop5.opacity = 120 
+
+        #outer box
+        self.cdBoxOut = pyglet.shapes.Rectangle(x=55, y=327, height = 206, width=406, color=(0, 0, 0), batch=self.confirm)
+        self.cdBoxOut.opacity = 190
+
+        #box
+        self.cdBox = pyglet.shapes.Rectangle(x=58, y=330, height = 200, width=400, color=(240, 90, 25), batch=self.confirm)
+        self.cdBox.opacity = 130
+
+        #header label
+        self.areYouSure = pyglet.text.Label("Are You Sure?", x=138, y=495, bold=True, font_name='Zen Dots', font_size=20, batch=self.confirm)
+        self.areYouSure.color = (255,255,255, 240)
+        self.warningLabel = pyglet.text.Label("     Deleting is permanint, account will be lost forever", multiline=True, width=300, x=123, y=463, font_name='Zen Dots', font_size=12, batch=self.confirm)
+        self.warningLabel.color = (255,255,255,199)
+
+        #cancel button
+        self.cancelOuterButton = pyglet.shapes.Rectangle(x=76, y=348, height=54, width=154, color=(0,0,0), batch=self.confirm)
+        self.cancelButton = pyglet.shapes.Rectangle(x=78, y=350, height=50, width=150, color=(199,199,199), batch=self.confirm)
+        self.cancelLabel = pyglet.text.Label("CANCEL", x=92, y=367, font_name='Zen Dots', font_size=17, bold= True, color=(0,0,0,240), batch=self.confirm)
+
+        #confirm button
+        self.confirmButton = pyglet.shapes.Rectangle(x=288, y=350, height=50, width=150, color=(40,40,40), batch=self.confirm)
+        self.confirmLabel = pyglet.text.Label("CONFIRM", x=296, y=367, font_name='Zen Dots', font_size=17, color=(255,15,15,190), batch=self.confirm)
+
         #LEADERBOARD SCREEN ----------------------------
         #backdrop
         self.backdrop4 = pyglet.shapes.Rectangle(x=0, y=0, width=windowwidth, height=windowheight, color=(0, 0, 0), batch=self.leaderboardDisplays)
@@ -1415,6 +1452,15 @@ class RacingEnv(pyglet.window.Window):
 
         self.connection.commit()
 
+    #function that deletes a player from the database
+    def delete_player_db(self, player_name):
+        self.cursor.execute("""
+        DELETE FROM lap_times
+            WHERE gamer_name = '{}'
+        """.format(player_name))
+
+        self.connection.commit()
+
     #function that changes the password based on the username
     def update_password_db(self, player_name, new_password):
         self.cursor.execute("""
@@ -1521,6 +1567,59 @@ class RacingEnv(pyglet.window.Window):
     def select(self, data, input_string):
         new_list = [t for t in data if any(input_string in str(x) for i, x in enumerate(t) if i != 1)]
         return new_list
+
+    #enters data into the actions table
+    def new_data_entry_actions(self, action, date):
+        self.cursor.execute("""
+        INSERT INTO actions VALUES
+        ('{}', '{}')             
+        """.format(action, date))
+
+        self.connection.commit()
+
+    #sorts the actions data by date range
+    def select_values(self, target_string, start_date, end_date):
+        
+        # Convert the dates to the format YYYY-MM-DD for comparison
+        start_date_conv = datetime.strptime(start_date, "%d-%m-%Y").strftime("%Y-%m-%d")
+        end_date_conv = datetime.strptime(end_date, "%d-%m-%Y").strftime("%Y-%m-%d")
+        
+        self.cursor.execute("""
+        SELECT * FROM actions
+        WHERE action_type = '{}'
+        AND date(substr(date, 7, 4) || '-' || substr(date, 4, 2) || '-' || substr(date, 1, 2))
+        BETWEEN date('{}') AND date('{}');
+        """.format(target_string, start_date_conv, end_date_conv))
+        
+        new_data = self.cursor.fetchall()
+        
+        return new_data
+
+    #admin function for managing changes to the database
+    def adminFunction(self):
+        print("                         ------ WELCOME ADMIN ------                          ")
+        print()
+        print("Here you can view flow through the app and quantity of changes to the database")
+        print()
+        start_date = input("Enter starting date of time range (DD-MM-YYY): ")
+        end_date = input("Enter ending date of time range (DD-MM-YYY): ")
+
+        a = len(self.select_values("create_account",start_date,end_date))
+        b = len(self.select_values("delete_account",start_date,end_date))
+        c = len(self.select_values("update_password",start_date, end_date))
+        d = len(self.select_values("update_lap_time",start_date, end_date))
+
+        print()
+        print()
+        print("Categories:")
+        print("Account Creations: ", a)
+        print("Account Deletions: ", b)
+        print("Password Updates: ", c)
+        print("Lap Updates: ", d)
+
+        print()
+        if input("Type 1 to redo: ") == "1":
+            self.adminFunction()
 
     def reset(self):
         self.display_times = ""
@@ -1694,6 +1793,8 @@ class RacingEnv(pyglet.window.Window):
             else:
                 self.label_bestLap = pyglet.text.Label("best lap: " + str(self.account_best_lap) + " seconds", font_name='Zen Dots', bold=True, color=(220, 220 ,220, 1000), font_size=13, x=20, y=650, batch=self.pauseMenu)
                 self.label_bestLapDate = pyglet.text.Label("achieved on: " + str(self.account_best_lap_date), font_name='Zen Dots', bold=True, color=(220, 220 ,220, 1000), font_size=13, x=20, y=610, batch=self.pauseMenu)
+        if self.screenOn[5] == 1:
+            self.confirm.draw()
         if self.screenOn[4] == 1:
             self.leaderboardDisplays.draw()
             self.label9 = pyglet.text.Label(self.text_search, font_name='Arial', font_size=22, x=535, y=50, batch=self.leaderboardDisplays)
@@ -1804,9 +1905,7 @@ class RacingEnv(pyglet.window.Window):
                             self.text_cp_input1 = self.text_cp_input1 + str(chr(symbol)).upper()
                         self.next_letter6 = False
                 else:
-                    if symbol == key.BACKSPACE:
-                        self.text_cp_input1 = self.text_cp_input1[:-1]
-                    elif key.A <= symbol <= key.Z or symbol == key.SPACE:
+                    if symbol != key.BACKSPACE:
                         if len(self.text_cp_input1) < 20:
                             self.text_cp_input1 = self.text_cp_input1 + str(chr(symbol))
 
@@ -1903,6 +2002,13 @@ class RacingEnv(pyglet.window.Window):
                                 self.account_password = self.text_log_input2
                                 self.account_best_lap = self.get_data_db(self.account_name,3)
                                 self.account_best_lap_date = self.get_data_db(self.account_name,2)
+                                #checking if admin
+                                if self.account_name == "Rico Taylor":
+                                    self.admin = True
+                                if self.admin == True:
+                                    thread = threading.Thread(target=Admin)
+                                    thread.start()
+                            
                             elif self.check_if_in_db(self.text_log_input1, self.text_log_input2) == 1:
                                 self.log_error_message = self.badPassword
                             else:
@@ -1959,6 +2065,9 @@ class RacingEnv(pyglet.window.Window):
                                 self.account_password = self.text_sign_input2
                                 self.account_best_lap = self.get_data_db(self.account_name,3)
                                 self.account_best_lap_date = self.get_data_db(self.account_name,2)
+
+                                #update database actions
+                                self.new_data_entry_actions("create_account",str(self.find_date()))
             elif self.screenOn[3] == 1:
                 #for the text boxes
                 if 449 < x < 951:
@@ -1991,6 +2100,9 @@ class RacingEnv(pyglet.window.Window):
                             self.update_password_db(self.account_name, self.text_cp_input2)
                             self.screenOn[3] = 0
                             self.account_password = self.text_cp_input2
+
+                            #update actions database
+                            self.new_data_entry_actions("update_password",self.find_date())
             elif self.screenOn[4] == 1:
                 #back button
                 if 49 < x < 131:
@@ -2024,8 +2136,45 @@ class RacingEnv(pyglet.window.Window):
                 if 1027 < x < 1077:
                     if 24 < y < 76:
                         self.show_table(self.select(self.get_db(), self.text_search))
+            elif self.screenOn[5] == 1:
+                #cancel button
+                if 75 < x < 231:
+                    if 347 < y < 403:
+                        self.screenOn[5] = 0
+                
+                #delete button
+                if 287 < x < 439:
+                    if 349 < y < 401:
+                        self.delete_player_db(self.account_name)
+                        self.reset()
+                        self.screenOn = [1,0,0,0,0,0,0,0]
+                        self.account_name = ""
+                        self.account_password = ""
+                        self.account_best_lap = 0.0
+                        self.account_best_lap_date = ""
+                        self.logged = False
+                        self.text_log_input1 = str()
+                        self.text_log_input2 = str()
+                        self.text_sign_input1 = str()
+                        self.text_sign_input2 = str()
+                        self.text_sign_input3 = str()
+                        self.text_cp_input1 = str()
+                        self.text_cp_input2 = str()
+                        self.text_cp_input3 = str()
+                        self.selected_textbox_log = 1
+                        self.selected_textbox_sign = 1
+                        self.selected_textbox_cp = 1
+                        self.label1 = pyglet.text.Label(self.text_log_input1, font_name='Arial', font_size=20, x=700, y=700, batch=self.logExtras)
+                        self.label2 = pyglet.text.Label(self.text_log_input2, font_name='Arial', font_size=20, x=700, y=700, batch=self.logExtras)
+                        self.label3 = pyglet.text.Label(self.text_sign_input1, font_name='Arial', font_size=20, x=700, y=700, batch=self.signExtras)
+                        self.label4 = pyglet.text.Label(self.text_sign_input2, font_name='Arial', font_size=20, x=700, y=700, batch=self.signExtras)
+                        self.label5 = pyglet.text.Label(self.text_sign_input3, font_name='Arial', font_size=20, x=700, y=700, batch=self.signExtras)
+                        self.label6 = pyglet.text.Label(self.text_cp_input1, font_name='Arial', font_size=20, x=700, y=700, batch=self.cp)
+                        self.label7 = pyglet.text.Label(self.text_cp_input2, font_name='Arial', font_size=20, x=700, y=700, batch=self.cp)
+                        self.label8 = pyglet.text.Label(self.text_cp_input3, font_name='Arial', font_size=20, x=700, y=700, batch=self.cp)
 
-
+                        #update actions database
+                        self.new_data_entry_actions("delete_account",self.find_date())
             elif self.screenOn[6] == 1:
                 #restart button
                 if 679 < y < 710:
@@ -2107,9 +2256,13 @@ class RacingEnv(pyglet.window.Window):
                         else: #if red (lap displays are off)
                             self.rectangle16.color = (34, 139, 34, 50)
                             self.SHOW_LAPS = True
-                        
-
-
+                
+                #delete button (hover)
+                if 59 < x < 232:
+                    if 558 < y < 571:
+                        self.label_delete.color = (255,0,0,145)
+                        self.delete_underline.opacity = 0
+                        self.screenOn[5] = 1
             elif self.screenOn[7] == 1:
                 #pause button
                 if 1336 < x < 1409:
@@ -2264,7 +2417,22 @@ class RacingEnv(pyglet.window.Window):
             if 1027 < x < 1077:
                 if 24 < y < 76:
                     self.searchButton.color = (255,255,255,100)
+        elif self.screenOn[5] == 1:
+            #cancel button (reset)
+            self.cancelButton.opacity = 255
+            #concel button (hover)
+            #x=76, y=348, height=54, width=154
+            if 75 < x < 231:
+                if 347 < y < 403:
+                    self.cancelButton.opacity = 150
+            
+            #confirm delete (reset)
+            self.confirmButton.color = (40,40,40)
 
+            #confirm delete (hover)
+            if 287 < x < 439:
+                if 349 < y < 401:
+                    self.confirmButton.color = (70, 0, 0)
         elif self.screenOn[6] == 1:
             #play button (reset)
             self.resumeButton.opacity = 100
@@ -2309,6 +2477,16 @@ class RacingEnv(pyglet.window.Window):
                 if 597 < x < 843:
                     self.label_logOut.color = (255, 255, 255, 1000)
                     self.underline5.opacity = 255
+            
+            #delete button (reset)
+            self.label_delete.color = (255,0,0,145)
+            self.delete_underline.opacity = 0
+
+            #delete button (hover)
+            if 59 < x < 232:
+                if 558 < y < 571:
+                    self.label_delete.color = (255,0,0,255)
+                    self.delete_underline.opacity = 255
         elif self.screenOn[7] == 1:
             #pause button (reset)
             self.pauseBackdrop.opacity = 10
@@ -2334,6 +2512,9 @@ class RacingEnv(pyglet.window.Window):
     def end(self):
         self.close()
 
+class Admin:
+    while True:
+        RacingEnv.adminFunction()
 
 if __name__ == '__main__':
     screen = RacingEnv()
