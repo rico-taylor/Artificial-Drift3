@@ -246,6 +246,53 @@ for gate in gates:
 
 line_list = walls + gates
 
+#sorts the actions data by date range
+def select_values(target_string, start_date, end_date):
+    connection = sqlite3.connect("data2.db")
+    cursor = connection.cursor()
+    # Convert the dates to the format YYYY-MM-DD for comparison
+    start_date_conv = datetime.strptime(start_date, "%d-%m-%Y").strftime("%Y-%m-%d")
+    end_date_conv = datetime.strptime(end_date, "%d-%m-%Y").strftime("%Y-%m-%d")
+    
+    cursor.execute("""
+    SELECT * FROM actions
+    WHERE action_type = '{}'
+    AND date(substr(date, 7, 4) || '-' || substr(date, 4, 2) || '-' || substr(date, 1, 2))
+    BETWEEN date('{}') AND date('{}');
+    """.format(target_string, start_date_conv, end_date_conv))
+    
+    new_data = cursor.fetchall()
+    
+    return new_data
+
+#admin function for managing changes to the database
+def adminFunction():
+    print("                         ------ WELCOME ADMIN ------                          ")
+    print()
+    print("Here you can view flow through the app and quantity of changes to the database")
+    print()
+    start_date = input("Enter starting date of time range (DD-MM-YYY): ")
+    end_date = input("Enter ending date of time range (DD-MM-YYY): ")
+
+    a = len(select_values("create_account",start_date,end_date))
+    b = len(select_values("delete_account",start_date,end_date))
+    c = len(select_values("update_password",start_date, end_date))
+    d = len(select_values("update_lap_time",start_date, end_date))
+
+    print()
+    print()
+    print("Categories:")
+    print("Account Creations: ", a)
+    print("Account Deletions: ", b)
+    print("Password Updates: ", c)
+    print("Lap Updates: ", d)
+
+    print()
+    if input("Type 1 to redo: ") == "1":
+        adminFunction()
+
+
+
 class Stopwatch:
     def __init__(self):
         self.start_time = None
@@ -777,6 +824,7 @@ Lap {}: {}""".format(len(self.lap_list),self.lap_list[-1])
         self.rotation_difference = self.car_direction()
         
         self.observation_space = [self.velocity, self.car.rotation, self.rotation_difference] + self.aiVisionList
+
 
 #finding the start position for player 1
 car_start_x =  1020/1920 *windowwidth
@@ -1577,50 +1625,6 @@ class RacingEnv(pyglet.window.Window):
 
         self.connection.commit()
 
-    #sorts the actions data by date range
-    def select_values(self, target_string, start_date, end_date):
-        
-        # Convert the dates to the format YYYY-MM-DD for comparison
-        start_date_conv = datetime.strptime(start_date, "%d-%m-%Y").strftime("%Y-%m-%d")
-        end_date_conv = datetime.strptime(end_date, "%d-%m-%Y").strftime("%Y-%m-%d")
-        
-        self.cursor.execute("""
-        SELECT * FROM actions
-        WHERE action_type = '{}'
-        AND date(substr(date, 7, 4) || '-' || substr(date, 4, 2) || '-' || substr(date, 1, 2))
-        BETWEEN date('{}') AND date('{}');
-        """.format(target_string, start_date_conv, end_date_conv))
-        
-        new_data = self.cursor.fetchall()
-        
-        return new_data
-
-    #admin function for managing changes to the database
-    def adminFunction(self):
-        print("                         ------ WELCOME ADMIN ------                          ")
-        print()
-        print("Here you can view flow through the app and quantity of changes to the database")
-        print()
-        start_date = input("Enter starting date of time range (DD-MM-YYY): ")
-        end_date = input("Enter ending date of time range (DD-MM-YYY): ")
-
-        a = len(self.select_values("create_account",start_date,end_date))
-        b = len(self.select_values("delete_account",start_date,end_date))
-        c = len(self.select_values("update_password",start_date, end_date))
-        d = len(self.select_values("update_lap_time",start_date, end_date))
-
-        print()
-        print()
-        print("Categories:")
-        print("Account Creations: ", a)
-        print("Account Deletions: ", b)
-        print("Password Updates: ", c)
-        print("Lap Updates: ", d)
-
-        print()
-        if input("Type 1 to redo: ") == "1":
-            self.adminFunction()
-
     def reset(self):
         self.display_times = ""
 
@@ -2006,7 +2010,7 @@ class RacingEnv(pyglet.window.Window):
                                 if self.account_name == "Rico Taylor":
                                     self.admin = True
                                 if self.admin == True:
-                                    thread = threading.Thread(target=Admin)
+                                    thread = threading.Thread(target=adminFunction)
                                     thread.start()
                             
                             elif self.check_if_in_db(self.text_log_input1, self.text_log_input2) == 1:
@@ -2511,10 +2515,6 @@ class RacingEnv(pyglet.window.Window):
             
     def end(self):
         self.close()
-
-class Admin:
-    while True:
-        RacingEnv.adminFunction()
 
 if __name__ == '__main__':
     screen = RacingEnv()
