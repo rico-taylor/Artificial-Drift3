@@ -291,8 +291,6 @@ def adminFunction():
     if input("Type 1 to redo: ") == "1":
         adminFunction()
 
-
-
 class Stopwatch:
     def __init__(self):
         self.start_time = None
@@ -698,15 +696,15 @@ Lap {}: {}""".format(len(self.lap_list),self.lap_list[-1])
 
     #function for when the user presses a key
     def on_key_press(self, symbol, modifiers):
-        if symbol == self.forward_key:
+        if symbol == self.forward_key or symbol == key.UP:
             self.forward = True
-        if symbol == self.backward_key:
+        if symbol == self.backward_key or symbol == key.DOWN:
             self.backward = True
-        if symbol == self.left_key:
+        if symbol == self.left_key or symbol == key.LEFT:
             self.aclockwise = True
-        if symbol == self.right_key:
+        if symbol == self.right_key or symbol == key.RIGHT:
             self.clockwise = True
-        if symbol == self.drift_key:
+        if symbol == self.drift_key or symbol == key.RSHIFT:
             self.drift = True
             self.rotation_speed = 3.5
             self.rounds = 0
@@ -715,15 +713,15 @@ Lap {}: {}""".format(len(self.lap_list),self.lap_list[-1])
 
     #function for when the user realeses the key
     def on_key_release(self, symbol, modifiers):
-        if symbol == self.forward_key:
+        if symbol == self.forward_key or symbol == key.UP:
             self.forward = False
-        if symbol == self.backward_key:
+        if symbol == self.backward_key or symbol == key.DOWN:
             self.backward = False
-        if symbol == self.left_key:
+        if symbol == self.left_key or symbol == key.LEFT:
             self.aclockwise = False
-        if symbol == self.right_key:
+        if symbol == self.right_key or symbol == key.RIGHT:
             self.clockwise = False
-        if symbol == self.drift_key:
+        if symbol == self.drift_key or symbol == key.RSHIFT:
             self.drift = False
             self.rotation_speed = 3
         

@@ -204,7 +204,6 @@ def update_lap_and_date_db(player_name, new_lap_time, new_date):
     
     connection.commit()
 
-
 def update_password_db(player_name, new_password):
     cursor.execute("""
     UPDATE lap_times
