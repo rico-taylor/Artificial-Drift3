@@ -331,7 +331,6 @@ class Stopwatch:
         # Return accumulated elapsed time if stopped
         return "{:.2f}".format(self.elapsed_time)
 
-
 class Car:
     def __init__(self,x,y,r,img, forward, backward, left, right, drift): #x,y is the start position of the car, r is the start rotation of the car
         #setting up the car sprite and image
@@ -823,7 +822,6 @@ Lap {}: {}""".format(len(self.lap_list),self.lap_list[-1])
         
         self.observation_space = [self.velocity, self.car.rotation, self.rotation_difference] + self.aiVisionList
 
-
 #finding the start position for player 1
 car_start_x =  1020/1920 *windowwidth
 car_start_y =  185/1080 *windowheight
@@ -1150,7 +1148,7 @@ class RacingEnv(pyglet.window.Window):
 
         #error messages
         self.doesNotMatch = pyglet.text.Label("passwords do not match", font_name='Arial', bold=True, color=(255, 255 ,255, 1000), font_size=12, x=765, y=235)
-        self.tooShort = pyglet.text.Label("password must be greater than 8 characters", font_name='Arial', bold=True, color=(255, 255 ,255, 1000), font_size=12, x=695, y=235)
+        self.tooShort = pyglet.text.Label("password must be greater than 7 characters", font_name='Arial', bold=True, color=(255, 255 ,255, 1000), font_size=12, x=695, y=235)
         self.userExists = pyglet.text.Label("username already exists", font_name='Arial', bold=True, color=(255, 255 ,255, 1000), font_size=12, x=768, y=235)
         self.sign_error_message = self.dummy
 
