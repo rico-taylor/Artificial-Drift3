@@ -8,7 +8,7 @@ import threading
 from datetime import datetime
 from pyglet import sprite, image
 from pyglet.window import key, mouse
-from math import sin, cos, atan, acos, asin, radians, sqrt, tanh
+from math import sin, cos, atan, asin, radians, sqrt
 
 #batches
 wall_lines = pyglet.graphics.Batch()
