@@ -88,7 +88,8 @@ def get_walls(window_width, window_height):
 
 #creating all of the reward gates
 def get_gates(window_width, window_height):
-    timer1 = pyglet.shapes.Line(x=995/1920 *window_width, y=100/1080 *window_height, x2=985/1920 *window_width, y2=250/1080 *window_height, width = 1, color=(255,165,0))
+    global timer1
+    timer1 = pyglet.shapes.Line(x=995/1920 *window_width, y=102/1080 *window_height, x2=985/1920 *window_width, y2=250/1080 *window_height, width = 1, color=(255,165,0))
     timer2 = pyglet.shapes.Line(x=939/1920 *window_width, y=246/1080 *window_height, x2=947/1920 *window_width, y2=98/1080 *window_height, width = 1, color=(255,165,0))
     timer3 = pyglet.shapes.Line(x=889/1920 *window_width, y=239/1080 *window_height, x2=898/1920 *window_width, y2=91/1080 *window_height, width = 1, color=(225,165,0))
     timer4 = pyglet.shapes.Line(x=838/1920 *window_width, y=233/1080 *window_height, x2=844/1920 *window_width, y2=82/1080 *window_height, width = 1, color=(225,165,0))
@@ -241,7 +242,6 @@ for wall in walls:
 
 gates = get_gates(windowwidth, windowheight)
 for gate in gates:
-    gate.opacity = 40
     gate.batch = gate_lines
 
 line_list = walls + gates
@@ -858,8 +858,13 @@ class RacingEnv(pyglet.window.Window):
         
         #loading in gates
         self.gates = get_gates(windowwidth, windowheight)
+        r = 0
         for gate in self.gates:
-            gate.opacity = 40
+            r += 1
+            if r == 1:
+                gate.opacity = 150 #start line
+            else:
+                gate.opacity = 40
             gate.batch = self.gate_lines
         
         #defining the line list
